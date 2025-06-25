@@ -8,11 +8,17 @@ import EmailIcons from "../../assets/styledIcons/EmailIcons";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import EyeCloseIcon from "../../assets/styledIcons/EyeCloseIcon";
 import { useState } from "react";
+import { toast } from "react-toastify";
+import { useRegisterMutation } from "./authApi";
+import SelectField from "../../components/SelectField";
+import Button from "../../components/Button";
 
 interface SignupFormValues {
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
+  role: string;
 }
 
 const SignupSchema = Yup.object().shape({
@@ -23,23 +29,28 @@ const SignupSchema = Yup.object().shape({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Confirm your password"),
+  role: Yup.string().required("Please select a role"),
 });
 
 const Signup = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const handleSignup = (values: SignupFormValues) => {
-    console.log(values);
-    localStorage.setItem("token", "demo-token");
-    navigate("/dashboard");
+  const [signup, { isLoading }] = useRegisterMutation();
+  const handleSignup = async (values: SignupFormValues) => {
+    try {
+      await signup(values).unwrap();
+      toast.success("Account created successfully!");
+      navigate("/login");
+    } catch (err: any | { data: { message: string } }) {
+      toast.error(err?.data?.message || "Login failed");
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl flex flex-col md:flex-row overflow-hidden">
-        <div className="w-full md:w-1/2 p-10 flex flex-col justify-center">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl flex flex-col md:flex-row">
+        <div className="w-full md:w-1/2 p-10 flex flex-col justify-center relative overflow-visible">
           <div className="mb-4 mx-auto">
             <img src={shahIcon} alt="logo" className="h-12" />
           </div>
@@ -53,7 +64,13 @@ const Signup = () => {
           </div>
 
           <Formik<SignupFormValues>
-            initialValues={{ email: "", password: "", confirmPassword: "" }}
+            initialValues={{
+              name: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
+              role: "",
+            }}
             validationSchema={SignupSchema}
             onSubmit={handleSignup}
           >
@@ -64,6 +81,20 @@ const Signup = () => {
               touched,
             }: FormikProps<SignupFormValues>) => (
               <Form className="space-y-5" noValidate>
+                <div>
+                  <label className="block mb-1 font-medium text-gray-700">
+                    Name
+                  </label>
+                  <InputField
+                    name="name"
+                    type="name"
+                    placeholder="Enter your name"
+                    value={values.name}
+                    onChange={handleChange}
+                    icon={<EmailIcons size={20} />}
+                    error={touched.name && errors.name ? errors.name : ""}
+                  />
+                </div>
                 <div>
                   <label className="block mb-1 font-medium text-gray-700">
                     Email
@@ -139,6 +170,25 @@ const Signup = () => {
                   />
                 </div>
 
+                <div>
+                  <label className="block mb-1 font-medium text-gray-700">
+                    Role
+                  </label>
+                  <SelectField
+                    name="role"
+                    value={values.role}
+                    onChange={handleChange}
+                    options={[
+                      { value: "super-admin", label: "Super Admin" },
+                      { value: "admin", label: "Admin" },
+                      { value: "store-manager", label: "Store Manager" },
+                      { value: "staff", label: "Staff" },
+                    ]}
+                    placeholder="Select your role"
+                    icon={<EyeOpen />}
+                    error={touched.role && errors.role ? errors.role : ""}
+                  />
+                </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm">
                     Already have an account?{" "}
@@ -148,12 +198,9 @@ const Signup = () => {
                   </p>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-600 transition cursor-pointer"
-                >
+                <Button type="submit" loading={isLoading} disabled={isLoading}>
                   Sign Up
-                </button>
+                </Button>
               </Form>
             )}
           </Formik>
