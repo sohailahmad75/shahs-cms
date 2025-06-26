@@ -185,7 +185,6 @@ const Signup = () => {
                       { value: "staff", label: "Staff" },
                     ]}
                     placeholder="Select your role"
-                    icon={<EyeOpen />}
                     error={touched.role && errors.role ? errors.role : ""}
                   />
                 </div>

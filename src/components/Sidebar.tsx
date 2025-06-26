@@ -1,98 +1,96 @@
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import styles from "./Sidebar.module.scss";
+import ShahsLogo from "../assets/styledIcons/ShahsLogo";
+import MenuIcon from "../assets/styledIcons/MenuIcon";
 
-const Sidebar = () => {
-  const [openSubmenu, setOpenSubmenu] = useState(null);
+interface SidebarProps {
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
+  isCollapsed: boolean;
+  setIsCollapsed: (value: boolean) => void;
+  isMobile: boolean;
+}
 
-  const toggleMenu = (key: any) => {
-    setOpenSubmenu(openSubmenu === key ? null : key);
-  };
+const Sidebar = ({
+  isOpen,
+  setIsOpen,
+  isCollapsed,
+  setIsCollapsed,
+  isMobile,
+}: SidebarProps) => {
+  const sidebarRef = useRef(null);
+
+  // Click outside to close on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        isMobile
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [setIsOpen, isMobile]);
+
+  const shouldShow = isMobile ? isOpen : true;
 
   return (
-    <div className={styles.sidebar} id="sidebar">
-      <div className={`${styles["sidebar-inner"]} slimscroll`}>
-        <div id="sidebar-menu" className={styles["sidebar-menu"]}>
-          <ul>
-            <li>
-              <Link to="/dashboard">
-                <img src="assets/img/icons/dashboard.svg" alt="img" />
-                <span>Dashboard</span>
-              </Link>
-            </li>
-
-            {/* Product */}
-            <li
-              className={`${styles.submenu} ${openSubmenu === "product" ? styles.open : ""}`}
+    <div
+      ref={sidebarRef}
+      className={`z-40 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.1)] bg-[linear-gradient(to_bottom,_#ffffff_0%,_#f8f8f8_100%,_#ffffff_100%)] text-white h-full transition-all duration-300 
+        ${shouldShow ? "block" : "hidden"} 
+        ${isCollapsed && !isMobile ? "w-20" : "w-64"} 
+        fixed md:relative top-0 left-0
+      `}
+    >
+      <div className="h-full flex flex-col">
+        <div className="flex items-center justify-between px-4 py-3">
+          {!isCollapsed && <ShahsLogo />}
+          {!isMobile && (
+            <span
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="text-white cursor-pointer bg-primary-100 hover:text-white p-2 rounded transition-colors duration-200"
+              title={isCollapsed ? "Expand" : "Collapse"}
             >
-              <span onClick={() => toggleMenu("product")}>
-                <img src="assets/img/icons/product.svg" alt="img" />
-                <span>Product</span>
-                <span className={styles["menu-arrow"]}></span>
-              </span>
-              <ul>
-                <li>
-                  <Link to="/products">Product List</Link>
-                </li>
-                <li>
-                  <Link to="/products/add">Add Product</Link>
-                </li>
-                <li>
-                  <Link to="/categories">Category List</Link>
-                </li>
-                <li>
-                  <Link to="/categories/add">Add Category</Link>
-                </li>
-                <li>
-                  <Link to="/subcategories">Sub Category List</Link>
-                </li>
-                <li>
-                  <Link to="/subcategories/add">Add Sub Category</Link>
-                </li>
-                <li>
-                  <Link to="/brands">Brand List</Link>
-                </li>
-                <li>
-                  <Link to="/brands/add">Add Brand</Link>
-                </li>
-                <li>
-                  <Link to="/products/import">Import Products</Link>
-                </li>
-                <li>
-                  <Link to="/barcode">Print Barcode</Link>
-                </li>
-              </ul>
-            </li>
-
-            {/* Sales */}
-            <li
-              className={`${styles.submenu} ${openSubmenu === "sales" ? styles.open : ""}`}
-            >
-              <span onClick={() => toggleMenu("sales")}>
-                <img src="assets/img/icons/sales1.svg" alt="img" />
-                <span>Sales</span>
-                <span className={styles["menu-arrow"]}></span>
-              </span>
-              <ul>
-                <li>
-                  <Link to="/sales">Sales List</Link>
-                </li>
-                <li>
-                  <Link to="/pos">POS</Link>
-                </li>
-                <li>
-                  <Link to="/sales/new">New Sales</Link>
-                </li>
-                <li>
-                  <Link to="/sales/returns">Sales Return List</Link>
-                </li>
-                <li>
-                  <Link to="/sales/returns/new">New Sales Return</Link>
-                </li>
-              </ul>
-            </li>
-          </ul>
+              <MenuIcon />
+            </span>
+          )}
         </div>
+
+        <ul className="flex-1 space-y-1 px-2">
+          <li>
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-3 p-2 rounded hover:bg-red-500"
+            >
+              <img src="/assets/img/icons/dashboard.svg" className="w-5 h-5" />
+              {!isCollapsed && <span>Dashboard</span>}
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/products"
+              className="flex items-center gap-3 p-2 rounded hover:bg-red-500"
+            >
+              <img src="/assets/img/icons/product.svg" className="w-5 h-5" />
+              {!isCollapsed && <span>Products</span>}
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/sales"
+              className="flex items-center gap-3 p-2 rounded hover:bg-red-500"
+            >
+              <img src="/assets/img/icons/sales1.svg" className="w-5 h-5" />
+              {!isCollapsed && <span>Sales</span>}
+            </Link>
+          </li>
+        </ul>
       </div>
     </div>
   );
