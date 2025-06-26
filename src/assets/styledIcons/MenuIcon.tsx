@@ -6,7 +6,7 @@ interface MenuIconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const MenuIcon: React.FC<MenuIconProps> = ({
-  size = 24,
+  size = 18,
   color = "currentColor",
   ...props
 }) => (

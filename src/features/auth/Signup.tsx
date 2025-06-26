@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { useRegisterMutation } from "./authApi";
 import SelectField from "../../components/SelectField";
 import Button from "../../components/Button";
+import { USER_ROLES } from "../../helper";
 
 interface SignupFormValues {
   name: string;
@@ -178,12 +179,7 @@ const Signup = () => {
                     name="role"
                     value={values.role}
                     onChange={handleChange}
-                    options={[
-                      { value: "super-admin", label: "Super Admin" },
-                      { value: "admin", label: "Admin" },
-                      { value: "store-manager", label: "Store Manager" },
-                      { value: "staff", label: "Staff" },
-                    ]}
+                    options={USER_ROLES}
                     placeholder="Select your role"
                     error={touched.role && errors.role ? errors.role : ""}
                   />

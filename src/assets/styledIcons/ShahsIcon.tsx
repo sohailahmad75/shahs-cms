@@ -9,7 +9,7 @@ const ShahsIcon: React.FC<IconsProps> = ({ size = 30, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
-    height="41"
+    height="35"
     viewBox="0 0 30 41"
     fill="none"
     {...props}

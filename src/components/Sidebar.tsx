@@ -1,7 +1,12 @@
-import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import ShahsLogo from "../assets/styledIcons/ShahsLogo";
 import MenuIcon from "../assets/styledIcons/MenuIcon";
+import ShahsIcon from "../assets/styledIcons/ShahsIcon";
+import DashboardIcon from "../assets/styledIcons/Dashboad";
+import { useUser } from "../hooks/useAuth";
+import type { UserRole } from "../helper";
+import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,6 +16,43 @@ interface SidebarProps {
   isMobile: boolean;
 }
 
+const menuList = [
+  {
+    id: "dashboard",
+    name: "Dashboard",
+    icon: <DashboardIcon />,
+    link: "/dashboard",
+    roles: ["admin", "manager", "staff"],
+  },
+  {
+    id: "products",
+    name: "Products",
+    icon: <DashboardIcon />,
+    roles: ["admin", "manager"],
+    children: [
+      {
+        id: "all-products",
+        name: "All Products",
+        link: "/products",
+        roles: ["admin", "manager"],
+      },
+      {
+        id: "add-product",
+        name: "Add Product",
+        link: "/products/add",
+        roles: ["admin"],
+      },
+    ],
+  },
+  {
+    id: "sales",
+    name: "Sales",
+    icon: <DashboardIcon />,
+    link: "/sales",
+    roles: ["admin"],
+  },
+];
+
 const Sidebar = ({
   isOpen,
   setIsOpen,
@@ -19,8 +61,10 @@ const Sidebar = ({
   isMobile,
 }: SidebarProps) => {
   const sidebarRef = useRef(null);
-
-  // Click outside to close on mobile
+  const location = useLocation();
+  const { user: activeUser } = useUser();
+  const role = activeUser?.user?.role as UserRole;
+  const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
   useEffect(() => {
     const handleClickOutside = (event: any) => {
       if (
@@ -40,19 +84,23 @@ const Sidebar = ({
   return (
     <div
       ref={sidebarRef}
-      className={`z-40 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.1)] bg-[linear-gradient(to_bottom,_#ffffff_0%,_#f8f8f8_100%,_#ffffff_100%)] text-white h-full transition-all duration-300 
+      className={`z-40 bg-white text-black h-full transition-all duration-300 
         ${shouldShow ? "block" : "hidden"} 
         ${isCollapsed && !isMobile ? "w-20" : "w-64"} 
-        fixed md:relative top-0 left-0
-      `}
+        fixed md:relative top-0 left-0 shadow-lg`}
     >
       <div className="h-full flex flex-col">
+        {isCollapsed && (
+          <div className="px-4 py-3 pb-1 flex justify-center">
+            <ShahsIcon />
+          </div>
+        )}
         <div className="flex items-center justify-between px-4 py-3">
           {!isCollapsed && <ShahsLogo />}
           {!isMobile && (
             <span
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="text-white cursor-pointer bg-primary-100 hover:text-white p-2 rounded transition-colors duration-200"
+              className={`text-white cursor-pointer bg-orange-100 hover:text-white rounded-full p-3 transition-transform duration-300 ease-in-out ${isCollapsed ? "rotate-0" : "rotate-180"}`}
               title={isCollapsed ? "Expand" : "Collapse"}
             >
               <MenuIcon />
@@ -61,35 +109,74 @@ const Sidebar = ({
         </div>
 
         <ul className="flex-1 space-y-1 px-2">
-          <li>
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-3 p-2 rounded hover:bg-red-500"
-            >
-              <img src="/assets/img/icons/dashboard.svg" className="w-5 h-5" />
-              {!isCollapsed && <span>Dashboard</span>}
-            </Link>
-          </li>
+          {menuList
+            .filter((item) => item.roles.includes(role))
+            .map(({ id, name, icon, link, children }) => (
+              <li key={id} className="relative group">
+                {link ? (
+                  <Link
+                    to={link}
+                    className={`flex items-center gap-3 p-2 py-3 rounded hover:bg-orange-100 hover:text-white transition duration-300 ease-in-out
+                    ${location.pathname === link ? "bg-orange-100 text-white" : ""}
+                  `}
+                  >
+                    <div className="w-5 h-5">{icon}</div>
+                    {!isCollapsed && <span>{name}</span>}
+                  </Link>
+                ) : (
+                  <div>
+                    <div
+                      onClick={() =>
+                        setOpenSubmenuId(openSubmenuId === id ? null : id)
+                      }
+                      className="flex items-center gap-3 p-2 py-3 rounded cursor-pointer hover:bg-orange-100 hover:text-white transition duration-300 ease-in-out"
+                    >
+                      <div className="w-5 h-5">{icon}</div>
+                      {!isCollapsed && <span>{name}</span>}
+                      {!isCollapsed && (
+                        <span className="ml-auto">
+                          {openSubmenuId === id ? (
+                            <ArrowIcon className="rotate-180" />
+                          ) : (
+                            <ArrowIcon />
+                          )}
+                        </span>
+                      )}
+                    </div>
 
-          <li>
-            <Link
-              to="/products"
-              className="flex items-center gap-3 p-2 rounded hover:bg-red-500"
-            >
-              <img src="/assets/img/icons/product.svg" className="w-5 h-5" />
-              {!isCollapsed && <span>Products</span>}
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              to="/sales"
-              className="flex items-center gap-3 p-2 rounded hover:bg-red-500"
-            >
-              <img src="/assets/img/icons/sales1.svg" className="w-5 h-5" />
-              {!isCollapsed && <span>Sales</span>}
-            </Link>
-          </li>
+                    {children && (
+                      <ul
+                        className={`transition-all duration-300 ${
+                          isCollapsed && !isMobile
+                            ? "absolute left-full top-0 z-50 bg-white shadow-md rounded hidden group-hover:block min-w-[160px] p-1"
+                            : openSubmenuId === id || isMobile
+                              ? "ml-6 mt-1 space-y-1"
+                              : "hidden"
+                        }`}
+                      >
+                        {children
+                          .filter((sub) => sub.roles.includes(role))
+                          .map(
+                            ({ id: subId, name: subName, link: subLink }) => (
+                              <li key={subId}>
+                                <Link
+                                  to={subLink}
+                                  className={`flex items-center gap-2 p-2 text-sm rounded hover:bg-orange-100 hover:text-white transition duration-200
+                                ${location.pathname === subLink ? "bg-orange-100 text-white" : ""}
+                                `}
+                                >
+                                  {isCollapsed && <span>•</span>}
+                                  <span>{subName}</span>
+                                </Link>
+                              </li>
+                            ),
+                          )}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
         </ul>
       </div>
     </div>
