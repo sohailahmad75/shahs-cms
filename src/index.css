@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-    --color-primary-100: #007bff;
+    --color-primary-100: #eb0029;
+    --color-orange-100: #FF4F04;
+    --color-secondry-100: #32373c;
     --default-font-family: var();
 }

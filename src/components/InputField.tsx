@@ -24,7 +24,7 @@ const InputField: React.FC<InputFieldProps> = ({
       <div
         className={`flex items-center w-full border rounded px-4 pr-12 py-2 transition-colors duration-200 ${
           error
-            ? "border-red-500"
+            ? "border-primary-100"
             : "border-gray-300 group-focus-within:border-orange-500"
         }`}
       >
@@ -42,7 +42,7 @@ const InputField: React.FC<InputFieldProps> = ({
           </div>
         )}
       </div>
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      {error && <p className="text-primary-100 text-sm mt-1">{error}</p>}
     </div>
   );
 };

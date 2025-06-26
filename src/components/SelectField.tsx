@@ -41,11 +41,11 @@ const SelectField: React.FC<SelectFieldProps> = ({
   }, []);
 
   return (
-    <div className="mb-4 relative " ref={dropdownRef}>
+    <div className="relative " ref={dropdownRef}>
       <div
         className={`flex items-center justify-between w-full border rounded px-4 py-2 cursor-pointer transition-colors duration-200 ${
           error
-            ? "border-red-500"
+            ? "border-orange-100"
             : "border-gray-300 group-focus-within:border-orange-500"
         }`}
         onClick={() => setOpen((prev) => !prev)}
@@ -77,7 +77,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 key={opt.value}
                 className={`px-4 py-2 cursor-pointer transition-colors duration-150 ${
                   isSelected
-                    ? "bg-orange-100 text-orange-600 font-medium"
+                    ? "bg-orange-100 text-white font-medium "
                     : "text-gray-700 hover:bg-orange-50"
                 }`}
                 onClick={() => {
@@ -97,7 +97,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         </div>
       )}
 
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      {error && <p className="text-primary-100 text-sm mt-1">{error}</p>}
     </div>
   );
 };

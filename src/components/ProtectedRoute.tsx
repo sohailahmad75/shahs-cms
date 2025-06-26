@@ -7,7 +7,6 @@ interface Props {
 
 export default function ProtectedRoute({ allowedRoles }: Props) {
   const { user: activeUser } = useUser();
-  console.log(activeUser);
   const isAuthenticated = !!activeUser.user?.id || !!activeUser.user?.email; // safer
   const role = activeUser?.user?.role;
 
