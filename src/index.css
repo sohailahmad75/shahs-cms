@@ -1,2 +1,6 @@
 @import "tailwindcss";
 
+@theme {
+    --color-primary-100: #007bff;
+    --default-font-family: var();
+}
