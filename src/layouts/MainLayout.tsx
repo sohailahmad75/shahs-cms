@@ -41,7 +41,7 @@ export default function MainLayout({ children }: Props) {
           isMobile={isMobile}
           openSidebar={() => setIsSidebarOpen(true)}
         />
-        <main className="p-4 overflow-y-auto">{children}</main>
+        <main className="p-4 overflow-y-auto min-h-full">{children}</main>
       </div>
     </div>
   );
