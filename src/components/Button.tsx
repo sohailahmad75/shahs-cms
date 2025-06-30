@@ -25,10 +25,7 @@ const Button: React.FC<ButtonProps> = ({
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={`w-full flex items-center justify-center gap-2 bg-orange-500 text-white py-2 px-4 rounded transition duration-200 ease-in-out 
-        hover:bg-orange-600 
-        disabled:bg-gray-300 disabled:cursor-not-allowed
-        ${className}`}
+      className={`flex items-center justify-center gap-2 bg-orange-500 text-white py-2 px-4 rounded transition duration-200 ease-in-out cursor-pointer hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed ${className}`}
       {...props}
     >
       {loading && (

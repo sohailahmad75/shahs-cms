@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import ShahsLogo from "../assets/styledIcons/ShahsLogo";
 import MenuIcon from "../assets/styledIcons/MenuIcon";
-import ShahsIcon from "../assets/styledIcons/ShahsIcon";
 import DashboardIcon from "../assets/styledIcons/Dashboad";
 import { useUser } from "../hooks/useAuth";
-import type { UserRole } from "../helper";
+import { ROLES, UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
+import TransactionIcon from "../assets/styledIcons/TransactionIcon";
+import ShahsIcon from "../assets/styledIcons/ShahsIcon";
+import ShahsLogo from "../assets/styledIcons/ShahsLogo";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -41,6 +42,26 @@ const menuList = [
         name: "Add Product",
         link: "/products/add",
         roles: ["admin"],
+      },
+    ],
+  },
+  {
+    id: "transactions",
+    name: "Transactions",
+    icon: <TransactionIcon />,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    children: [
+      {
+        id: "bank-transactions",
+        name: "Bank Transactions",
+        link: "/transactions/bank-transactions",
+        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+      },
+      {
+        id: "app-transactions",
+        name: "App Transactions",
+        link: "/transactions/app-transactions",
+        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
       },
     ],
   },

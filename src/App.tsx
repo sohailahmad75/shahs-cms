@@ -8,7 +8,9 @@ import "react-toastify/dist/ReactToastify.css";
 function App() {
   return (
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <div className="bg-gray-50">
+        <RouterProvider router={router} />
+      </div>
 
       <ToastContainer
         position="top-right"
