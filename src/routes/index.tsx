@@ -4,12 +4,14 @@ import authRoutes from "./authRoutes";
 import dashboardRoutes from "./dashboardRoutes";
 import transactionsRoutes from "./transactionsRoutes";
 import reportRoutes from "./reportRoutes";
+import invoiceRoutes from "./invoiceRoutes";
 
 const router = createBrowserRouter([
   ...authRoutes,
   ...dashboardRoutes,
   ...transactionsRoutes,
   ...reportRoutes,
+  ...invoiceRoutes,
   {
     path: "*",
     element: <Navigate to="/dashboard" />,
