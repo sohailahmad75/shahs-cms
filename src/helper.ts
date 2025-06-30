@@ -10,8 +10,8 @@ export const USER_ROLES: { value: UserRole; label: string }[] = [
 ];
 
 export const ROLES = {
-  SUPER_ADMIN: "super-admin",
-  ADMIN: "admin",
-  STORE_MANAGER: "store-manager",
-  STAFF: "staff",
+  SUPER_ADMIN: 1,
+  ADMIN: 2,
+  STORE_MANAGER: 3,
+  STAFF: 4,
 } as const;

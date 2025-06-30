@@ -3,10 +3,11 @@ import MainLayout from "../layouts/MainLayout";
 import BankConnected from "../features/dashboard/BankConnected";
 import BankTransactions from "../features/transactions";
 import TransactionsWrapper from "../features/transactions/TransactionsWrapper";
+import { ROLES } from "../helper";
 
 const transactionsRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["admin"]} />,
+    element: <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} />,
     children: [
       {
         path: "/bank/connected",

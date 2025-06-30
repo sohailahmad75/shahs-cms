@@ -3,10 +3,11 @@ import MainLayout from "../layouts/MainLayout";
 import ListReports from "../features/dailyReports/ListReports";
 import ReportDetails from "../features/dailyReports/ReportDetails";
 import CreateReport from "../features/dailyReports/CreateReport";
+import { ROLES } from "../helper";
 
 const reportRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["admin", "superadmin"]} />,
+    element: <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} />,
     children: [
       {
         path: "/reports",
