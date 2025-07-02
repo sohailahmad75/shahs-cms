@@ -5,13 +5,12 @@ const customerOptions = [
   { label: "John Doe", value: "john" },
   { label: "Jane Smith", value: "jane" },
 ];
-
-const InvoiceFormHeader = ({ form, errors, handleChange }) => {
+const InvoiceFormHeader = ({ form = {}, errors = {}, handleChange }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <SelectField
         name="customer"
-        value={form.customer}
+        value={form.customer || ""}
         onChange={handleChange}
         options={customerOptions}
         placeholder="Select a customer"
@@ -19,7 +18,7 @@ const InvoiceFormHeader = ({ form, errors, handleChange }) => {
       />
       <InputField
         name="email"
-        value={form.email}
+        value={form.email || ""}
         onChange={handleChange}
         placeholder="Customer Email"
         error={errors.email}
@@ -27,7 +26,7 @@ const InvoiceFormHeader = ({ form, errors, handleChange }) => {
       <InputField
         name="invoiceDate"
         type="date"
-        value={form.invoiceDate}
+        value={form.invoiceDate || ""}
         onChange={handleChange}
         placeholder="Invoice Date"
         error={errors.invoiceDate}
@@ -35,7 +34,7 @@ const InvoiceFormHeader = ({ form, errors, handleChange }) => {
       <InputField
         name="dueDate"
         type="date"
-        value={form.dueDate}
+        value={form.dueDate || ""}
         onChange={handleChange}
         placeholder="Due Date"
         error={errors.dueDate}
@@ -43,5 +42,4 @@ const InvoiceFormHeader = ({ form, errors, handleChange }) => {
     </div>
   );
 };
-
 export default InvoiceFormHeader;

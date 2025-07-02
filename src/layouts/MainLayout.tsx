@@ -8,8 +8,8 @@ interface Props {
 }
 
 export default function MainLayout({ children }: Props) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // for mobile
-  const [isCollapsed, setIsCollapsed] = useState(false); // for desktop/tablet icon-only toggle
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -17,9 +17,9 @@ export default function MainLayout({ children }: Props) {
       const width = window.innerWidth;
       setIsMobile(width < 768);
       if (width >= 768 && width < 1024) {
-        setIsCollapsed(true); // tablet default to icon-only
+        setIsCollapsed(true);
       } else if (width >= 1024) {
-        setIsCollapsed(false); // desktop full sidebar
+        setIsCollapsed(false);
       }
     };
     handleResize();
@@ -28,7 +28,9 @@ export default function MainLayout({ children }: Props) {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen">
+      {" "}
+      {/* ✅ NO overflow-hidden here */}
       <Sidebar
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
@@ -36,12 +38,18 @@ export default function MainLayout({ children }: Props) {
         setIsCollapsed={setIsCollapsed}
         isMobile={isMobile}
       />
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {" "}
+        {/* ✅ Restrict overflow here */}
         <Header
           isMobile={isMobile}
           openSidebar={() => setIsSidebarOpen(true)}
         />
-        <main className="p-4 overflow-y-auto min-h-full">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4">
+          {" "}
+          {/* ✅ Makes children scrollable */}
+          {children}
+        </main>
       </div>
     </div>
   );

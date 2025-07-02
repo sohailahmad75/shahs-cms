@@ -1,12 +1,9 @@
-// src/components/invoice/InvoiceForm.tsx
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Formik, FieldArray, Form } from "formik";
+import { FastField, FieldArray, Form, Formik } from "formik";
 import * as Yup from "yup";
-import InvoiceFormHeader from "./InvoiceFormHeader";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import { closestCenter, DndContext } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
@@ -16,13 +13,15 @@ import InputField from "../../../components/InputField";
 import SelectField from "../../../components/SelectField";
 import Button from "../../../components/Button";
 import Loader from "../../../components/Loader";
+import InvoiceFormHeader from "./InvoiceFormHeader";
 
 const productOptions = [
   { label: "Burger", value: "burger" },
   { label: "Fries", value: "fries" },
+  { label: "Wrap", value: "wrap" },
 ];
 
-const DraggableRow = ({ item, index, handleChange, handleRemove, errors }) => {
+const DraggableRow = memo(({ item, index, handleRemove }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: index });
 
@@ -35,51 +34,41 @@ const DraggableRow = ({ item, index, handleChange, handleRemove, errors }) => {
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-8 gap-2 items-center border-b py-2 bg-white"
+      className="grid grid-cols-8 gap-2 items-center border border-gray-200 rounded-md px-3 py-2 bg-white shadow-sm mb-2"
       {...attributes}
       {...listeners}
     >
-      <span className="cursor-move text-gray-400">☰</span>
-      <InputField
+      <span className="cursor-grab text-gray-400">☰</span>
+      <FastField
         name={`items[${index}].serviceDate`}
-        value={item.serviceDate}
-        onChange={handleChange}
         type="date"
         placeholder="Service Date"
-        error={errors?.serviceDate}
+        component={InputField}
       />
-      <SelectField
+      <FastField
         name={`items[${index}].product`}
-        value={item.product}
-        onChange={handleChange}
         options={productOptions}
         placeholder="Product/Service"
-        error={errors?.product}
+        component={SelectField}
       />
-      <InputField
+      <FastField
         name={`items[${index}].description`}
-        value={item.description}
-        onChange={handleChange}
         placeholder="Description"
-        error={errors?.description}
+        component={InputField}
       />
-      <InputField
+      <FastField
         name={`items[${index}].qty`}
-        value={item.qty}
-        onChange={handleChange}
         type="number"
         placeholder="Qty"
-        error={errors?.qty}
+        component={InputField}
       />
-      <InputField
+      <FastField
         name={`items[${index}].rate`}
-        value={item.rate}
-        onChange={handleChange}
         type="number"
         placeholder="Rate"
-        error={errors?.rate}
+        component={InputField}
       />
-      <div className="font-semibold">
+      <div className="font-semibold text-right text-gray-700">
         £{(Number(item.qty) * Number(item.rate)).toFixed(2)}
       </div>
       <button
@@ -91,7 +80,7 @@ const DraggableRow = ({ item, index, handleChange, handleRemove, errors }) => {
       </button>
     </div>
   );
-};
+});
 
 const defaultForm = {
   customer: "",
@@ -112,7 +101,6 @@ const defaultForm = {
 const InvoiceForm = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
-
   const [initialValues, setInitialValues] = useState(defaultForm);
   const [loading, setLoading] = useState(isEditMode);
 
@@ -148,26 +136,21 @@ const InvoiceForm = () => {
     items.reduce((acc, item) => acc + Number(item.qty) * Number(item.rate), 0);
 
   const handleSubmit = async (values: typeof defaultForm) => {
-    if (isEditMode) {
-      await fetch(`/api/invoices/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-    } else {
-      await fetch("/api/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-    }
+    const url = isEditMode ? `/api/invoices/${id}` : "/api/invoices";
+    const method = isEditMode ? "PUT" : "POST";
+
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
   };
 
   if (loading) return <Loader />;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">
+    <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+      <h1 className="text-2xl font-semibold mb-6">
         {isEditMode ? "Edit Invoice" : "Create Invoice"}
       </h1>
 
@@ -180,8 +163,8 @@ const InvoiceForm = () => {
         {({ values, errors, handleChange }) => (
           <Form>
             <InvoiceFormHeader
-              form={values}
-              errors={errors}
+              form={values ?? {}}
+              errors={errors ?? {}}
               handleChange={handleChange}
             />
 
@@ -191,13 +174,11 @@ const InvoiceForm = () => {
                   collisionDetection={closestCenter}
                   onDragEnd={({ active, over }) => {
                     if (active.id !== over?.id) {
-                      const oldIndex = active.id as number;
-                      const newIndex = over?.id as number;
-                      move(oldIndex, newIndex);
+                      move(active.id as number, over?.id as number);
                     }
                   }}
                 >
-                  <div className="mb-2 font-medium grid grid-cols-8 gap-2">
+                  <div className="text-sm text-gray-600 font-medium grid grid-cols-8 gap-2 px-1 mb-1">
                     <span>#</span>
                     <span>Service Date</span>
                     <span>Product</span>
@@ -205,7 +186,7 @@ const InvoiceForm = () => {
                     <span>Qty</span>
                     <span>Rate</span>
                     <span>Amount</span>
-                    <span>VAT</span>
+                    <span></span>
                   </div>
 
                   <SortableContext
@@ -217,9 +198,7 @@ const InvoiceForm = () => {
                         key={index}
                         item={item}
                         index={index}
-                        handleChange={handleChange}
                         handleRemove={() => remove(index)}
-                        errors={errors.items?.[index] || {}}
                       />
                     ))}
                   </SortableContext>
@@ -235,7 +214,7 @@ const InvoiceForm = () => {
                         rate: 0,
                       })
                     }
-                    className="text-sm text-blue-600 mt-2 hover:underline"
+                    className="text-sm text-blue-600 mt-3 hover:underline"
                   >
                     + Add Line
                   </button>
@@ -243,7 +222,7 @@ const InvoiceForm = () => {
               )}
             </FieldArray>
 
-            <div className="text-right text-lg font-bold mb-4">
+            <div className="text-right text-lg font-bold my-6">
               Total: £{calculateTotal(values.items).toFixed(2)}
             </div>
 

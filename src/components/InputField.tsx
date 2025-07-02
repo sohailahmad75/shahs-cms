@@ -1,5 +1,3 @@
-import React from "react";
-
 type InputFieldProps = {
   type?: string;
   placeholder?: string;
@@ -7,7 +5,7 @@ type InputFieldProps = {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   icon?: React.ReactNode;
   error?: string;
-  name?: string;
+  name: string; // make required
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -24,8 +22,8 @@ const InputField: React.FC<InputFieldProps> = ({
       <div
         className={`flex items-center w-full border rounded px-4 pr-12 py-2 transition-colors duration-200 ${
           error
-            ? "border-primary-100"
-            : "border-gray-300 group-focus-within:border-orange-500"
+            ? "border-red-500"
+            : "border-gray-300 group-focus-within:border-red-500"
         }`}
       >
         <input
@@ -37,12 +35,12 @@ const InputField: React.FC<InputFieldProps> = ({
           className="w-full outline-none bg-transparent"
         />
         {icon && (
-          <div className="absolute right-3 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-200">
+          <div className="absolute right-3 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200">
             {icon}
           </div>
         )}
       </div>
-      {error && <p className="text-primary-100 text-sm mt-1">{error}</p>}
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );
 };

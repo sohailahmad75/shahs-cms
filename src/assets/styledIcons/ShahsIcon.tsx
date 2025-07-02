@@ -5,13 +5,12 @@ interface IconsProps extends React.SVGProps<SVGSVGElement> {
   color?: string;
 }
 
-const ShahsIcon: React.FC<IconsProps> = ({ size = 30, ...props }) => (
+const ShahsIcon: React.FC<IconsProps> = ({ size = 22, ...props }) => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
     width={size}
-    height="35"
+    height="auto"
     viewBox="0 0 30 41"
-    fill="none"
+    preserveAspectRatio="xMidYMid meet"
     {...props}
   >
     <path
