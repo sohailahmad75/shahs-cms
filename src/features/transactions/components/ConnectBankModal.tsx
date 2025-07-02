@@ -24,7 +24,7 @@ const ConnectBankModal = ({ isOpen, onClose, userId }: Props) => {
   const [connectBank, { isLoading: isConnecting }] = useConnectBankMutation();
 
   const filteredBanks = useMemo(() => {
-    return banks.filter((bank: any) =>
+    return banks?.filter((bank: any) =>
       bank.name.toLowerCase().includes(search.toLowerCase()),
     );
   }, [banks, search]);
@@ -34,7 +34,7 @@ const ConnectBankModal = ({ isOpen, onClose, userId }: Props) => {
 
     try {
       const res = await connectBank({
-        userId,
+        userId: 234,
         institutionId: selectedBankId,
       }).unwrap();
 
@@ -73,12 +73,12 @@ const ConnectBankModal = ({ isOpen, onClose, userId }: Props) => {
           />
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-1">
-            {filteredBanks.length === 0 ? (
+            {filteredBanks?.length === 0 ? (
               <p className="col-span-full text-center text-gray-500 text-sm mt-10">
                 No banks found
               </p>
             ) : (
-              filteredBanks.map((bank: any) => (
+              filteredBanks?.map((bank: any) => (
                 <div
                   key={bank.id}
                   onClick={() => setSelectedBankId(bank.id)}

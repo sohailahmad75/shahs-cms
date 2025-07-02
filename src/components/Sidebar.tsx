@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import MenuIcon from "../assets/styledIcons/MenuIcon";
-import DashboardIcon from "../assets/styledIcons/Dashboad";
 import { useUser } from "../hooks/useAuth";
-import { ROLES, UserRole } from "../helper";
+import { UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
-import TransactionIcon from "../assets/styledIcons/TransactionIcon";
 import ShahsIcon from "../assets/styledIcons/ShahsIcon";
 import ShahsLogo from "../assets/styledIcons/ShahsLogo";
+import { sidebarMenuList } from "../constants";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,63 +14,6 @@ interface SidebarProps {
   setIsCollapsed: (value: boolean) => void;
   isMobile: boolean;
 }
-
-const menuList = [
-  {
-    id: "dashboard",
-    name: "Dashboard",
-    icon: <DashboardIcon />,
-    link: "/dashboard",
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
-  {
-    id: "invoice",
-    name: "Invoice",
-    icon: <DashboardIcon />,
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    children: [
-      {
-        id: "invoices",
-        name: "Invoices",
-        link: "/invoices",
-        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-      },
-      {
-        id: "add-product",
-        name: "Add Product",
-        link: "/invoice/add",
-        roles: [ROLES.ADMIN],
-      },
-    ],
-  },
-  {
-    id: "transactions",
-    name: "Transactions",
-    icon: <TransactionIcon />,
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    children: [
-      {
-        id: "bank-transactions",
-        name: "Bank Transactions",
-        link: "/transactions/bank-transactions",
-        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-      },
-      {
-        id: "app-transactions",
-        name: "App Transactions",
-        link: "/transactions/app-transactions",
-        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-      },
-    ],
-  },
-  {
-    id: "sales",
-    name: "Sales",
-    icon: <DashboardIcon />,
-    link: "/sales",
-    roles: ["admin"],
-  },
-];
 
 const Sidebar = ({
   isOpen,
@@ -86,6 +27,9 @@ const Sidebar = ({
   const { user: activeUser } = useUser();
   const role = activeUser?.user?.role as UserRole;
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
+  const isAnyChildActive = (children: any[], pathname: string) =>
+    children?.some((child) => child.link === pathname);
+
   useEffect(() => {
     const handleClickOutside = (event: any) => {
       if (
@@ -105,99 +49,131 @@ const Sidebar = ({
   return (
     <div
       ref={sidebarRef}
-      className={`z-40 bg-white text-black h-full transition-all duration-300 
+      className={`z-40 bg-gray-900 text-secondary-100 h-full transition-all duration-300 
         ${shouldShow ? "block" : "hidden"} 
-        ${isCollapsed && !isMobile ? "w-20" : "w-64"} 
-        fixed md:relative top-0 left-0 shadow-lg`}
+        ${isCollapsed && !isMobile ? "w-16" : "w-64"} 
+        fixed md:relative top-0 left-0 shadow-xl`}
     >
       <div className="h-full flex flex-col">
         {isCollapsed && (
-          <div className="px-4 py-3 pb-1 flex justify-center">
+          <div className="px-3 py-2 flex justify-center">
             <ShahsIcon />
           </div>
         )}
-        <div className="flex items-center justify-between px-4 py-3">
+
+        <div
+          className={`flex items-center px-3 ${
+            isCollapsed ? "py-3 justify-center" : "py-6 justify-between"
+          }`}
+        >
           {!isCollapsed && <ShahsLogo />}
           {!isMobile && (
             <span
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className={`text-white cursor-pointer bg-orange-100 hover:text-white rounded-full p-3 transition-transform duration-300 ease-in-out ${isCollapsed ? "rotate-0" : "rotate-180"}`}
+              className="text-white cursor-pointer bg-orange-100  rounded-full p-2 transition-transform duration-300 ease-in-out"
               title={isCollapsed ? "Expand" : "Collapse"}
             >
-              <MenuIcon />
+              <ArrowIcon
+                size={16}
+                className={isCollapsed ? "rotate-270" : "rotate-90"}
+              />
             </span>
           )}
         </div>
 
         <ul className="flex-1 space-y-1 px-2">
-          {menuList
+          {sidebarMenuList
             .filter((item) => item.roles.includes(role))
-            .map(({ id, name, icon, link, children }) => (
-              <li key={id} className="relative group">
-                {link ? (
-                  <Link
-                    to={link}
-                    className={`flex items-center gap-3 p-2 py-3 rounded hover:bg-orange-100 hover:text-white transition duration-300 ease-in-out
-                    ${location.pathname === link ? "bg-orange-100 text-white" : ""}
-                  `}
-                  >
-                    <div className="w-5 h-5">{icon}</div>
-                    {!isCollapsed && <span>{name}</span>}
-                  </Link>
-                ) : (
-                  <div>
-                    <div
-                      onClick={() =>
-                        setOpenSubmenuId(openSubmenuId === id ? null : id)
-                      }
-                      className="flex items-center gap-3 p-2 py-3 rounded cursor-pointer hover:bg-orange-100 hover:text-white transition duration-300 ease-in-out"
+            .map(({ id, name, icon, link, children }) => {
+              const childIsActive =
+                children && isAnyChildActive(children, location.pathname);
+              const isActive = location.pathname === link || childIsActive;
+
+              return (
+                <li key={id} className="relative group">
+                  {link ? (
+                    <Link
+                      to={link}
+                      className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
+              ${
+                isActive
+                  ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                  : "hover:text-orange-100 hover:font-semibold"
+              }
+            `}
                     >
-                      <div className="w-5 h-5">{icon}</div>
+                      <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
-                      {!isCollapsed && (
-                        <span className="ml-auto">
-                          {openSubmenuId === id ? (
-                            <ArrowIcon className="rotate-180" />
-                          ) : (
-                            <ArrowIcon />
-                          )}
-                        </span>
+                    </Link>
+                  ) : (
+                    <div>
+                      <div
+                        onClick={() =>
+                          setOpenSubmenuId(
+                            openSubmenuId === id || childIsActive ? null : id,
+                          )
+                        }
+                        className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+                ${
+                  isActive
+                    ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                    : "hover:text-orange-100 hover:font-semibold"
+                }
+              `}
+                      >
+                        <div>{icon}</div>
+                        {!isCollapsed && <span>{name}</span>}
+                        {!isCollapsed && (
+                          <span className="ml-auto transition-transform duration-300">
+                            <ArrowIcon
+                              className={`transition-transform duration-300 ${
+                                openSubmenuId === id || childIsActive
+                                  ? "rotate-180"
+                                  : ""
+                              }`}
+                            />
+                          </span>
+                        )}
+                      </div>
+
+                      {children && (
+                        <ul
+                          className={`transition-all duration-300 overflow-hidden ${
+                            isCollapsed && !isMobile
+                              ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
+                              : openSubmenuId === id || isMobile
+                                ? "ml-6 mt-1 space-y-1"
+                                : "hidden"
+                          }`}
+                        >
+                          {children
+                            .filter((sub) => sub.roles.includes(role))
+                            .map(
+                              ({ id: subId, name: subName, link: subLink }) => (
+                                <li key={subId}>
+                                  <Link
+                                    to={subLink}
+                                    className={`flex items-center gap-2 p-2 text-sm rounded-md transition-all duration-300
+                          ${
+                            location.pathname === subLink
+                              ? "bg-orange-200 text-orange-100 font-semibold"
+                              : "hover:text-orange-100 hover:font-semibold"
+                          }
+                        `}
+                                  >
+                                    {isCollapsed && <span>•</span>}
+                                    <span>{subName}</span>
+                                  </Link>
+                                </li>
+                              ),
+                            )}
+                        </ul>
                       )}
                     </div>
-
-                    {children && (
-                      <ul
-                        className={`transition-all duration-300 ${
-                          isCollapsed && !isMobile
-                            ? "absolute left-full top-0 z-50 bg-white shadow-md rounded hidden group-hover:block min-w-[160px] p-1"
-                            : openSubmenuId === id || isMobile
-                              ? "ml-6 mt-1 space-y-1"
-                              : "hidden"
-                        }`}
-                      >
-                        {children
-                          .filter((sub) => sub.roles.includes(role))
-                          .map(
-                            ({ id: subId, name: subName, link: subLink }) => (
-                              <li key={subId}>
-                                <Link
-                                  to={subLink}
-                                  className={`flex items-center gap-2 p-2 text-sm rounded hover:bg-orange-100 hover:text-white transition duration-200
-                                ${location.pathname === subLink ? "bg-orange-100 text-white" : ""}
-                                `}
-                                >
-                                  {isCollapsed && <span>•</span>}
-                                  <span>{subName}</span>
-                                </Link>
-                              </li>
-                            ),
-                          )}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </li>
-            ))}
+                  )}
+                </li>
+              );
+            })}
         </ul>
       </div>
     </div>

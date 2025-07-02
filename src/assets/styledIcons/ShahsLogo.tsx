@@ -5,12 +5,13 @@ interface EmailIconsProps extends React.SVGProps<SVGSVGElement> {
   color?: string;
 }
 
-const ShahsLogo: React.FC<EmailIconsProps> = ({ size = 354, ...props }) => (
+const ShahsLogo: React.FC<EmailIconsProps> = ({ size = 140, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
-    height="132"
+    height="auto"
     viewBox="0 0 354 132"
+    preserveAspectRatio="xMidYMid meet"
     fill="none"
     {...props}
   >
