@@ -11,5 +11,6 @@ export const baseApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ["Menus", "MenuCategory"],
   endpoints: () => ({}), // will inject from other files
 });

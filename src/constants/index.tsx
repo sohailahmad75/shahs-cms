@@ -1,6 +1,7 @@
 import DashboardIcon from "../assets/styledIcons/Dashboad";
 import { ROLES } from "../helper";
 import TransactionIcon from "../assets/styledIcons/TransactionIcon";
+import MenuManagerIcon from "../assets/styledIcons/MenuManagerIcon";
 
 export const sidebarMenuList = [
   {
@@ -51,11 +52,18 @@ export const sidebarMenuList = [
     ],
   },
   {
+    id: "menu-manager",
+    name: "Menu Manager",
+    icon: <MenuManagerIcon />,
+    link: "/menus",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+  {
     id: "sales",
     name: "Sales",
     icon: <DashboardIcon />,
     link: "/sales",
-    roles: ["admin"],
+    roles: [ROLES.SUPER_ADMIN],
   },
 ];
 

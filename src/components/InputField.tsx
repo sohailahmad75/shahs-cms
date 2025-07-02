@@ -1,11 +1,15 @@
+import React from "react";
+
 type InputFieldProps = {
   type?: string;
   placeholder?: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
   icon?: React.ReactNode;
   error?: string;
-  name: string; // make required
+  name: string; // required
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -17,25 +21,38 @@ const InputField: React.FC<InputFieldProps> = ({
   error,
   name,
 }) => {
+  const baseStyles =
+    "w-full outline-none bg-transparent resize-none min-h-[100px]";
+
   return (
     <div className="mb-4 relative group">
       <div
-        className={`flex items-center w-full border rounded px-4 pr-12 py-2 transition-colors duration-200 ${
+        className={`flex items-start w-full border rounded px-4 pr-12 py-2 transition-colors duration-200 ${
           error
             ? "border-red-500"
             : "border-gray-300 group-focus-within:border-red-500"
         }`}
       >
-        <input
-          name={name}
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          className="w-full outline-none bg-transparent"
-        />
+        {type === "textarea" ? (
+          <textarea
+            name={name}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            className={baseStyles}
+          />
+        ) : (
+          <input
+            name={name}
+            type={type}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            className="w-full outline-none bg-transparent"
+          />
+        )}
         {icon && (
-          <div className="absolute right-3 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200">
+          <div className="absolute right-3 top-3 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200">
             {icon}
           </div>
         )}
