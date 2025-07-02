@@ -4,9 +4,10 @@ type ButtonProps = {
   type?: "button" | "submit" | "reset";
   children: React.ReactNode;
   onClick?: () => void;
-  loading?: boolean | undefined;
+  loading?: boolean;
   disabled?: boolean;
   className?: string;
+  variant?: "solid" | "outlined"; // <-- NEW
 };
 
 const Button: React.FC<ButtonProps> = ({
@@ -16,21 +17,36 @@ const Button: React.FC<ButtonProps> = ({
   loading = false,
   disabled = false,
   className = "",
+  variant = "solid", // <-- Default to solid
   ...props
 }) => {
   const isDisabled = loading || disabled;
+
+  const baseClasses =
+    "flex items-center justify-center gap-2 py-2 px-4 rounded transition duration-200 ease-in-out cursor-pointer";
+  const disabledClasses =
+    "disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed";
+
+  const solidClasses = "bg-orange-500 text-white hover:bg-orange-600";
+  const outlinedClasses =
+    "border border-orange-500 text-orange-500 bg-white hover:bg-orange-50";
+
+  const variantClasses =
+    variant === "outlined" ? outlinedClasses : solidClasses;
 
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={`flex items-center justify-center gap-2 bg-orange-500 text-white py-2 px-4 rounded transition duration-200 ease-in-out cursor-pointer hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed ${className}`}
+      className={`${baseClasses} ${variantClasses} ${disabledClasses} ${className}`}
       {...props}
     >
       {loading && (
         <svg
-          className="animate-spin h-5 w-5 text-white"
+          className={`animate-spin h-5 w-5 ${
+            variant === "outlined" ? "text-orange-500" : "text-white"
+          }`}
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
