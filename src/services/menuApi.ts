@@ -2,7 +2,7 @@
 
 import type { Menu } from "../menu-manager";
 import { baseApi } from "./baseApi";
-import { MenuCategory } from "../types";
+import type { MenuCategory, MenuItem, MenuModifier } from "../types";
 
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -58,6 +58,63 @@ export const dashboardApi = baseApi.injectEndpoints({
         { type: "MenuCategory", id: menuId },
       ],
     }),
+    createItem: builder.mutation({
+      query: ({ categoryId, payload }) => ({
+        url: `/menus/categories/${categoryId}/items`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: (_result, _error, { categoryId }) => [
+        { type: "MenuCategory", id: categoryId },
+      ],
+    }),
+    createModifier: builder.mutation<
+      void,
+      { menuId: string; payload: Partial<MenuModifier> }
+    >({
+      query: ({ menuId, payload }) => ({
+        url: `/menus/${menuId}/modifiers`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: [{ type: "MenuModifiers" }],
+    }),
+
+    getModifiers: builder.query<MenuModifier[], string>({
+      query: (menuId) => `/menus/${menuId}/modifiers`,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map((mod) => ({
+                type: "MenuModifiers" as const,
+                id: mod.id,
+              })),
+              { type: "MenuModifiers" },
+            ]
+          : [{ type: "MenuModifiers" }],
+    }),
+    getAllMenuItems: builder.query<MenuItem[], string>({
+      query: (menuId) => `/menus/${menuId}/items`,
+    }),
+    getModifierById: builder.query<MenuModifier, string>({
+      query: (modifierId) => `/menus/modifiers/${modifierId}`,
+      providesTags: (_result, _err, id) => [{ type: "MenuModifiers", id }],
+    }),
+
+    updateModifier: builder.mutation<
+      void,
+      { id: string; payload: Partial<MenuModifier> }
+    >({
+      query: ({ id, payload }) => ({
+        url: `/menus/modifiers/${id}`,
+        method: "PUT",
+        body: payload,
+      }),
+      invalidatesTags: (_result, _err, { id }) => [
+        { type: "MenuModifiers", id },
+        { type: "MenuModifiers" },
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -68,4 +125,10 @@ export const {
   useGetMenuByIdQuery,
   useGetMenuCategoriesQuery,
   useCreateCategoryMutation,
+  useCreateItemMutation,
+  useCreateModifierMutation,
+  useGetModifiersQuery,
+  useGetAllMenuItemsQuery,
+  useUpdateModifierMutation,
+  useGetModifierByIdQuery,
 } = dashboardApi;

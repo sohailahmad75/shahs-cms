@@ -1,12 +1,13 @@
 // src/components/ui/Modal.tsx
 import type { ReactNode } from "react";
+import CloseIcon from "../assets/styledIcons/CloseIcon";
 
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
   title?: string;
-  width?: string; // optional custom width (e.g., "max-w-md", "max-w-xl")
+  width?: string;
 };
 
 const Modal = ({
@@ -21,20 +22,21 @@ const Modal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div
-        className={`bg-white rounded p-6 w-full ${width} shadow-lg relative min-h-[400px]`}
+        className={`bg-white rounded p-6 w-full ${width} shadow-xl relative animate-fadeIn`}
       >
-        {/* Close button */}
-        <button
-          className="absolute top-2 right-3 text-gray-600 text-xl"
+        <span
+          className="absolute top-3 right-4 text-gray-600 hover:text-orange-500 transition duration-200 ease-in-out hover:scale-110 cursor-pointer"
           onClick={onClose}
+          role="button"
+          aria-label="Close modal"
         >
-          &times;
-        </button>
+          <CloseIcon size={22} />
+        </span>
 
-        {/* Optional title */}
-        {title && <h2 className="text-xl font-semibold mb-4">{title}</h2>}
+        {title && (
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">{title}</h2>
+        )}
 
-        {/* Content */}
         {children}
       </div>
     </div>

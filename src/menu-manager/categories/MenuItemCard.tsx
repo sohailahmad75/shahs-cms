@@ -1,12 +1,5 @@
 import React from "react";
 
-interface MenuItem {
-  name: string;
-  description: string;
-  price: string;
-  image: string;
-}
-
 const MenuItemCard: React.FC<{ item: MenuItem }> = ({ item }) => {
   return (
     <div className="border border-gray-200 rounded p-2 flex gap-3 items-start">

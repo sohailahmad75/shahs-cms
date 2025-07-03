@@ -2,8 +2,9 @@ import { RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import router from "./routes";
 import { store } from "./store";
-import { ToastContainer } from "react-toastify";
+import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CloseIcon from "./assets/styledIcons/CloseIcon";
 
 function App() {
   return (
@@ -14,13 +15,14 @@ function App() {
 
       <ToastContainer
         position="top-right"
-        autoClose={100000}
-        hideProgressBar={false}
+        autoClose={1500} // 1.5 seconds
+        hideProgressBar
         closeOnClick
-        pauseOnHover
-        progressClassName="hidden"
-        draggable
+        pauseOnHover={false}
+        draggable={false}
         icon={false}
+        newestOnTop
+        transition={Slide}
         toastClassName={(context) => {
           const base =
             "rounded-lg shadow-xl p-4 text-sm font-medium flex gap-3 relative my-1 items-center ";
@@ -38,7 +40,7 @@ function App() {
         }}
         closeButton={
           <span className="text-white hover:text-gray-200 text-lg px-2 cursor-pointer">
-            ×
+            <CloseIcon size={14} />
           </span>
         }
       />
