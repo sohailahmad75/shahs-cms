@@ -1,11 +1,11 @@
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
-import BankTransactions from "../features/transactions";
 import { ROLES } from "../helper";
 import MenuEditWrapper from "../menu-manager/categories/MenuEditWrapper";
 import CategoryList from "../menu-manager/categories/CategoryList";
 import MenuManager from "../menu-manager";
 import ItemList from "../menu-manager/items/ItemList";
+import ModifierList from "../menu-manager/modifications";
 
 const menuManagerRoutes = [
   {
@@ -44,7 +44,7 @@ const menuManagerRoutes = [
         element: (
           <MainLayout>
             <MenuEditWrapper>
-              <BankTransactions />
+              <ModifierList />
             </MenuEditWrapper>
           </MainLayout>
         ),

@@ -1,47 +1,24 @@
 import React, { useState } from "react";
-import { DETAILED_MENU } from "../constants/detailedMenu";
+import { useParams } from "react-router-dom";
+import { useGetMenuCategoriesQuery } from "../../services/menuApi";
+import AddItemModal from "../categories/AddItemModal";
+import Button from "../../components/Button";
 import { DynamicTable } from "../../components/DynamicTable";
+import Loader from "../../components/Loader";
+import InputField from "../../components/InputField";
+import SelectField from "../../components/SelectField";
 
-const columns: Column<MenuItem>[] = [
-  {
-    key: "name",
-    label: "Name",
-    render: (value, row) => (
-      <div className="flex items-center gap-3">
-        <img
-          src={row.image}
-          alt={row.name}
-          className="w-10 h-10 rounded object-cover"
-        />
-        <span>{value}</span>
-      </div>
-    ),
-  },
-  { key: "price", label: "Price" },
-  {
-    key: "category",
-    label: "Category",
-    render: (value) => (
-      <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
-        {value}
-      </span>
-    ),
-  },
-  { key: "type", label: "Item Type" },
-  {
-    key: "id",
-    label: "Actions",
-    render: () => (
-      <button className="text-gray-500 hover:text-black ml-auto">•••</button>
-    ),
-  },
-];
 const ItemList: React.FC = () => {
+  const { id: menuId = "" } = useParams();
+  const { data: categories = [], isLoading } =
+    useGetMenuCategoriesQuery(menuId);
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [showAddItem, setShowAddItem] = useState(false);
 
-  const allItems: MenuItem[] = DETAILED_MENU.flatMap((category) =>
-    category.items.map((item) => ({
+  const allItems: any[] = categories.flatMap((category) =>
+    category?.items?.map((item: any) => ({
       ...item,
       category: category.name,
     })),
@@ -56,16 +33,13 @@ const ItemList: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const uniqueCategories = [
-    "All",
-    ...new Set(DETAILED_MENU.map((c) => c.name)),
-  ];
+  const uniqueCategories = ["All", ...new Set(categories.map((c) => c.name))];
 
-  const columns: Column<MenuItem>[] = [
+  const columns = [
     {
       key: "name",
       label: "Name",
-      render: (value, row) => (
+      render: (value: string, row: any) => (
         <div className="flex items-center gap-3">
           <img
             src={row.image}
@@ -80,13 +54,12 @@ const ItemList: React.FC = () => {
     {
       key: "category",
       label: "Category",
-      render: (value) => (
+      render: (value: string) => (
         <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
           {value}
         </span>
       ),
     },
-    { key: "type", label: "Item Type" },
     {
       key: "id",
       label: "Actions",
@@ -96,28 +69,29 @@ const ItemList: React.FC = () => {
     },
   ];
 
+  if (isLoading) return <Loader />;
+
   return (
     <div className="space-y-6">
-      <div className="flex gap-3 items-center">
-        <input
-          type="text"
-          placeholder="Search for an item"
-          className="border px-3 py-2 rounded w-full"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="border px-3 py-2 rounded"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-        >
-          {uniqueCategories.map((cat) => (
-            <option key={cat}>{cat}</option>
-          ))}
-        </select>
-        <button className="bg-teal-500 text-white px-4 py-2 rounded">
-          + Add Item
-        </button>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex gap-3 items-center ">
+          <InputField
+            name="search"
+            placeholder="Search for an item"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <SelectField
+            name="categoryFilter"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            options={uniqueCategories.map((cat) => ({
+              label: cat,
+              value: cat,
+            }))}
+          />
+        </div>
+        <Button onClick={() => setShowAddItem(true)}>+ Add Item</Button>
       </div>
 
       <DynamicTable
@@ -126,6 +100,13 @@ const ItemList: React.FC = () => {
         rowKey="id"
         tableClassName="w-full text-sm"
         rowClassName="hover:bg-slate-50 dark:hover:bg-slate-900"
+      />
+
+      <AddItemModal
+        isOpen={showAddItem}
+        onClose={() => setShowAddItem(false)}
+        categories={categories.map((cat) => ({ id: cat.id, name: cat.name }))}
+        selectedCategory={categories[0] || { id: "", name: "" }}
       />
     </div>
   );

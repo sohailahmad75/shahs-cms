@@ -27,7 +27,6 @@ const CategoryList: React.FC = () => {
     });
     setExpandedCategories(newState);
   };
-
   return (
     <>
       {isLoading ? (
@@ -54,7 +53,7 @@ const CategoryList: React.FC = () => {
                 No categories found
               </p>
             ) : (
-              categories.map((cat) => (
+              categories?.map((cat) => (
                 <CategoryCard
                   key={cat.id}
                   category={cat}
@@ -65,6 +64,10 @@ const CategoryList: React.FC = () => {
                       [cat.name]: val,
                     }))
                   }
+                  menuCategories={categories.map((c) => ({
+                    id: c.id,
+                    name: c.name,
+                  }))}
                 />
               ))
             )}

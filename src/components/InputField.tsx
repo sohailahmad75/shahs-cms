@@ -10,6 +10,7 @@ type InputFieldProps = {
   icon?: React.ReactNode;
   error?: string;
   name: string; // required
+  className?: string;
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -20,14 +21,16 @@ const InputField: React.FC<InputFieldProps> = ({
   icon,
   error,
   name,
+  className = "",
+  ...props
 }) => {
   const baseStyles =
     "w-full outline-none bg-transparent resize-none min-h-[100px]";
 
   return (
-    <div className="mb-4 relative group">
+    <div className={`relative group ${className}`} {...props}>
       <div
-        className={`flex items-start w-full border rounded px-4 pr-12 py-2 transition-colors duration-200 ${
+        className={`flex items-start w-full border rounded px-4 py-2 transition-colors duration-200 ${
           error
             ? "border-red-500"
             : "border-gray-300 group-focus-within:border-red-500"
