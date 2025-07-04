@@ -21,9 +21,16 @@ const ModifierList: React.FC = () => {
   return (
     <div className="space-y-6 mt-10 bg-white p-6 rounded shadow-sm">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Modifications</h2>
-        <Button onClick={() => setShowModal(true)}>
-          <AddIcon /> Create new modification
+        <h2 className="text-lg font-semibold">Modifications</h2>
+
+        <Button
+          onClick={() => {
+            setShowModal(true);
+            setSelectedModifierId(undefined);
+          }}
+        >
+          <AddIcon />{" "}
+          <span className="hidden sm:inline">Create new modification</span>
         </Button>
       </div>
 
@@ -39,11 +46,12 @@ const ModifierList: React.FC = () => {
             return (
               <div
                 key={mod.id}
-                className="group relative border border-gray-200 rounded p-4 bg-white shadow-sm transition duration-200 hover:shadow-md"
+                className="group relative border border-gray-200 rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                {/* Edit/Delete Actions */}
+                <div className="absolute top-3 right-3 flex gap-2">
                   <ActionIcon
-                    icon={<EditIcon />}
+                    icon={<EditIcon size={18} />}
                     onClick={() => {
                       setSelectedModifierId(mod.id);
                       setShowModal(true);
@@ -51,39 +59,54 @@ const ModifierList: React.FC = () => {
                     title="Edit"
                   />
                   <ActionIcon
-                    icon={<TrashIcon />}
+                    icon={<TrashIcon size={18} />}
                     onClick={() => console.log("Delete", mod.id)}
                     title="Delete"
                   />
                 </div>
-                <h3 className="text-lg font-medium text-secondary-100 truncate capitalize">
-                  {mod.name}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                  {mod.description}
-                </p>
 
-                <p className="text-sm text-gray-500 mt-1">
-                  {mod.isRequired ? "Required" : "Optional"} &nbsp;|&nbsp; Min:{" "}
-                  {mod.minSelection} &nbsp;|&nbsp; Max: {mod.maxSelection}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {mod.isMoreOnce
-                    ? "Can choose more than once"
-                    : "Choose only once"}
-                </p>
+                {/* Grid layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Left Side */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-orange-100 capitalize truncate">
+                      {mod.name}
+                    </h3>
+                    {mod.description && (
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {mod.description}
+                      </p>
+                    )}
 
-                {itemNames.length > 0 && (
-                  <div className="mt-3 text-sm">
-                    <span className="font-medium text-gray-700">
-                      Items applied to:&nbsp;
-                    </span>
-                    <span className="text-primary-100 capitalize">
-                      {firstTwo}
-                      {moreCount > 0 && ` +${moreCount} more`}
-                    </span>
+                    <div className="mt-3 text-sm text-gray-700 space-y-1">
+                      <p>
+                        <span className="font-medium">Required:</span>{" "}
+                        {mod.isRequired ? "Yes" : "No"}
+                      </p>
+                      <p>
+                        <span className="font-medium">Multi-choice:</span>{" "}
+                        {mod.isMoreOnce ? "Allowed" : "One-time"}
+                      </p>
+                      <p>
+                        <span className="font-medium">Selections:</span> Min{" "}
+                        {mod.minSelection} – Max {mod.maxSelection}
+                      </p>
+                    </div>
                   </div>
-                )}
+
+                  {/* Right Side */}
+                  {itemNames.length > 0 && (
+                    <div className="flex flex-col justify-between">
+                      <div className="text-sm text-gray-700">
+                        <p className="font-medium mb-1">Applied to:</p>
+                        <p className="text-primary-600 truncate">
+                          {firstTwo}
+                          {moreCount > 0 && ` +${moreCount} more`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}

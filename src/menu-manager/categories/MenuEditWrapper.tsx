@@ -25,22 +25,16 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
 
   return (
     <div className="p-2">
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4 items-start">
         <img
           src={menu.image}
           alt="menu header"
-          style={{
-            maxWidth: "280px",
-            width: "100%",
-            height: "auto",
-            objectFit: "contain",
-            borderRadius: "4px",
-            overflow: "hidden",
-          }}
+          className="w-full max-w-[280px] h-auto object-contain rounded-md"
         />
-        <div>
-          <h1 className="text-xl font-semibold">{menu.name}</h1>
-          <p className="text-xs font-normal">{menu.description}</p>
+
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold text-gray-800">{menu.name}</h1>
+          <p className="text-sm text-gray-600 mt-1">{menu.description}</p>
         </div>
       </div>
 

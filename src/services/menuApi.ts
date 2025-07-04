@@ -115,6 +115,13 @@ export const dashboardApi = baseApi.injectEndpoints({
         { type: "MenuModifiers" },
       ],
     }),
+    generateDefaultMenu: builder.mutation<void, any>({
+      query: () => ({
+        url: "/menus/default",
+        method: "POST",
+      }),
+      invalidatesTags: [{ type: "Menus" }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -131,4 +138,5 @@ export const {
   useGetAllMenuItemsQuery,
   useUpdateModifierMutation,
   useGetModifierByIdQuery,
+  useGenerateDefaultMenuMutation,
 } = dashboardApi;

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 
 type Option = {
   label: string;
@@ -23,6 +24,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
   error,
 }) => {
   const [open, setOpen] = useState(false);
+  const [labelWidth, setLabelWidth] = useState(0);
+  const labelRef = useRef<HTMLSpanElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -40,44 +43,56 @@ const SelectField: React.FC<SelectFieldProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (labelRef.current) {
+      setLabelWidth(labelRef.current.offsetWidth + 48); // + icon and padding
+    }
+  }, [value]);
+
   return (
-    <div className="relative " ref={dropdownRef}>
+    <div className="relative inline-block w-full max-w-full" ref={dropdownRef}>
+      {/* Hidden span to calculate label width */}
+      <span
+        ref={labelRef}
+        className="absolute opacity-0 pointer-events-none whitespace-nowrap"
+      >
+        {selectedOption?.label || placeholder}
+      </span>
+
+      {/* Trigger box */}
       <div
-        className={`flex items-center justify-between w-full border rounded px-4 py-2 cursor-pointer transition-colors duration-200 ${
-          error
-            ? "border-orange-100"
-            : "border-gray-300 group-focus-within:border-orange-500"
+        className={`flex items-center justify-between border rounded px-4 py-2 cursor-pointer transition-colors duration-200 ${
+          error ? "border-orange-100" : "border-gray-300"
         }`}
         onClick={() => setOpen((prev) => !prev)}
+        style={{
+          width: Math.min(Math.max(labelWidth, 120), 240), // Clamp between 120px–240px
+        }}
       >
-        <span className={`${value ? "text-gray-800" : "text-gray-400"}`}>
+        <span
+          className={`truncate ${value ? "text-gray-800" : "text-gray-400"}`}
+        >
           {selectedOption?.label || placeholder}
         </span>
-        <svg
-          className={`w-4 h-4 ml-2 transition-transform ${
+        <ArrowIcon
+          size={18}
+          className={`ml-2 transition-transform ${
             open ? "rotate-180 text-orange-500" : "text-gray-400"
           }`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10 12a1 1 0 01-.707-.293l-4-4a1 1 0 011.414-1.414L10 9.586l3.293-3.293a1 1 0 111.414 1.414l-4 4A1 1 0 0110 12z"
-            clipRule="evenodd"
-          />
-        </svg>
+        />
       </div>
 
+      {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn">
+        <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn min-w-[120px] p-1 w-auto">
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
               <div
                 key={opt.value}
-                className={`px-4 py-2 cursor-pointer transition-colors duration-150 ${
+                className={`px-4 py-2 cursor-pointer transition duration-150 rounded text-sm mb-1 ${
                   isSelected
-                    ? "bg-orange-100 text-white font-medium "
+                    ? "bg-orange-500 text-white font-medium"
                     : "text-gray-700 hover:bg-orange-50"
                 }`}
                 onClick={() => {

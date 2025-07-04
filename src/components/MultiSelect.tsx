@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "lucide-react";
+import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 
 type Option = {
   label: string;
@@ -20,11 +21,23 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   onChange,
   options,
   placeholder = "Select options",
-  name,
   error,
 }) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
+  const [labelWidth, setLabelWidth] = useState(0);
+
+  const selectedLabels = options
+    .filter((opt) => value.includes(opt.value))
+    .map((opt) => opt.label);
+
+  const displayText =
+    value.length === 0
+      ? placeholder
+      : selectedLabels.length <= 2
+        ? selectedLabels.join(", ")
+        : `${selectedLabels.slice(0, 2).join(", ")} +${selectedLabels.length - 2} more`;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -39,6 +52,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (labelRef.current) {
+      setLabelWidth(labelRef.current.offsetWidth + 48); // add icon/padding
+    }
+  }, [displayText]);
+
   const toggleValue = (val: string) => {
     if (value.includes(val)) {
       onChange(value.filter((v) => v !== val));
@@ -47,57 +66,49 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   };
 
-  const selectedLabels = options
-    .filter((opt) => value.includes(opt.value))
-    .map((opt) => opt.label);
-
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative inline-block w-full max-w-full" ref={dropdownRef}>
+      {/* Hidden span to calculate width */}
+      <span
+        ref={labelRef}
+        className="absolute opacity-0 pointer-events-none whitespace-nowrap"
+      >
+        {displayText}
+      </span>
+
+      {/* Trigger */}
       <div
-        className={`flex items-center justify-between w-full border rounded px-4 py-2 cursor-pointer transition-colors duration-200 ${
-          error
-            ? "border-red-500"
-            : "border-gray-300 group-focus-within:border-orange-500"
+        className={`flex items-center justify-between border rounded px-4 py-2 cursor-pointer transition-colors duration-200 ${
+          error ? "border-red-500" : "border-gray-300"
         }`}
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen((prev) => !prev)}
+        style={{
+          width: Math.min(Math.max(labelWidth, 140), 280), // clamp width
+        }}
       >
         <span
-          className={`${
-            value.length ? "text-gray-800" : "text-gray-400"
-          } truncate`}
+          className={`truncate ${value.length ? "text-gray-800" : "text-gray-400"}`}
         >
-          {value.length === 0
-            ? placeholder
-            : selectedLabels.length <= 2
-              ? selectedLabels.join(", ")
-              : `${selectedLabels.slice(0, 2).join(", ")} +${
-                  selectedLabels.length - 2
-                } more`}
+          {displayText}
         </span>
-        <svg
-          className={`w-4 h-4 ml-2 transition-transform ${
+        <ArrowIcon
+          size={18}
+          className={`ml-2 transition-transform ${
             open ? "rotate-180 text-orange-500" : "text-gray-400"
           }`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10 12a1 1 0 01-.707-.293l-4-4a1 1 0 011.414-1.414L10 9.586l3.293-3.293a1 1 0 111.414 1.414l-4 4A1 1 0 0110 12z"
-            clipRule="evenodd"
-          />
-        </svg>
+        />
       </div>
 
+      {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn">
+        <div className="absolute z-50 p-2 mt-1 w-full bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn min-w-[140px]">
           {options.map((opt) => {
             const isSelected = value.includes(opt.value);
             return (
               <div
                 key={opt.value}
                 onClick={() => toggleValue(opt.value)}
-                className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-orange-50 text-sm text-gray-800"
+                className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-orange-50 text-sm text-gray-800 rounded"
               >
                 <div
                   className={`w-5 h-5 rounded border flex items-center justify-center transition-colors duration-200 ${
@@ -106,15 +117,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                       : "border-gray-300"
                   }`}
                 >
-                  {isSelected && (
-                    <CheckIcon
-                      size={16}
-                      color="white"
-                      className="transition-transform duration-200"
-                    />
-                  )}
+                  {isSelected && <CheckIcon size={16} color="white" />}
                 </div>
-                <span>{opt.label}</span>
+                <span className="capitalize">{opt.label}</span>
               </div>
             );
           })}

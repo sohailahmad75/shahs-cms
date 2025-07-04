@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import MenuItemCard from "./MenuItemCard";
 import Button from "../../components/Button";
 import ArrowIcon from "../../assets/styledIcons/ArrowIcon";
-import AddItemModal from "./AddItemModal";
+import AddItemModal from "../items/AddItemModal";
 import type { MenuCategory } from "../../types";
+import AddIcon from "../../assets/styledIcons/AddIcon";
 
 interface CategoryProps {
   category: MenuCategory;
@@ -22,7 +23,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
 
   console.log(category);
   return (
-    <div>
+    <div className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-100">
       <div className="flex justify-between items-center mb-2 pb-2">
         <div className="flex items-center gap-3">
           <img
@@ -30,7 +31,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
             alt={category.name}
             className="w-16 h-16 rounded object-cover"
           />
-          <h3 className="text-xl font-semibold">{category.name}</h3>
+          <h3 className="text-lg font-semibold">{category.name}</h3>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-500">
@@ -53,17 +54,35 @@ const CategoryCard: React.FC<CategoryProps> = ({
 
       {isExpanded && (
         <>
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            {category?.items?.map((item) => (
-              <MenuItemCard key={item.name} item={item} />
-            ))}
+          <div className="mb-4">
+            {category?.items?.length ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                {category.items.map((item) => (
+                  <MenuItemCard key={item.name} item={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 italic px-2 py-4 text-center border border-dashed border-gray-200 rounded">
+                No items in this category yet.
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-4 text-blue-600 text-sm font-medium">
-            <Button onClick={() => setShowAddItem(true)}>
-              + Create new item
+          <div className="flex gap-2 text-blue-600 text-sm font-medium flex-wrap">
+            <Button
+              onClick={() => setShowAddItem(true)}
+              variant="outlined"
+              className="w-full sm:w-auto"
+            >
+              <AddIcon size={18} /> Create new item
             </Button>
-            <Button>+ Add existing items</Button>
+            <Button
+              variant="outlined"
+              className="w-full sm:w-auto"
+              icon={<AddIcon />}
+            >
+              Add existing items
+            </Button>
           </div>
 
           {showAddItem && (

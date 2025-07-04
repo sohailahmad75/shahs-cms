@@ -1,4 +1,5 @@
 export type MenuItem = {
+  id: string;
   name: string;
   description: string;
   price: string;
@@ -14,21 +15,20 @@ export type MenuCategory = {
 };
 
 export type MenuModifier = {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   minSelection: number;
   maxSelection: number;
   isRequired: boolean;
   isMoreOnce: boolean;
-  menuId?: string;
-  options?: ModifierOption[];
-  items?: MenuItem[];
+  items: string[]; // item IDs
+  options: ModifierOption[];
 };
 
 export type ModifierOption = {
-  id: string;
+  id?: string;
   name: string;
   price: number;
-  modifierId: string;
+  modifierId?: string;
 };

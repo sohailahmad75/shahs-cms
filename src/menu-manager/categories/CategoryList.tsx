@@ -33,17 +33,19 @@ const CategoryList: React.FC = () => {
         <Loader />
       ) : (
         <>
-          <div className="flex gap-2 mb-4 justify-between items-center">
-            <div className="flex gap-2">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
+            <div className="flex flex-wrap gap-2">
               <Button variant="outlined" onClick={() => toggleAll(false)}>
-                <CollapseIcon /> Collapse all
+                <CollapseIcon />{" "}
+                <span className="hidden sm:inline">Collapse all</span>
               </Button>
               <Button variant="outlined" onClick={() => toggleAll(true)}>
-                <ExpandIcon /> Expand all
+                <ExpandIcon />{" "}
+                <span className="hidden sm:inline">Expand all</span>
               </Button>
             </div>
-            <Button onClick={() => setIsModalOpen(true)}>
-              <AddIcon /> Add Category
+            <Button onClick={() => setIsModalOpen(true)} icon={<AddIcon />}>
+              <span className="hidden sm:inline">Add Category</span>
             </Button>
           </div>
 

@@ -6,7 +6,11 @@ import AddIcon from "../assets/styledIcons/AddIcon";
 import Modal from "../components/Modal";
 import InputField from "../components/InputField";
 import { toast } from "react-toastify";
-import { useCreateMenuMutation, useGetMenusQuery } from "../services/menuApi";
+import {
+  useCreateMenuMutation,
+  useGenerateDefaultMenuMutation,
+  useGetMenusQuery,
+} from "../services/menuApi";
 
 export interface Menu {
   id: string;
@@ -28,6 +32,17 @@ const MenuManager: React.FC = () => {
 
   const { data: menus = [], isFetching } = useGetMenusQuery();
   const [createMenu, { isLoading }] = useCreateMenuMutation();
+  const [generateDefaultMenu, { isLoading: isDefaultMenuLoading }] =
+    useGenerateDefaultMenuMutation();
+
+  const handleGenerate = async () => {
+    try {
+      await generateDefaultMenu({});
+      toast.success("Default menu generated");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to generate menu");
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -53,9 +68,19 @@ const MenuManager: React.FC = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Menu Manager</h1>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <AddIcon /> Add New
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setIsModalOpen(true)} icon={<AddIcon />}>
+            Add New
+          </Button>
+          <Button
+            onClick={() => handleGenerate()}
+            variant="outlined"
+            loading={isDefaultMenuLoading}
+            icon={<AddIcon />}
+          >
+            Default Menu
+          </Button>
+        </div>
       </div>
 
       {isFetching ? (
@@ -63,38 +88,47 @@ const MenuManager: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {menus.map((menu) => (
-            <div key={menu.id} className="bg-white p-6 shadow-sm rounded-md">
-              <img
-                src={menu.image}
-                alt={menu.name}
-                className="w-full h-80 object-cover rounded-md"
-              />
-              <div className="p-4">
-                <h2 className="font-semibold text-lg">{menu.name}</h2>
+            <div
+              key={menu.id}
+              className="bg-white rounded-md shadow-sm overflow-hidden flex flex-col"
+            >
+              <div className="relative w-full pt-[50%] overflow-hidden rounded">
+                <img
+                  src={menu.image}
+                  alt={menu.name}
+                  className="absolute top-0 left-0 w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="p-4 flex flex-col flex-1 justify-between">
+                <h2 className="font-semibold text-lg line-clamp-1">
+                  {menu.name}
+                </h2>
+
                 <div className="text-gray-600 text-sm mt-2 space-y-1">
-                  <div className="flex items-center gap-2 py-2 justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2 py-2 flex-wrap">
+                    <div className="flex items-center gap-2 text-sm">
                       <HomeIcon /> {menu.storeCount} store
                       {menu.storeCount !== 1 && "s"}
                     </div>
 
                     {menu.storeCount <= 0 && (
-                      <span className="ml-2 rounded bg-red-100 text-xs font-medium text-red-600 px-3 py-1">
+                      <span className="rounded bg-red-100 text-xs font-medium text-red-600 px-3 py-1 mt-2 sm:mt-0">
                         Inactive
                       </span>
                     )}
                   </div>
-                  <hr className="border-gray-200 my-6" />
+
+                  <hr className="border-gray-200 my-4" />
                 </div>
-                <div className="mt-4">
-                  <Button
-                    variant="outlined"
-                    onClick={() => navigate(`/menus/${menu.id}/categories`)}
-                    className="!w-full"
-                  >
-                    Edit menu
-                  </Button>
-                </div>
+
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(`/menus/${menu.id}/categories`)}
+                  className="w-full"
+                >
+                  Edit Menu
+                </Button>
               </div>
             </div>
           ))}

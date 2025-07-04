@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGetMenuCategoriesQuery } from "../../services/menuApi";
-import AddItemModal from "../categories/AddItemModal";
+import AddItemModal from "./AddItemModal";
 import Button from "../../components/Button";
 import { DynamicTable } from "../../components/DynamicTable";
 import Loader from "../../components/Loader";
 import InputField from "../../components/InputField";
 import SelectField from "../../components/SelectField";
+import AddIcon from "../../assets/styledIcons/AddIcon";
 
 const ItemList: React.FC = () => {
   const { id: menuId = "" } = useParams();
@@ -73,12 +74,14 @@ const ItemList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex gap-3 items-center ">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+        {/* Left side: search + filter (on large screens takes 50%) */}
+        <div className="flex flex-col sm:flex-row flex-1 gap-3 w-full lg:max-w-[50%]">
           <InputField
             name="search"
             placeholder="Search for an item"
             value={search}
+            className="w-full"
             onChange={(e) => setSearch(e.target.value)}
           />
           <SelectField
@@ -91,7 +94,17 @@ const ItemList: React.FC = () => {
             }))}
           />
         </div>
-        <Button onClick={() => setShowAddItem(true)}>+ Add Item</Button>
+
+        {/* Right side: Add Button */}
+        <div className="w-full lg:w-auto">
+          <Button
+            onClick={() => setShowAddItem(true)}
+            className="w-full sm:w-auto"
+            icon={<AddIcon />}
+          >
+            Add Item
+          </Button>
+        </div>
       </div>
 
       <DynamicTable

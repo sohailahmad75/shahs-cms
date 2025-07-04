@@ -7,7 +7,8 @@ type ButtonProps = {
   loading?: boolean;
   disabled?: boolean;
   className?: string;
-  variant?: "solid" | "outlined"; // <-- NEW
+  variant?: "solid" | "outlined";
+  icon?: React.ReactNode;
 };
 
 const Button: React.FC<ButtonProps> = ({
@@ -17,7 +18,8 @@ const Button: React.FC<ButtonProps> = ({
   loading = false,
   disabled = false,
   className = "",
-  variant = "solid", // <-- Default to solid
+  variant = "solid",
+  icon,
   ...props
 }) => {
   const isDisabled = loading || disabled;
@@ -28,8 +30,7 @@ const Button: React.FC<ButtonProps> = ({
     "disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed";
 
   const solidClasses = "bg-orange-500 text-white hover:bg-orange-600";
-  const outlinedClasses =
-    "border border-orange-500 text-orange-500 bg-white hover:bg-orange-50";
+  const outlinedClasses = `border ${loading ? "text-gray-600 border-gray-600" : "border-orange-500 text-orange-500"}   bg-white hover:bg-orange-50`;
 
   const variantClasses =
     variant === "outlined" ? outlinedClasses : solidClasses;
@@ -39,34 +40,17 @@ const Button: React.FC<ButtonProps> = ({
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={`${baseClasses} ${variantClasses} ${disabledClasses} ${className}`}
+      className={`${baseClasses} ${variantClasses} ${disabledClasses} ${className} text-sm`}
       {...props}
     >
-      {loading && (
-        <svg
-          className={`animate-spin h-5 w-5 ${
-            variant === "outlined" ? "text-orange-500" : "text-white"
-          }`}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8v8z"
-          ></path>
-        </svg>
+      {loading ? (
+        <div className="w-4 h-4">
+          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        icon
       )}
-      {loading ? "" : children}
+      {children}
     </button>
   );
 };
