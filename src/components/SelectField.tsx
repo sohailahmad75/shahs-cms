@@ -61,13 +61,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
       {/* Trigger box */}
       <div
-        className={`flex items-center justify-between border rounded px-4 py-2 cursor-pointer transition-colors duration-200 ${
+        className={`flex items-center justify-between border rounded px-4 py-2 cursor-pointer transition-colors duration-200 w-full ${
           error ? "border-orange-100" : "border-gray-300"
         }`}
         onClick={() => setOpen((prev) => !prev)}
-        style={{
-          width: Math.min(Math.max(labelWidth, 120), 240), // Clamp between 120px–240px
-        }}
       >
         <span
           className={`truncate ${value ? "text-gray-800" : "text-gray-400"}`}
@@ -84,7 +81,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn min-w-[120px] p-1 w-auto">
+        <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn w-full p-2">
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
