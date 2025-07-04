@@ -9,7 +9,7 @@ type InputFieldProps = {
   ) => void;
   icon?: React.ReactNode;
   error?: string;
-  name: string; // required
+  name: string;
   className?: string;
 };
 
