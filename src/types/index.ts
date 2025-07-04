@@ -4,6 +4,7 @@ export type MenuItem = {
   description: string;
   price: string;
   image: string;
+  deliveryPrice: number;
 };
 
 export type MenuCategory = {
@@ -31,4 +32,5 @@ export type ModifierOption = {
   name: string;
   price: number;
   modifierId?: string;
+  deliveryPrice: number;
 };

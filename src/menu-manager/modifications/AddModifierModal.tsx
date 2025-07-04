@@ -28,6 +28,9 @@ const ModifierSchema = Yup.object().shape({
     Yup.object().shape({
       name: Yup.string().required("Option name is required"),
       price: Yup.number().min(0, "Price must be 0 or more").required(),
+      deliveryPrice: Yup.number()
+        .min(0, "Delivery Price must be 0 or more")
+        .required(),
     }),
   ),
 });
@@ -82,6 +85,7 @@ const AddModifierModal: React.FC<Props> = ({
           modifierData.options?.map((opt) => ({
             name: opt.name,
             price: opt.price,
+            deliveryPrice: opt.deliveryPrice,
           })) || [],
       });
     } else {
@@ -262,7 +266,7 @@ const AddModifierModal: React.FC<Props> = ({
                             />
                           </div>
 
-                          <div className="md:col-span-4">
+                          <div className="md:col-span-3">
                             <label className="text-sm font-medium text-gray-700 mb-1 block">
                               Price <span className="text-red-500">*</span>
                             </label>
@@ -281,6 +285,31 @@ const AddModifierModal: React.FC<Props> = ({
                                 touched.options?.[index]?.price &&
                                 errors.options?.[index]?.price
                                   ? (errors.options[index] as any).price
+                                  : ""
+                              }
+                            />
+                          </div>
+
+                          <div className="md:col-span-3">
+                            <label className="text-sm font-medium text-gray-700 mb-1 block">
+                              Delivery Price{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <InputField
+                              type="number"
+                              name={`options[${index}].deliveryPrice`}
+                              value={String(opt.deliveryPrice)}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  `options[${index}].deliveryPrice`,
+                                  parseFloat(e.target.value),
+                                )
+                              }
+                              placeholder="Price"
+                              error={
+                                touched.options?.[index]?.deliveryPrice &&
+                                errors.options?.[index]?.deliveryPrice
+                                  ? (errors.options[index] as any).deliveryPrice
                                   : ""
                               }
                             />
