@@ -37,7 +37,7 @@ const MenuManager: React.FC = () => {
 
   const handleGenerate = async () => {
     try {
-      await generateDefaultMenu({});
+      await generateDefaultMenu({}).unwrap();
       toast.success("Default menu generated");
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to generate menu");
