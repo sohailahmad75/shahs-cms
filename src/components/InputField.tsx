@@ -11,6 +11,7 @@ type InputFieldProps = {
   error?: string;
   name: string;
   className?: string;
+  iconContainerClassName?:string;
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -22,6 +23,7 @@ const InputField: React.FC<InputFieldProps> = ({
   error,
   name,
   className = "",
+  iconContainerClassName="",
   ...props
 }) => {
   const baseStyles =
@@ -55,7 +57,7 @@ const InputField: React.FC<InputFieldProps> = ({
           />
         )}
         {icon && (
-          <div className="absolute right-3 top-3 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200">
+          <div className={`absolute right-3 top-3 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200 ${iconContainerClassName ? iconContainerClassName : ''}`}>
             {icon}
           </div>
         )}

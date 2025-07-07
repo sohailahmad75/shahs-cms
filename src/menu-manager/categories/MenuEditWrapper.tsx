@@ -1,7 +1,12 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
-import { useGetMenuByIdQuery } from "../../services/menuApi";
+import {
+  useGetMenuByIdQuery,
+  useSyncMenuToUberMutation,
+} from "../../services/menuApi";
+import Button from "../../components/Button";
+import { toast } from "react-toastify";
 
 const tabs = [
   { label: "Categories", slug: "categories" },
@@ -14,6 +19,9 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
   const navigate = useNavigate();
   const { id = "" } = useParams();
 
+  const [syncMenuToUber, { isLoading: isSyncMenuToUberLoading }] =
+    useSyncMenuToUberMutation();
+
   const { data: menu, isLoading } = useGetMenuByIdQuery(id);
 
   const activeTab = useMemo(() => {
@@ -25,16 +33,39 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
 
   return (
     <div className="p-2">
-      <div className="flex flex-col md:flex-row gap-4 items-start">
-        <img
-          src={menu.image}
-          alt="menu header"
-          className="w-full max-w-[280px] h-auto object-contain rounded-md"
-        />
+      <div className="flex flex-col gap-4">
+        {/* Top: Image and Info */}
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <img
+            src={menu.image}
+            alt="menu header"
+            className="w-full max-w-[280px] h-auto object-contain rounded-md"
+          />
 
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold text-gray-800">{menu.name}</h1>
-          <p className="text-sm text-gray-600 mt-1">{menu.description}</p>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold text-gray-800">{menu.name}</h1>
+            <p className="text-sm text-gray-600 mt-1">{menu.description}</p>
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-2 gap-2 flex-wrap">
+          <Button
+            variant="outlined"
+            loading={isSyncMenuToUberLoading}
+            onClick={async () => {
+              try {
+                const a = syncMenuToUber({ id });
+                console.log(a);
+                toast.success("Synced with Uber");
+              } catch (e) {
+                console.log(e);
+              }
+            }}
+          >
+            Sync with Uber
+          </Button>
+          <Button variant="outlined">Sync with Deliveroo</Button>
+          <Button variant="outlined">Sync with JustEat</Button>
         </div>
       </div>
 

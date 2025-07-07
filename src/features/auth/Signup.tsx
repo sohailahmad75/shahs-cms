@@ -124,7 +124,7 @@ const Signup = () => {
                     icon={
                       <span
                         onClick={() => setShowPassword(!showPassword)}
-                        className="cursor-pointer p-1"
+                        className="cursor-pointer flex"
                       >
                         {showPassword ? (
                           <EyeCloseIcon size={20} />
@@ -154,7 +154,7 @@ const Signup = () => {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="cursor-pointer p-1"
+                        className="cursor-pointer flex"
                       >
                         {showConfirmPassword ? (
                           <EyeCloseIcon size={20} />
