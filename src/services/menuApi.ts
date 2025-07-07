@@ -122,6 +122,13 @@ export const dashboardApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Menus" }],
     }),
+    syncMenuToUber: builder.mutation<void, any>({
+      query: ({ id }) => ({
+        url: `/menus/${id}/sync-to-uber`,
+        method: "POST",
+      }),
+      invalidatesTags: [{ type: "Menus" }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -139,4 +146,5 @@ export const {
   useUpdateModifierMutation,
   useGetModifierByIdQuery,
   useGenerateDefaultMenuMutation,
+  useSyncMenuToUberMutation,
 } = dashboardApi;

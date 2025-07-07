@@ -110,14 +110,14 @@ const Login = () => {
                       showPassword ? (
                         <span
                           onClick={() => setShowPassword(!showPassword)}
-                          className="cursor-pointer p-1"
+                          className="cursor-pointer flex"
                         >
                           <EyeCloseIcon size={20} />
                         </span>
                       ) : (
                         <span
                           onClick={() => setShowPassword(!showPassword)}
-                          className="cursor-pointer p-1"
+                          className="cursor-pointer flex"
                         >
                           <EyeOpen size={20} />
                         </span>
