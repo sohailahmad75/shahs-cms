@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useUser } from "../hooks/useAuth";
-import { UserRole } from "../helper";
+import type { SidebarSubMenuItem, UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 import ShahsIcon from "../assets/styledIcons/ShahsIcon";
 import ShahsLogo from "../assets/styledIcons/ShahsLogo";
@@ -22,24 +22,29 @@ const Sidebar = ({
   setIsCollapsed,
   isMobile,
 }: SidebarProps) => {
-  const sidebarRef = useRef(null);
   const location = useLocation();
   const { user: activeUser } = useUser();
   const role = activeUser?.user?.role as UserRole;
+  console.log("activeUserRole:", role, typeof role);
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
-  const isAnyChildActive = (children: any[], pathname: string) =>
-    children?.some((child) => child.link === pathname);
+  const isAnyChildActive = (
+    children: SidebarSubMenuItem[] | undefined,
+    pathname: string,
+  ) => children?.some((child) => child.link === pathname);
+
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: any) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         sidebarRef.current &&
-        !sidebarRef.current.contains(event.target) &&
+        !sidebarRef.current.contains(event.target as Node) &&
         isMobile
       ) {
         setIsOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setIsOpen, isMobile]);
