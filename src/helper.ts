@@ -1,12 +1,12 @@
 // roles.ts
 
-export type UserRole = "super-admin" | "admin" | "store-manager" | "staff";
+export type UserRole = 1 | 2 | 3 | 4;
 
 export const USER_ROLES: { value: UserRole; label: string }[] = [
-  { value: "super-admin", label: "Super Admin" },
-  { value: "admin", label: "Admin" },
-  { value: "store-manager", label: "Store Manager" },
-  { value: "staff", label: "Staff" },
+  { value: 1, label: "Super Admin" },
+  { value: 2, label: "Admin" },
+  { value: 3, label: "Store Manager" },
+  { value: 4, label: "Staff" },
 ];
 
 export const ROLES = {
@@ -15,3 +15,10 @@ export const ROLES = {
   STORE_MANAGER: 3,
   STAFF: 4,
 } as const;
+
+export interface SidebarSubMenuItem {
+  id: string;
+  name: string;
+  link: string;
+  roles: UserRole[];
+}

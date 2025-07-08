@@ -1,8 +1,7 @@
-// components/ui/DynamicTable.tsx
 import React from "react";
 
-interface Column<T> {
-  key: keyof T;
+export interface Column<T> {
+  key: keyof T | "actions";
   label: string;
   render?: (value: T[keyof T], row: T) => React.ReactNode;
   className?: string;
@@ -43,20 +42,39 @@ export function DynamicTable<T>({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-          {data.map((row) => (
-            <tr key={String(row[rowKey])} className={rowClassName}>
-              {columns.map((col, idx) => (
-                <td
-                  key={idx}
-                  className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100"
-                >
-                  {col.render
-                    ? col.render(row[col.key], row)
-                    : (row[col.key] as React.ReactNode)}
-                </td>
-              ))}
+          {data.length === 0 ? (
+            <tr>
+              <td
+                colSpan={columns.length}
+                className="p-6 text-center italic text-slate-500 dark:text-slate-400"
+              >
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md py-8 px-4">
+                  <p className="text-lg font-medium mb-2">No data available</p>
+                  <p className="text-sm">
+                    There are currently no records to display. Try adding some
+                    data or adjusting your filters.
+                  </p>
+                </div>
+              </td>
             </tr>
-          ))}
+          ) : (
+            data?.map((row) => (
+              <tr key={String(row[rowKey])} className={rowClassName}>
+                {columns.map((col, idx) => (
+                  <td
+                    key={idx}
+                    className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100"
+                  >
+                    {col.key === "actions"
+                      ? (col.render?.(undefined as T[keyof T], row) ?? null)
+                      : col.render
+                        ? col.render(row[col.key], row)
+                        : (row[col.key] as React.ReactNode)}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

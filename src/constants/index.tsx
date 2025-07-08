@@ -1,9 +1,23 @@
 import DashboardIcon from "../assets/styledIcons/Dashboad";
-import { ROLES } from "../helper";
+import { ROLES, type UserRole } from "../helper";
 import TransactionIcon from "../assets/styledIcons/TransactionIcon";
 import MenuManagerIcon from "../assets/styledIcons/MenuManagerIcon";
+import type { JSX } from "react";
+import HouseCheckIcon from "../assets/styledIcons/HouseCheckIcon";
 
-export const sidebarMenuList = [
+export const sidebarMenuList: {
+  id: string;
+  name: string;
+  icon: JSX.Element;
+  link?: string;
+  children?: {
+    id: string;
+    name: string;
+    link: string;
+    roles: UserRole[];
+  }[];
+  roles: UserRole[];
+}[] = [
   {
     id: "dashboard",
     name: "Dashboard",
@@ -56,6 +70,13 @@ export const sidebarMenuList = [
     name: "Menu Manager",
     icon: <MenuManagerIcon />,
     link: "/menus",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+  {
+    id: "stores",
+    name: "Stores",
+    icon: <HouseCheckIcon />,
+    link: "/stores",
     roles: [ROLES.SUPER_ADMIN],
   },
   {

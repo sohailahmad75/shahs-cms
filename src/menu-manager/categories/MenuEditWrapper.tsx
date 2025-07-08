@@ -51,6 +51,7 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
         <div className="flex justify-end mt-2 gap-2 flex-wrap">
           <Button
             variant="outlined"
+            disabled
             loading={isSyncMenuToUberLoading}
             onClick={async () => {
               try {
@@ -64,8 +65,12 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
           >
             Sync with Uber
           </Button>
-          <Button variant="outlined">Sync with Deliveroo</Button>
-          <Button variant="outlined">Sync with JustEat</Button>
+          <Button variant="outlined" disabled>
+            Sync with Deliveroo
+          </Button>
+          <Button variant="outlined" disabled>
+            Sync with JustEat
+          </Button>
         </div>
       </div>
 
