@@ -5,58 +5,36 @@ import {
   useCreateStoreMutation,
   useUpdateStoreMutation,
   useDeleteStoreMutation,
-} from "../../services/storeApi";
+  useGetStoreByIdQuery,
+} from "./services/storeApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
-import Modal from "../../components/Modal";
-import InputField from "../../components/InputField";
 import { toast } from "react-toastify";
 import type { Store } from "./types";
-import * as Yup from "yup";
-import { Form, Formik } from "formik";
-import {
-  StoreTypeEnum,
-  StoreTypeOptions,
-} from "../../common/enums/status.enum";
-import SelectField from "../../components/SelectField";
-
-const emptyInitialValues = {
-  name: "",
-  email: "",
-  phone: "",
-  street: "",
-  city: "",
-  postcode: "",
-  country: "United Kingdom",
-  uberStoreId: "",
-  deliverooStoreId: "",
-  justEatStoreId: "",
-  vatNumber: "",
-  googlePlaceId: "",
-  storeType: StoreTypeEnum.SHOP.toString(),
-};
-
-const StoreSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  phone: Yup.string().required("Phone is required"),
-  street: Yup.string().required("Street is required"),
-  city: Yup.string().required("City is required"),
-  postcode: Yup.string().required("Postcode is required"),
-  country: Yup.string().required("Country is required"),
-  storeType: Yup.string().required("Store type is required"),
-});
+import Loader from "../../components/Loader";
+import StoreModal from "./components/StoreModal";
+import { Link, useNavigate } from "react-router-dom";
+import EditIcon from "../../assets/styledIcons/EditIcon";
+import ActionIcon from "../../components/ActionIcon";
+import { DeleteIcon } from "lucide-react";
+import TransactionIcon from "../../assets/styledIcons/TransactionIcon";
+import TrashIcon from "../../assets/styledIcons/TrashIcon";
+import EyeOpen from "../../assets/styledIcons/EyeOpen";
 
 const StoreListPage: React.FC = () => {
   const { data: stores = [], isLoading, refetch } = useGetStoresQuery();
-  const [createStore] = useCreateStoreMutation();
-  const [updateStore] = useUpdateStoreMutation();
+  const [createStore, { isLoading: creatingLoading }] =
+    useCreateStoreMutation();
+  const [updateStore, { isLoading: updateLoading }] = useUpdateStoreMutation();
   const [deleteStore] = useDeleteStoreMutation();
-
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingStore, setEditingStore] = useState<Store | null>(null);
+  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { data: editingStoreData } = useGetStoreByIdQuery(editingStoreId!, {
+    skip: !editingStoreId,
+  });
 
-  const handleEdit = (store: Store) => {
-    setEditingStore(store);
+  const handleEdit = (storeId: string) => {
+    setEditingStoreId(storeId);
     setModalOpen(true);
   };
 
@@ -71,22 +49,38 @@ const StoreListPage: React.FC = () => {
   };
 
   const columns: Column<Store>[] = [
+    {
+      key: "index",
+      label: "#",
+      render: (_, __, index) => <span>{index + 1}</span>,
+    },
     { key: "name", label: "Name" },
     { key: "email", label: "Email" },
     { key: "phone", label: "Phone" },
     { key: "street", label: "Street" },
     { key: "postcode", label: "Postcode" },
+    { key: "companyName", label: "Company Name" },
+    { key: "companyNumber", label: "Company Number" },
     {
       key: "actions",
       label: "Actions",
       render: (_, row) => (
         <div className="flex gap-2">
-          <Button variant="outlined" onClick={() => handleEdit(row)}>
-            Edit
-          </Button>
-          <Button variant="destructive" onClick={() => handleDelete(row.id)}>
-            Delete
-          </Button>
+          <Link to={`/stores/${row.id}`} className="hover:underline ">
+            <ActionIcon
+              className="text-secondary-100"
+              icon={<EyeOpen size={22} />}
+            />
+          </Link>
+          <ActionIcon
+            icon={<EditIcon size={22} />}
+            onClick={() => handleEdit(row.id)}
+          />
+          <ActionIcon
+            className="text-red-500"
+            icon={<TrashIcon size={22} />}
+            onClick={() => handleDelete(row.id)}
+          />
         </div>
       ),
     },
@@ -98,7 +92,7 @@ const StoreListPage: React.FC = () => {
         <h1 className="text-2xl font-bold">Stores</h1>
         <Button
           onClick={() => {
-            setEditingStore(null);
+            setEditingStoreId(null);
             setModalOpen(true);
           }}
         >
@@ -107,7 +101,7 @@ const StoreListPage: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <p>Loading stores...</p>
+        <Loader />
       ) : (
         <DynamicTable
           data={stores}
@@ -117,91 +111,31 @@ const StoreListPage: React.FC = () => {
         />
       )}
 
-      <Modal
+      <StoreModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editingStore ? "Edit Store" : "Add Store"}
-        width="max-w-4xl"
-      >
-        <Formik
-          initialValues={editingStore || emptyInitialValues}
-          validationSchema={StoreSchema}
-          enableReinitialize
-          onSubmit={async (values, { setSubmitting }) => {
-            try {
-              if (editingStore) {
-                await updateStore({
-                  id: editingStore.id,
-                  data: values,
-                }).unwrap();
-                toast.success("Store updated successfully");
-              } else {
-                await createStore(values).unwrap();
-                toast.success("Store created successfully");
-              }
-
-              setModalOpen(false);
-              setEditingStore(null);
-              refetch();
-            } catch (err: any) {
-              toast.error(err?.data?.message || "Something went wrong");
-            } finally {
-              setSubmitting(false);
+        onClose={() => {
+          setModalOpen(false);
+          setEditingStoreId(null);
+        }}
+        onSubmit={async (values) => {
+          try {
+            if (editingStoreId) {
+              await updateStore({ id: editingStoreId, data: values }).unwrap();
+              toast.success("Store updated successfully");
+            } else {
+              await createStore(values).unwrap();
+              toast.success("Store created successfully");
             }
-          }}
-        >
-          {({ values, handleChange, errors, touched, isSubmitting }) => (
-            <Form className="space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { name: "name", label: "Store Name", required: true },
-                  { name: "email", label: "Email", required: true },
-                  { name: "phone", label: "Phone", required: true },
-                  { name: "street", label: "Street", required: true },
-                  { name: "city", label: "City", required: true },
-                  { name: "postcode", label: "Postcode", required: true },
-                  { name: "country", label: "Country", required: true },
-                  { name: "storeType", label: "Store Type", required: true }, // Include here
-                  { name: "vatNumber", label: "VAT Number" },
-                  { name: "googlePlaceId", label: "Google Place ID" },
-                  { name: "uberStoreId", label: "Uber Store ID" },
-                  { name: "deliverooStoreId", label: "Deliveroo Store ID" },
-                  { name: "justEatStoreId", label: "Just Eat Store ID" },
-                ].map(({ name, label, required }) => (
-                  <div key={name}>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      {label}
-                      {required && <span className="text-red-500"> *</span>}
-                    </label>
-
-                    {name === "storeType" ? (
-                      <SelectField
-                        name={name}
-                        value={values[name]}
-                        onChange={handleChange}
-                        options={StoreTypeOptions}
-                        error={touched[name] ? errors[name] : ""}
-                      />
-                    ) : (
-                      <InputField
-                        name={name}
-                        placeholder={label}
-                        value={values[name]}
-                        onChange={handleChange}
-                        error={touched[name] ? errors[name] : ""}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <Button type="submit" className="w-full" loading={isSubmitting}>
-                {editingStore ? "Update Store" : "Create Store"}
-              </Button>
-            </Form>
-          )}
-        </Formik>
-      </Modal>
+            refetch();
+            setModalOpen(false);
+            setEditingStoreId(null);
+          } catch (err: any) {
+            toast.error(err?.data?.message || "Error occurred");
+          }
+        }}
+        editingStore={editingStoreData || null}
+        isSubmitting={creatingLoading || updateLoading}
+      />
     </div>
   );
 };

@@ -1,9 +1,9 @@
 import React from "react";
 
 export interface Column<T> {
-  key: keyof T | "actions";
+  key: keyof T | "actions" | "index";
   label: string;
-  render?: (value: T[keyof T], row: T) => React.ReactNode;
+  render?: (value: T[keyof T], row: T, index?: number) => React.ReactNode;
   className?: string;
 }
 
@@ -58,7 +58,7 @@ export function DynamicTable<T>({
               </td>
             </tr>
           ) : (
-            data?.map((row) => (
+            data?.map((row, index) => (
               <tr key={String(row[rowKey])} className={rowClassName}>
                 {columns.map((col, idx) => (
                   <td
@@ -66,10 +66,14 @@ export function DynamicTable<T>({
                     className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100"
                   >
                     {col.key === "actions"
-                      ? (col.render?.(undefined as T[keyof T], row) ?? null)
-                      : col.render
-                        ? col.render(row[col.key], row)
-                        : (row[col.key] as React.ReactNode)}
+                      ? (col.render?.(undefined as T[keyof T], row, index) ??
+                        null)
+                      : col.key === "index"
+                        ? (col.render?.(undefined as T[keyof T], row, index) ??
+                          null)
+                        : col.render
+                          ? col.render(row[col.key], row, index)
+                          : (row[col.key] as React.ReactNode)}
                   </td>
                 ))}
               </tr>

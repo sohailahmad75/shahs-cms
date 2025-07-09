@@ -8,11 +8,12 @@ import {
 import { getErrorMessage } from "../../../helper";
 import Button from "../../../components/Button";
 import { useEffect } from "react";
+import EmailVerifiedSuccess from "./EmailVerifiedSuccess";
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token")!;
-  const navigate = useNavigate();
+
   const { data, error, isLoading, isSuccess, isError } = useVerifyEmailQuery(
     token,
     {
@@ -23,11 +24,9 @@ const VerifyEmail = () => {
   const [resendVerification, { isLoading: isResendVerification }] =
     useResendVerificationMutation();
 
-  // ✅ Only show toast once when success or error happens
   useEffect(() => {
     if (isSuccess)
       toast.success(data?.message || "Email verified successfully");
-    navigate("/login");
     if (isError) toast.error(getErrorMessage(error));
   }, [isSuccess, isError]);
 
@@ -45,12 +44,7 @@ const VerifyEmail = () => {
 
         {isSuccess && (
           <>
-            <h2 className="text-green-600 font-semibold text-xl mb-2">
-              Email Verified!
-            </h2>
-            <p className="text-sm text-gray-600">
-              You can now log in to your account.
-            </p>
+            <EmailVerifiedSuccess />
           </>
         )}
 
@@ -67,7 +61,6 @@ const VerifyEmail = () => {
                 try {
                   const res = await resendVerification({ token }).unwrap();
                   toast.success(res.message || "Verification email resent");
-                  navigate("/login");
                 } catch (error) {
                   toast.error(getErrorMessage(error));
                 }

@@ -1,6 +1,6 @@
-import { baseApi } from "./baseApi";
-import type { Store } from "../features/stores/types";
-import type { CreateStoreDto, UpdateStoreDto } from "../features/stores/types";
+import { baseApi } from "../../../services/baseApi";
+import type { Store } from "../types";
+import type { CreateStoreDto, UpdateStoreDto } from "../types";
 
 export const storeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -49,6 +49,11 @@ export const storeApi = baseApi.injectEndpoints({
         { type: "Stores" },
       ],
     }),
+
+    getStoreById: builder.query<Store, string>({
+      query: (id) => `/stores/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Stores", id }],
+    }),
   }),
 });
 
@@ -57,4 +62,5 @@ export const {
   useCreateStoreMutation,
   useUpdateStoreMutation,
   useDeleteStoreMutation,
+  useGetStoreByIdQuery,
 } = storeApi;

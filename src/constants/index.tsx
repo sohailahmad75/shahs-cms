@@ -4,6 +4,7 @@ import TransactionIcon from "../assets/styledIcons/TransactionIcon";
 import MenuManagerIcon from "../assets/styledIcons/MenuManagerIcon";
 import type { JSX } from "react";
 import HouseCheckIcon from "../assets/styledIcons/HouseCheckIcon";
+import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 
 export const sidebarMenuList: {
   id: string;
@@ -28,7 +29,7 @@ export const sidebarMenuList: {
   {
     id: "invoice",
     name: "Invoice",
-    icon: <DashboardIcon />,
+    icon: <InvoiceIcon />,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
     children: [
       {
