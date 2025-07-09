@@ -7,7 +7,8 @@ interface Props {
 
 export default function ProtectedRoute({ allowedRoles }: Props) {
   const { user: activeUser } = useUser();
-  const isAuthenticated = !!activeUser.user?.id || !!activeUser.user?.email; // safer
+  console.log("ProtectedRoute activeUser:", activeUser);
+  const isAuthenticated = !!activeUser.user?.id || !!activeUser.user?.email;
   const role = activeUser?.user?.role;
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;

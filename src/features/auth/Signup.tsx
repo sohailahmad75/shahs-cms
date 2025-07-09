@@ -9,7 +9,7 @@ import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import EyeCloseIcon from "../../assets/styledIcons/EyeCloseIcon";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { useRegisterMutation } from "./authApi";
+import { useRegisterMutation } from "../../services/authApi";
 import SelectField from "../../components/SelectField";
 import Button from "../../components/Button";
 import { USER_ROLES } from "../../helper";
@@ -40,11 +40,11 @@ const Signup = () => {
   const [signup, { isLoading }] = useRegisterMutation();
   const handleSignup = async (values: SignupFormValues) => {
     try {
-      await signup(values).unwrap();
-      toast.success("Account created successfully!");
+      const { message } = await signup(values).unwrap();
+      toast.success(message || "Account created successfully!");
       navigate("/login");
     } catch (err: any | { data: { message: string } }) {
-      toast.error(err?.data?.message || "Login failed");
+      toast.error(err?.data?.message || "Signup failed");
     }
   };
 
