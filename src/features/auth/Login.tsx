@@ -10,7 +10,7 @@ import EyeCloseIcon from "../../assets/styledIcons/EyeCloseIcon";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { useLoginMutation } from "./authApi";
+import { useLoginMutation } from "../../services/authApi";
 import { setUser } from "./authSlice";
 
 interface LoginFormValues {

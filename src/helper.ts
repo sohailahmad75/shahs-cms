@@ -1,4 +1,5 @@
-// roles.ts
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { SerializedError } from "@reduxjs/toolkit";
 
 export type UserRole = 1 | 2 | 3 | 4;
 
@@ -22,3 +23,29 @@ export interface SidebarSubMenuItem {
   link: string;
   roles: UserRole[];
 }
+
+interface ErrorResponse {
+  message?: string;
+}
+
+export const getErrorMessage = (
+  error: FetchBaseQueryError | SerializedError | string | undefined,
+): string => {
+  if (!error) return "Something went wrong";
+
+  // If it's already a plain string
+  if (typeof error === "string") return error;
+
+  // If it's a FetchBaseQueryError with status
+  if ("status" in error) {
+    const errData = error.data as ErrorResponse;
+    return errData?.message || "An error occurred";
+  }
+
+  // If it's a SerializedError (runtime thrown error, e.g. network)
+  if ("message" in error) {
+    return error.message || "An unexpected error occurred";
+  }
+
+  return "Something went wrong";
+};

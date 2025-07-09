@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SelectField from "../components/SelectField";
 import { useUser } from "../hooks/useAuth";
-import { ROLES } from "../helper"; // Your location dropdown
+import { ROLES } from "../helper";
+import { useDispatch } from "react-redux";
+import { logout } from "../features/auth/authSlice"; // Your location dropdown
 
 interface Props {
   isMobile: boolean;
@@ -23,6 +25,8 @@ export default function Header({ isMobile, openSidebar }: Props) {
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -39,6 +43,7 @@ export default function Header({ isMobile, openSidebar }: Props) {
   const handleUserAction = (action: string) => {
     setShowUserMenu(false);
     if (action === "logout") {
+      dispatch(logout());
       navigate("/login");
     } else if (action === "profile") {
       navigate("/profile");
