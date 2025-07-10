@@ -129,6 +129,17 @@ export const dashboardApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Menus" }],
     }),
+    assignMenuToManyStores: builder.mutation<
+      void,
+      { menuId: string; storeIds: string[] }
+    >({
+      query: (body) => ({
+        url: `/store-menus/assign-many`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Menus"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -147,4 +158,5 @@ export const {
   useGetModifierByIdQuery,
   useGenerateDefaultMenuMutation,
   useSyncMenuToUberMutation,
+  useAssignMenuToManyStoresMutation,
 } = dashboardApi;

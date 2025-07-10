@@ -12,6 +12,12 @@ import {
   useGetMenusQuery,
 } from "../services/menuApi";
 
+export interface StoreSummary {
+  id: string;
+  name: string;
+  companyName: string;
+  isActive: boolean;
+}
 export interface Menu {
   id: string;
   name: string;
@@ -19,6 +25,7 @@ export interface Menu {
   storeCount: number;
   menus?: number;
   image: string;
+  storeMenus: StoreSummary[];
 }
 
 const MenuManager: React.FC = () => {
@@ -85,6 +92,18 @@ const MenuManager: React.FC = () => {
 
       {isFetching ? (
         <p>Loading menus...</p>
+      ) : menus.length === 0 ? (
+        <div className="p-6 text-center italic text-slate-500 dark:text-slate-400">
+          <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md py-10 px-6 mx-auto">
+            <p className="text-xl font-semibold text-slate-600 mb-2">
+              No menus available
+            </p>
+            <p className="text-sm mb-4">
+              You can generate a default menu to get started, or create a new
+              one from scratch.
+            </p>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {menus.map((menu) => (

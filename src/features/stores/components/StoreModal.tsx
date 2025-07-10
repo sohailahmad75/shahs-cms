@@ -10,6 +10,7 @@ import InputField from "../../../components/InputField";
 import BankDetailsFields from "./BankDetailsFields";
 import Button from "../../../components/Button";
 import type { UpdateStoreDto } from "../types";
+import React from "react";
 
 const StoreSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -75,6 +76,13 @@ const StoreModal = ({
       title={editingStore ? "Edit Store" : "Add Store"}
       width="max-w-4xl"
     >
+      <div className="col-span-2 flex items-center gap-6 mb-6">
+        <div className="flex-grow h-px bg-gray-200" />
+        <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+          Basic Details
+        </span>
+        <div className="flex-grow h-px bg-gray-200" />
+      </div>
       <Formik
         initialValues={{
           ...emptyInitialValues,
@@ -145,6 +153,13 @@ const StoreModal = ({
               touched={touched}
             />
 
+            <div className="col-span-2 flex items-center gap-6 mb-6">
+              <div className="flex-grow h-px bg-gray-200" />
+              <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+                Additional Info
+              </span>
+              <div className="flex-grow h-px bg-gray-200" />
+            </div>
             {/* Additional Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[

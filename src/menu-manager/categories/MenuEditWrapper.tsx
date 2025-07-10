@@ -1,12 +1,14 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, useState } from "react";
 import { useMemo } from "react";
 import {
+  useAssignMenuToManyStoresMutation,
   useGetMenuByIdQuery,
   useSyncMenuToUberMutation,
 } from "../../services/menuApi";
 import Button from "../../components/Button";
 import { toast } from "react-toastify";
+import PublishBanner from "./PublishBanner";
 
 const tabs = [
   { label: "Categories", slug: "categories" },
@@ -21,6 +23,25 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
 
   const [syncMenuToUber, { isLoading: isSyncMenuToUberLoading }] =
     useSyncMenuToUberMutation();
+  const [selectedSites, setSelectedSites] = useState<string[]>([]);
+
+  const [assignMenuToManyStores, { isLoading: isAssigning }] =
+    useAssignMenuToManyStoresMutation();
+
+  const handlePublish = async () => {
+    if (!id || selectedSites.length === 0) return;
+
+    try {
+      await assignMenuToManyStores({
+        menuId: id,
+        storeIds: selectedSites,
+      }).unwrap();
+      toast.success("Menu successfully assigned to selected stores!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to assign menu to selected stores.");
+    }
+  };
 
   const { data: menu, isLoading } = useGetMenuByIdQuery(id);
 
@@ -96,6 +117,13 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
 
         <div className="p-3">{children}</div>
       </div>
+      <PublishBanner
+        isAssigning={isAssigning}
+        selectedSites={selectedSites}
+        setSelectedSites={setSelectedSites}
+        onPublish={handlePublish}
+        storeMenus={menu.storeMenus}
+      />
     </div>
   );
 };
