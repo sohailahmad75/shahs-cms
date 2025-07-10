@@ -12,11 +12,9 @@ import { toast } from "react-toastify";
 import type { Store } from "./types";
 import Loader from "../../components/Loader";
 import StoreModal from "./components/StoreModal";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import EditIcon from "../../assets/styledIcons/EditIcon";
 import ActionIcon from "../../components/ActionIcon";
-import { DeleteIcon } from "lucide-react";
-import TransactionIcon from "../../assets/styledIcons/TransactionIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
 
@@ -28,7 +26,6 @@ const StoreListPage: React.FC = () => {
   const [deleteStore] = useDeleteStoreMutation();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
-  const navigate = useNavigate();
   const { data: editingStoreData } = useGetStoreByIdQuery(editingStoreId!, {
     skip: !editingStoreId,
   });
