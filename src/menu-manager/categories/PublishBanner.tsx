@@ -5,28 +5,34 @@ import IconDropdown from "../../components/IconDropdown";
 import VerticalDotsIcon from "../../assets/styledIcons/VerticalDotsIcon";
 import PublishSitesModal from "./PublishSitesModal";
 import UploadIcon from "../../assets/styledIcons/UploadIcon";
-import type { StoreSummary } from "../index";
+import type { StoreMenu } from "../index";
 
 const PublishBanner = ({
   selectedSites = [],
   setSelectedSites,
   onPublish,
   isAssigning,
+  storeMenus,
 }: {
   isAssigning: boolean;
   selectedSites: string[];
   setSelectedSites: React.Dispatch<React.SetStateAction<string[]>>;
   onPublish: () => void;
-  storeMenus?: StoreSummary[];
+  storeMenus?: StoreMenu[];
 }) => {
   const [isModalOpen, setModalOpen] = useState(false);
+  const activeStoreIds =
+    storeMenus?.filter((s) => s.isActive).map((s) => s.storeId) || [];
+
+  const isSameAsBefore =
+    selectedSites.length === activeStoreIds.length &&
+    selectedSites.every((id) => activeStoreIds.includes(id));
 
   return (
     <>
       <div className="relative z-40">
         <div className="fixed bottom-2 md:left-64 md:right-6 left-0 px-2 md:px-4 z-40 w-full md:w-auto">
           <div className="bg-[#2e3333]/90 text-white rounded p-4 md:p-8 flex flex-wrap gap-4 justify-between items-center">
-            {/* Left side: Icon + message */}
             <div className="flex items-center gap-3">
               <div className="bg-green-400 p-1 flex items-center justify-center rounded-full">
                 <CheckIcon />
@@ -42,7 +48,9 @@ const PublishBanner = ({
               <Button
                 loading={isAssigning}
                 variant="outlined"
-                disabled={selectedSites.length === 0 || isAssigning}
+                disabled={
+                  selectedSites.length === 0 || isAssigning || isSameAsBefore
+                }
                 onClick={onPublish}
                 className="rounded-none rounded-l-md"
               >
@@ -71,6 +79,7 @@ const PublishBanner = ({
           onClose={() => setModalOpen(false)}
           onSave={() => setModalOpen(false)}
           selectedSites={selectedSites}
+          storeMenus={storeMenus}
         />
       )}
     </>

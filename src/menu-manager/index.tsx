@@ -12,20 +12,31 @@ import {
   useGetMenusQuery,
 } from "../services/menuApi";
 
-export interface StoreSummary {
+export interface StoreBasicInfo {
   id: string;
   name: string;
   companyName: string;
-  isActive: boolean;
 }
+
+export interface StoreMenu {
+  id: number;
+  storeId: string;
+  menuId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  store: StoreBasicInfo;
+}
+
 export interface Menu {
   id: string;
   name: string;
   description: string;
-  storeCount: number;
-  menus?: number;
+  isActive: boolean;
   image: string;
-  storeMenus: StoreSummary[];
+  createdAt: string;
+  updatedAt: string;
+  storeMenus: StoreMenu[];
 }
 
 const MenuManager: React.FC = () => {
@@ -127,11 +138,11 @@ const MenuManager: React.FC = () => {
                 <div className="text-gray-600 text-sm mt-2 space-y-1">
                   <div className="flex items-center justify-between gap-2 py-2 flex-wrap">
                     <div className="flex items-center gap-2 text-sm">
-                      <HomeIcon /> {menu.storeCount} store
-                      {menu.storeCount !== 1 && "s"}
+                      <HomeIcon /> {menu?.storeMenus?.length} store
+                      {menu?.storeMenus?.length !== 1 && "s"}
                     </div>
 
-                    {menu.storeCount <= 0 && (
+                    {menu?.storeMenus?.length <= 0 && (
                       <span className="rounded bg-red-100 text-xs font-medium text-red-600 px-3 py-1 mt-2 sm:mt-0">
                         Inactive
                       </span>

@@ -20,8 +20,6 @@ const CategoryCard: React.FC<CategoryProps> = ({
   menuCategories,
 }) => {
   const [showAddItem, setShowAddItem] = useState(false);
-
-  console.log(category);
   return (
     <div className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-100">
       <div className="flex justify-between items-center mb-2 pb-2">
