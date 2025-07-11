@@ -3,27 +3,27 @@ import LocationPreview from "../../../components/LocationPreview";
 const StoreMap = ({
   store = {
     id: "762fa1af-2011-465e-8361-fdac27238e43",
-    name: "shahs",
-    companyName: "Shahs halal food - Borough High Street",
-    street: "135 Ramsay Road",
-    city: "London",
-    postcode: "E79EP",
+    name: "Shahs Halal Food - Head Office",
+    companyName: "Shahs Halal Food LTD",
+    street: "Rosslyn Cres",
+    city: "Harrow",
+    postcode: "HA1 2RZ",
     country: "United Kingdom",
-    latitude: "51.5231",
-    longitude: "-0.0931",
+    lat: "51.587832749045965",
+    lon: "-0.32885417955580487",
   },
 }) => {
-  if (!store?.latitude || !store?.longitude) return null;
+  if (!store?.lat || !store?.lon) return null;
 
   const center = {
-    latitude: parseFloat(store.latitude),
-    longitude: parseFloat(store.longitude),
+    lat: parseFloat(store.lat),
+    lon: parseFloat(store.lon),
   };
 
   const mapData = [
     {
-      lat: parseFloat(store.latitude),
-      lng: parseFloat(store.longitude),
+      lat: parseFloat(store.lat),
+      lng: parseFloat(store.lon),
       companyName: store.companyName || store.name,
       isActive: true,
     },

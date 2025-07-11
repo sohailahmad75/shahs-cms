@@ -98,3 +98,9 @@
 .recharts-tooltip-item {
     @apply text-base font-medium !text-[color:var(--color-primary-100)] dark:!text-[color:var(--color-primary-100)];
 }
+
+.gm-style-iw-d {
+    overflow: auto !important;
+    padding: 0 15px 20px 0;
+    max-height: 500px !important;
+}

@@ -130,7 +130,7 @@ const StoreListPage: React.FC = () => {
             toast.error(err?.data?.message || "Error occurred");
           }
         }}
-        editingStore={editingStoreData || null}
+        editingStore={editingStoreId ? editingStoreData : null}
         isSubmitting={creatingLoading || updateLoading}
       />
     </div>

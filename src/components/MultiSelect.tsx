@@ -82,9 +82,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           error ? "border-red-500" : "border-gray-300"
         }`}
         onClick={() => setOpen((prev) => !prev)}
-        style={{
-          width: Math.min(Math.max(labelWidth, 140), 280), // clamp width
-        }}
       >
         <span
           className={`truncate ${value.length ? "text-gray-800" : "text-gray-400"}`}

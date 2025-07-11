@@ -192,7 +192,10 @@ const AddModifierModal: React.FC<Props> = ({
                 checked={values.isMoreOnce}
                 onChange={handleChange}
               />
+            </div>
 
+            <div className="space-y-4">
+              {/* Add options here */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Select items to apply to{" "}
@@ -210,10 +213,6 @@ const AddModifierModal: React.FC<Props> = ({
                   error={touched.items ? (errors.items as string) : ""}
                 />
               </div>
-            </div>
-
-            <div className="space-y-4">
-              {/* Add options here */}
               <div>
                 <div className="flex justify-between items-center">
                   <h4 className="text-sm font-semibold text-gray-700">

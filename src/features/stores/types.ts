@@ -12,9 +12,17 @@ export interface BankDetail {
   createdAt: string;
   updatedAt: string;
 }
-
+export interface FsaRating {
+  id: number;
+  name: string;
+  rating: string;
+  ratingDate: string;
+  address: string;
+  authority: string;
+  status: string;
+}
 export interface Store {
-  id: string; // required because this comes from the backend
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -28,6 +36,8 @@ export interface Store {
   vatNumber?: string;
   googlePlaceId?: string;
   fsaId?: string;
+  fsa?: FsaRating;
+
   companyName: string;
   companyNumber: string;
   storeType: number;
@@ -56,6 +66,8 @@ export interface CreateStoreDto {
     accountNumber: string;
     sortCode: string;
   }[];
+  lat?: string;
+  lon?: string;
 }
 
 export interface UpdateStoreDto extends Partial<CreateStoreDto> {
