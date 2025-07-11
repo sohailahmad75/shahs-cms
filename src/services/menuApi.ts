@@ -134,8 +134,8 @@ export const dashboardApi = baseApi.injectEndpoints({
       { menuId: string; storeIds: string[] }
     >({
       query: (body) => ({
-        url: `/store-menus/assign-many`,
-        method: "PATCH",
+        url: `/store-menus/bulk-assign`,
+        method: "POST",
         body,
       }),
       invalidatesTags: ["Menus"],

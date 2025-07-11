@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { type PropsWithChildren, useState } from "react";
+import { type PropsWithChildren, useEffect, useState } from "react";
 import { useMemo } from "react";
 import {
   useAssignMenuToManyStoresMutation,
@@ -9,6 +9,7 @@ import {
 import Button from "../../components/Button";
 import { toast } from "react-toastify";
 import PublishBanner from "./PublishBanner";
+import Loader from "../../components/Loader";
 
 const tabs = [
   { label: "Categories", slug: "categories" },
@@ -29,6 +30,7 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
     useAssignMenuToManyStoresMutation();
 
   const handlePublish = async () => {
+    debugger;
     if (!id || selectedSites.length === 0) return;
 
     try {
@@ -45,11 +47,20 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
 
   const { data: menu, isLoading } = useGetMenuByIdQuery(id);
 
+  useEffect(() => {
+    if (!menu) return;
+    console.log(
+      "[...menu.storeMenus.map((sm) => sm.id)]",
+      menu.storeMenus.map((sm) => sm.storeId),
+      menu.storeMenus,
+    );
+    setSelectedSites([...menu.storeMenus.map((sm) => sm.storeId)]);
+  }, [menu]);
   const activeTab = useMemo(() => {
     return tabs.findIndex((tab) => location.pathname.endsWith(`/${tab.slug}`));
   }, [location.pathname]);
 
-  if (isLoading) return <p>Loading menu...</p>;
+  if (isLoading) return <Loader />;
   if (!menu) return <p>Menu not found</p>;
 
   return (
