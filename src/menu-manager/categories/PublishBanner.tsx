@@ -38,8 +38,7 @@ const PublishBanner = ({
                 <CheckIcon />
               </div>
               <div className="text-sm">
-                <p className="font-medium">Your changes are saved,</p>
-                <p>but customers won’t see them until you press Publish.</p>
+                <p className="font-medium">Your changes are saved</p>
               </div>
             </div>
 

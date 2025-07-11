@@ -10,7 +10,6 @@ import InputField from "../../../components/InputField";
 import BankDetailsFields from "./BankDetailsFields";
 import Button from "../../../components/Button";
 import type { UpdateStoreDto } from "../types";
-import React from "react";
 
 const StoreSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -54,6 +53,8 @@ const emptyInitialValues = {
   companyNumber: "",
   storeType: StoreTypeEnum.SHOP,
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
+  lat: "",
+  lon: "",
 };
 
 const StoreModal = ({
@@ -66,7 +67,7 @@ const StoreModal = ({
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (values: any) => void;
-  editingStore: UpdateStoreDto;
+  editingStore: UpdateStoreDto | null | undefined;
   isSubmitting: boolean;
 }) => {
   return (
@@ -169,6 +170,8 @@ const StoreModal = ({
                 { name: "deliverooStoreId", label: "Deliveroo Store ID" },
                 { name: "justEatStoreId", label: "Just Eat Store ID" },
                 { name: "fsaId", label: "FSA Store ID" },
+                { name: "lat", label: "Google Place lat" },
+                { name: "lon", label: "Google Place lon" },
               ].map(({ name, label }) => (
                 <div key={name}>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">

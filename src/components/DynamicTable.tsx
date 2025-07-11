@@ -63,7 +63,7 @@ export function DynamicTable<T>({
                 {columns.map((col, idx) => (
                   <td
                     key={idx}
-                    className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100"
+                    className="px-4 py-4 text-sm text-slate-800 dark:text-slate-100"
                   >
                     {col.key === "actions"
                       ? (col.render?.(undefined as T[keyof T], row, index) ??

@@ -11,6 +11,7 @@ const StoreDetailPage = () => {
   const { data: store, isLoading } = useGetStoreByIdQuery(id!);
   const [openingHours, setOpeningHours] = useState<string | null>("");
 
+  console.log(store);
   useEffect(() => {
     if (store?.openingHours) setOpeningHours(store.openingHours);
   }, [store]);
@@ -130,7 +131,7 @@ const StoreDetailPage = () => {
               </div>
             </Card>
           )}
-          <StoreMap />
+          <StoreMap store={store} />
         </div>
       </div>
     </div>
