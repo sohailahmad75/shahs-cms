@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { useLoginMutation } from "../../services/authApi";
 import { setUser } from "./authSlice";
+import Button from "../../components/Button";
 
 interface LoginFormValues {
   email: string;
@@ -27,7 +28,7 @@ const LoginSchema = Yup.object().shape({
 
 const Login = () => {
   const navigate = useNavigate();
-  const [login] = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const handleLogin = async (values: LoginFormValues) => {
@@ -144,12 +145,13 @@ const Login = () => {
                   </Link>
                 </div>
 
-                <button
+                <Button
+                  loading={isLoading}
                   type="submit"
                   className="w-full bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-600 transition cursor-pointer"
                 >
                   Sign In
-                </button>
+                </Button>
               </Form>
             )}
           </Formik>
