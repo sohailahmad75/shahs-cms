@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import Modal from "../../components/Modal";
@@ -10,11 +10,14 @@ import {
   useUpdateModifierMutation,
   useGetAllMenuItemsQuery,
   useGetModifierByIdQuery,
+  useGetAllModificationTypesQuery,
 } from "../../services/menuApi";
 import MultiSelect from "../../components/MultiSelect";
 import CheckboxField from "../../components/CheckboxField";
-import type { MenuItem, MenuModifier } from "../../types";
 import AddIcon from "../../assets/styledIcons/AddIcon";
+import { MenuItem, MenuModifier } from "../helper/menu-types";
+import { TagOption } from "../../components/helper/components.types";
+import TagSelector from "../../components/TagSelector";
 
 const ModifierSchema = Yup.object().shape({
   name: Yup.string().required("Modifier name is required"),
@@ -33,6 +36,9 @@ const ModifierSchema = Yup.object().shape({
         .required(),
     }),
   ),
+  modificationTypeId: Yup.string().required(
+    "Please select a modification type",
+  ),
 });
 
 type Props = {
@@ -40,6 +46,15 @@ type Props = {
   onClose: () => void;
   menuId: string;
   modifierId?: string; // optional for edit
+};
+
+const iconMap: Record<string, JSX.Element> = {
+  add: <AddIcon />,
+  remove: <AddIcon />,
+  cook: <AddIcon />,
+  size: <AddIcon />,
+  variation: <AddIcon />,
+  gift: <AddIcon />,
 };
 
 const AddModifierModal: React.FC<Props> = ({
@@ -51,12 +66,21 @@ const AddModifierModal: React.FC<Props> = ({
   const [createModifier, { isLoading: creating }] = useCreateModifierMutation();
   const [updateModifier, { isLoading: updating }] = useUpdateModifierMutation();
 
+  const { data: allModTypes = [] } = useGetAllModificationTypesQuery();
+
+  console.log("allModTypes", allModTypes);
   const { data: allItems = [], isLoading: itemsLoading } =
     useGetAllMenuItemsQuery(menuId);
   const { data: modifierData, isLoading: modifierLoading } =
     useGetModifierByIdQuery(modifierId!, {
       skip: !modifierId,
     });
+
+  const MODIFIER_OPTIONS: TagOption[] = allModTypes.map((type) => ({
+    label: type.name,
+    value: type.id,
+    icon: iconMap[type.id] || <AddIcon />, // fallback to AddIcon
+  }));
 
   const initialData: MenuModifier = {
     name: "",
@@ -67,6 +91,7 @@ const AddModifierModal: React.FC<Props> = ({
     isMoreOnce: false,
     items: [],
     options: [],
+    modificationTypeId: "",
   };
 
   const [initialValues, setInitialValues] = useState<MenuModifier>(initialData);
@@ -87,6 +112,7 @@ const AddModifierModal: React.FC<Props> = ({
             price: opt.price,
             deliveryPrice: opt.deliveryPrice,
           })) || [],
+        modificationTypeId: modifierData.modificationTypeId || "",
       });
     } else {
       setInitialValues(initialData);
@@ -154,29 +180,47 @@ const AddModifierModal: React.FC<Props> = ({
                 />
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Min selection <span className="text-red-500">*</span>
-                </label>
-                <InputField
-                  name="minSelection"
-                  type="number"
-                  placeholder="Min selection"
-                  value={String(values.minSelection)}
-                  onChange={handleChange}
-                />
+              <div className="flex justify-between items-center gap-2 flex-wrap">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Min selection <span className="text-red-500">*</span>
+                  </label>
+                  <InputField
+                    name="minSelection"
+                    type="number"
+                    placeholder="Min selection"
+                    value={String(values.minSelection)}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Max selection <span className="text-red-500">*</span>
+                  </label>
+                  <InputField
+                    name="maxSelection"
+                    type="number"
+                    placeholder="Max selection"
+                    value={String(values.maxSelection)}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
 
-              <div>
+              <div className="flex-1">
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Max selection <span className="text-red-500">*</span>
+                  Modification type <span className="text-red-500">*</span>
                 </label>
-                <InputField
-                  name="maxSelection"
-                  type="number"
-                  placeholder="Max selection"
-                  value={String(values.maxSelection)}
-                  onChange={handleChange}
+                <TagSelector
+                  value={values.modificationTypeId}
+                  onChange={(val) => setFieldValue("modificationTypeId", val)}
+                  options={MODIFIER_OPTIONS}
+                  error={
+                    touched.modificationTypeId && errors.modificationTypeId
+                      ? errors.modificationTypeId
+                      : ""
+                  }
                 />
               </div>
 

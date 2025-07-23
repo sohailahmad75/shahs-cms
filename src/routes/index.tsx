@@ -7,6 +7,7 @@ import reportRoutes from "./reportRoutes";
 import invoiceRoutes from "./invoiceRoutes";
 import menuManagerRoutes from "./menuManagerRoutes";
 import storeRoutes from "./storesRoutes";
+import kioskRoutes from "./kioskRoutes";
 
 const router = createBrowserRouter([
   ...authRoutes,
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
   ...invoiceRoutes,
   ...menuManagerRoutes,
   ...storeRoutes,
+  ...kioskRoutes,
   {
     path: "*",
     element: <Navigate to="/dashboard" />,
