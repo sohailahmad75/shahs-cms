@@ -2,9 +2,13 @@
 
 import type { Menu } from "../menu-manager";
 import { baseApi } from "./baseApi";
-import type { MenuCategory, MenuItem, MenuModifier } from "../types";
+import {
+  MenuCategory,
+  MenuItem,
+  MenuModifier,
+} from "../menu-manager/helper/menu-types";
 
-export const dashboardApi = baseApi.injectEndpoints({
+export const menuApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createMenu: builder.mutation<void, Partial<Menu>>({
       query: (newMenu) => ({
@@ -140,6 +144,13 @@ export const dashboardApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Menus"],
     }),
+
+    getAllModificationTypes: builder.query<
+      { id: string; name: string; value: string }[],
+      void
+    >({
+      query: () => "/menus/modification-types",
+    }),
   }),
   overrideExisting: false,
 });
@@ -159,4 +170,5 @@ export const {
   useGenerateDefaultMenuMutation,
   useSyncMenuToUberMutation,
   useAssignMenuToManyStoresMutation,
-} = dashboardApi;
+  useGetAllModificationTypesQuery,
+} = menuApi;

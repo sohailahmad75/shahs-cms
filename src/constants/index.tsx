@@ -5,6 +5,7 @@ import MenuManagerIcon from "../assets/styledIcons/MenuManagerIcon";
 import type { JSX } from "react";
 import HouseCheckIcon from "../assets/styledIcons/HouseCheckIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
+import KioskIcon from "../assets/styledIcons/KioskIcon";
 
 export const sidebarMenuList: {
   id: string;
@@ -80,6 +81,14 @@ export const sidebarMenuList: {
     link: "/stores",
     roles: [ROLES.SUPER_ADMIN],
   },
+  {
+    id: "kiosks",
+    name: "Kiosks",
+    icon: <KioskIcon />,
+    link: "/kiosks",
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+
   {
     id: "sales",
     name: "Sales",
