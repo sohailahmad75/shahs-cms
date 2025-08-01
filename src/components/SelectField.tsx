@@ -13,6 +13,7 @@ type SelectFieldProps = {
   placeholder?: string;
   name?: string;
   error?: string;
+  disabled?: boolean;
 };
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -22,6 +23,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   placeholder = "Select an option",
   name,
   error,
+  disabled,
 }) => {
   const [open, setOpen] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
@@ -61,10 +63,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
       {/* Trigger box */}
       <div
-        className={`flex items-center justify-between border rounded px-4 py-2 cursor-pointer transition-colors duration-200 w-full ${
+        className={`flex items-center justify-between border rounded px-4 py-2 transition-colors duration-200 w-full ${
           error ? "border-orange-100" : "border-gray-300"
-        }`}
-        onClick={() => setOpen((prev) => !prev)}
+        } ${disabled ? "bg-gray-100 cursor-not-allowed text-gray-400" : "cursor-pointer"}`}
+        onClick={() => !disabled && setOpen((prev) => !prev)} // ✅ prevent open
       >
         <span
           className={`truncate ${value ? "text-gray-800" : "text-gray-400"}`}
@@ -75,12 +77,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
           size={18}
           className={`ml-2 transition-transform ${
             open ? "rotate-180 text-orange-500" : "text-gray-400"
-          }`}
+          } ${disabled ? "opacity-50" : ""}`}
         />
       </div>
 
       {/* Dropdown */}
-      {open && (
+      {open && !disabled && (
         <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn w-full p-2">
           {options.map((opt) => {
             const isSelected = opt.value === value;

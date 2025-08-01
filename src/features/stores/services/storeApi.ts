@@ -54,6 +54,21 @@ export const storeApi = baseApi.injectEndpoints({
       query: (id) => `/stores/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Stores", id }],
     }),
+
+    updateOpeningHours: builder.mutation<
+      Store,
+      { id: string; data: UpdateStoreDto }
+    >({
+      query: ({ id, data }) => ({
+        url: `/stores/${id}/opening-hours`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Stores", id },
+        { type: "Stores" },
+      ],
+    }),
   }),
 });
 
@@ -63,4 +78,5 @@ export const {
   useUpdateStoreMutation,
   useDeleteStoreMutation,
   useGetStoreByIdQuery,
+  useUpdateOpeningHoursMutation,
 } = storeApi;
