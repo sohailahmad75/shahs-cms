@@ -49,3 +49,23 @@ export const getErrorMessage = (
 
   return "Something went wrong";
 };
+// url,key,method, file
+export async function uploadToS3(
+  url: string,
+  method: string,
+  file: File,
+): Promise<void> {
+  const formData = new FormData();
+
+  // Append the actual file last
+  formData.append("file", file);
+
+  const res = await fetch(url, {
+    method: method,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to upload to S3");
+  }
+}

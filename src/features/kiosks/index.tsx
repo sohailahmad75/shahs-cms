@@ -50,8 +50,7 @@ const KiosksListPage: React.FC = () => {
       label: "#",
       render: (_, __, index) => <span>{index + 1}</span>,
     },
-    { key: "name", label: "Name" },
-    { key: "model", label: "Model" },
+    { key: "deviceTypeLabel", label: "Device Type" },
     { key: "deviceId", label: "Device ID" },
     {
       key: "status",
@@ -61,7 +60,9 @@ const KiosksListPage: React.FC = () => {
     {
       key: "storeId",
       label: "Store",
-      render: (_, row) => <span>{row?.store?.name ?? "-"}</span>,
+      render: (_, row) => (
+        <span className="capitalize">{row?.store?.name ?? "-"}</span>
+      ),
     },
     {
       key: "actions",

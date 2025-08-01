@@ -15,6 +15,7 @@ export interface Kiosk {
 export interface CreateKioskDto {
   deviceId: string;
   storeId?: string;
+  deviceType: number;
 }
 export interface UpdateKioskDto extends Partial<CreateKioskDto> {
   id: string;

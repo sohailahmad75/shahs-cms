@@ -10,6 +10,8 @@ import InputField from "../../../components/InputField";
 import BankDetailsFields from "./BankDetailsFields";
 import Button from "../../../components/Button";
 import type { UpdateStoreDto } from "../types";
+import { useEffect, useState } from "react";
+import OpeningHoursFormSection from "./OpeningHoursFormSection";
 
 const StoreSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -34,6 +36,16 @@ const StoreSchema = Yup.object().shape({
     }),
   ),
 });
+
+const defaultDays = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 const emptyInitialValues = {
   name: "",
@@ -70,6 +82,31 @@ const StoreModal = ({
   editingStore: UpdateStoreDto | null | undefined;
   isSubmitting: boolean;
 }) => {
+  const [openingHours, setOpeningHours] = useState(
+    defaultDays.map((day) => ({
+      day,
+      open: "11:00 am",
+      close: "11:00 pm",
+      closed: false,
+    })),
+  );
+  const [sameAllDays, setSameAllDays] = useState(false);
+  useEffect(() => {
+    if (editingStore?.openingHours?.length) {
+      const dayMap = Object.fromEntries(
+        editingStore.openingHours.map((h) => [h.day, h]),
+      );
+
+      const mapped = defaultDays.map((day) => ({
+        day,
+        open: dayMap[day]?.open || "11:00 am",
+        close: dayMap[day]?.close || "11:00 pm",
+        closed: dayMap[day]?.closed ?? false,
+      }));
+
+      setOpeningHours(mapped);
+    }
+  }, [editingStore]);
   return (
     <Modal
       isOpen={isOpen}
@@ -95,7 +132,13 @@ const StoreModal = ({
         }}
         validationSchema={StoreSchema}
         enableReinitialize
-        onSubmit={onSubmit}
+        onSubmit={(values) => {
+          const finalValues = {
+            ...values,
+            openingHours,
+          };
+          onSubmit(finalValues);
+        }}
       >
         {({ values, handleChange, touched, errors, setFieldValue }) => (
           <Form className="space-y-8">
@@ -152,6 +195,20 @@ const StoreModal = ({
               setFieldValue={setFieldValue}
               errors={errors}
               touched={touched}
+            />
+
+            <div className="col-span-2 flex items-center gap-6 mb-2">
+              <div className="flex-grow h-px bg-gray-200" />
+              <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+                Opening Hours
+              </span>
+              <div className="flex-grow h-px bg-gray-200" />
+            </div>
+            <OpeningHoursFormSection
+              openingHours={openingHours}
+              setOpeningHours={setOpeningHours}
+              sameAllDays={sameAllDays}
+              setSameAllDays={setSameAllDays}
             />
 
             <div className="col-span-2 flex items-center gap-6 mb-6">

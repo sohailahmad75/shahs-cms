@@ -10,11 +10,13 @@ import type { CreateKioskDto, Kiosk, UpdateKioskDto } from "../kiosks.types";
 const KioskSchema = Yup.object().shape({
   deviceId: Yup.string().required("Device ID is required"),
   storeId: Yup.string().nullable(),
+  deviceType: Yup.number().required("Device Type is required"),
 });
 
 const emptyInitialValues: CreateKioskDto = {
   deviceId: "",
   storeId: "",
+  deviceType: 1, // Default to Self-Service
 };
 
 const KioskModal = ({
@@ -97,6 +99,23 @@ const KioskModal = ({
                   )}
                 </div>
               ))}
+
+              {/* ✅ Device Type Dropdown */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Device Type <span className="text-red-500"> *</span>
+                </label>
+                <SelectField
+                  name="deviceType"
+                  value={values.deviceType.toString()}
+                  onChange={handleChange}
+                  options={[
+                    { label: "Self-Service", value: "1" },
+                    { label: "Till", value: "2" },
+                  ]}
+                  error={touched.deviceType ? errors.deviceType : ""}
+                />
+              </div>
             </div>
 
             <Button type="submit" className="w-full" loading={isSubmitting}>

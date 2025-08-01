@@ -1,49 +1,64 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useGetStoreByIdQuery } from "../services/storeApi";
+import {
+  useGetStoreByIdQuery,
+  useUpdateOpeningHoursMutation,
+} from "../services/storeApi";
 import Loader from "../../../components/Loader";
 import Button from "../../../components/Button";
-import InputField from "../../../components/InputField";
 import StoreMap from "./StoreMap";
+import { getFsaBadgeUrl } from "../helper/store-helper";
+import { toast } from "react-toastify";
+import OpeningHoursFormSection from "./OpeningHoursFormSection";
 
-const StoreDetailPage = () => {
+const StoreInformation = () => {
   const { id } = useParams();
   const { data: store, isLoading } = useGetStoreByIdQuery(id!);
-  const [openingHours, setOpeningHours] = useState<string | null>("");
+  const [updateOpeningHours, { isLoading: updateOpeningHoursLoading }] =
+    useUpdateOpeningHoursMutation();
+  const defaultHours = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const [sameAllDays, setSameAllDays] = useState(false);
+  const [openingHours, setOpeningHours] = useState(
+    defaultHours.map((day) => ({
+      day,
+      open: "11:00 am",
+      close: "11:00 pm",
+      closed: false,
+    })),
+  );
 
-  console.log(store);
   useEffect(() => {
-    if (store?.openingHours) setOpeningHours(store.openingHours);
+    if (store?.openingHours) {
+      const openingMap = Object.fromEntries(
+        store.openingHours.map((h: any) => [h.day, h]),
+      );
+
+      setOpeningHours(
+        defaultHours.map((day) => ({
+          day,
+          open: openingMap[day]?.open || "11:00 am",
+          close: openingMap[day]?.close || "11:00 pm",
+          closed: openingMap[day]?.closed ?? false,
+        })),
+      );
+    }
   }, [store]);
 
   if (isLoading) return <Loader />;
   if (!store) return <div className="text-red-500 p-4">Store not found.</div>;
 
-  const getFsaBadgeUrl = (rating: string) => {
-    switch (rating) {
-      case "5":
-      case "4":
-      case "3":
-      case "2":
-      case "1":
-        return `https://ratings.food.gov.uk/images/badges/fhrs/3/fhrs-badge-${rating}.svg`;
-      case "AwaitingInspection":
-      case "Exempt":
-      case "AwaitingPublication":
-        return `https://ratings.food.gov.uk/images/badges/fhrs/1/fhrs-badge-${rating}.svg`;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className=" mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold text-primary mb-6">{store.name}</h1>
-
+    <div className=" mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left side (2/3) */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Store Info */}
           <Card>
             <GridDetail
               data={[
@@ -62,19 +77,33 @@ const StoreDetailPage = () => {
 
           {/* Opening Hours */}
           <Card>
-            <label className="block font-semibold mb-1">Opening Hours</label>
-            <InputField
-              name="opening-hours"
-              value={openingHours || ""}
-              onChange={(e) => setOpeningHours(e.target.value)}
-              placeholder="e.g. Mon–Sun 11am–11pm"
+            <h2 className="font-semibold">Opening Hours</h2>
+            <OpeningHoursFormSection
+              openingHours={openingHours}
+              setOpeningHours={setOpeningHours}
+              sameAllDays={sameAllDays}
+              setSameAllDays={setSameAllDays}
             />
-            <Button
-              className="mt-3"
-              onClick={() => alert("Update opening hours")}
-            >
-              Save Hours
-            </Button>
+
+            <div className="flex gap-3 mt-4 flex-end justify-end">
+              <Button
+                loading={updateOpeningHoursLoading}
+                disabled={updateOpeningHoursLoading}
+                onClick={async () => {
+                  try {
+                    await updateOpeningHours({
+                      id: store.id,
+                      data: openingHours,
+                    }).unwrap();
+                    toast.success("Store Opening hours updated successfully");
+                  } catch (err: any) {
+                    toast.error(err?.data?.message || "Error occurred");
+                  }
+                }}
+              >
+                Save Hours
+              </Button>
+            </div>
           </Card>
 
           {/* Bank Accounts */}
@@ -162,4 +191,4 @@ const Detail = ({ label, value }: { label: string; value?: string }) => (
   </div>
 );
 
-export default StoreDetailPage;
+export default StoreInformation;

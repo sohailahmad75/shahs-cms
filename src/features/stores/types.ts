@@ -21,6 +21,12 @@ export interface FsaRating {
   authority: string;
   status: string;
 }
+export interface OpeningHour {
+  day: string;
+  open: string | null;
+  close: string | null;
+  closed: boolean;
+}
 export interface Store {
   id: string;
   name: string;
@@ -37,11 +43,11 @@ export interface Store {
   googlePlaceId?: string;
   fsaId?: string;
   fsa?: FsaRating;
-
   companyName: string;
   companyNumber: string;
   storeType: number;
   bankDetails: BankDetail[];
+  openingHours: OpeningHour[];
 }
 
 export interface CreateStoreDto {
