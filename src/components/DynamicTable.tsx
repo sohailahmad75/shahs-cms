@@ -25,52 +25,49 @@ export function DynamicTable<T>({
   rowClassName,
 }: DynamicTableProps<T>) {
   return (
-    <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-800">
-      <table className={`min-w-full table-auto ${tableClassName || ""}`}>
+    <div className="overflow-x-auto rounded border border-gray-200">
+      <table className={`min-w-full text-sm text-left ${tableClassName || ""}`}>
         <thead
-          className={`bg-slate-100 dark:bg-slate-800 ${headerClassName || ""}`}
+          className={`bg-orange-500 hover:bg-orange-600 text-white ${headerClassName || ""}`}
         >
           <tr>
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className={`px-4 py-2 text-left text-sm font-medium text-slate-600 dark:text-slate-300 ${col.className || ""}`}
+                className={`px-4 py-3 font-semibold ${col.className || "text-left"}`}
               >
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+        <tbody>
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
-                className="p-6 text-center italic text-slate-500 dark:text-slate-400"
+                className="px-4 py-6 text-center text-gray-500"
               >
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md py-8 px-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-md py-8 px-4">
                   <p className="text-lg font-medium mb-2">No data available</p>
-                  <p className="text-sm">
-                    There are currently no records to display. Try adding some
-                    data or adjusting your filters.
-                  </p>
                 </div>
               </td>
             </tr>
           ) : (
-            data?.map((row, index) => (
-              <tr key={String(row[rowKey])} className={rowClassName}>
+            data.map((row, index) => (
+              <tr
+                key={String(row[rowKey])}
+                className={`hover:bg-orange-50 transition ${rowClassName || ""}`}
+              >
                 {columns.map((col, idx) => (
                   <td
                     key={idx}
-                    className="px-4 py-4 text-sm text-slate-800 dark:text-slate-100"
+                    className="px-4 py-3 border-t border-gray-200"
                   >
                     {col.key === "actions"
-                      ? (col.render?.(undefined as T[keyof T], row, index) ??
-                        null)
+                      ? col.render?.(undefined as T[keyof T], row, index) ?? null
                       : col.key === "index"
-                        ? (col.render?.(undefined as T[keyof T], row, index) ??
-                          null)
+                        ? col.render?.(undefined as T[keyof T], row, index) ?? null
                         : col.render
                           ? col.render(row[col.key], row, index)
                           : (row[col.key] as React.ReactNode)}
