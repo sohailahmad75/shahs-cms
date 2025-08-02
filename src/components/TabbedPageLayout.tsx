@@ -50,7 +50,7 @@ const TabbedPageLayout = ({ title, tabs, children }: TabbedPageLayoutProps) => {
         ))}
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-6 rounded shadow-sm">
+      <div className="bg-white p-6 rounded shadow-sm">
         {children}
       </div>
     </div>

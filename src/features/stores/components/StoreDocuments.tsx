@@ -103,7 +103,7 @@ const StoreDocuments: React.FC = () => {
           data={documents}
           columns={columns}
           rowKey="id"
-          tableClassName="bg-white dark:bg-slate-900"
+          tableClassName="bg-white"
         />
       )}
 
