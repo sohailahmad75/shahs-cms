@@ -19,16 +19,28 @@ const CategoryCard: React.FC<CategoryProps> = ({
   setExpanded,
   menuCategories,
 }) => {
+  const [imageError, setImageError] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
+
+  const hasValidImage = category.image && !imageError;
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-100">
       <div className="flex justify-between items-center mb-2 pb-2">
         <div className="flex items-center gap-3">
-          <img
-            src={category.image}
-            alt={category.name}
-            className="w-16 h-16 rounded object-cover"
-          />
+          {hasValidImage ? (
+            <img
+              src={category.image}
+              alt={category.name}
+              onError={() => setImageError(true)}
+              className="w-16 h-16 rounded object-cover border border-gray-200"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded bg-gray-100 flex items-center justify-center text-xs text-gray-500 border border-gray-200 text-center">
+              No Image
+            </div>
+          )}
+
           <h3 className="text-lg font-semibold">{category.name}</h3>
         </div>
         <div className="flex items-center gap-2">
@@ -55,7 +67,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
           <div className="mb-4">
             {category?.items?.length ? (
               <div className="grid md:grid-cols-2 gap-4">
-                {category.items.map((item) => (
+                {category.items.map((item: any) => (
                   <MenuItemCard key={item.name} item={item} />
                 ))}
               </div>
@@ -98,3 +110,4 @@ const CategoryCard: React.FC<CategoryProps> = ({
 };
 
 export default CategoryCard;
+
