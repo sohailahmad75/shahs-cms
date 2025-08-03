@@ -25,7 +25,7 @@ interface Item {
   image?: string;
 }
 
-const ItemList: React.FC = () => {
+const StoresList: React.FC = () => {
   const { id: menuId = "" } = useParams();
   const { data: categories = [], isLoading } =
     useGetMenuCategoriesQuery(menuId);
@@ -195,4 +195,4 @@ const ItemList: React.FC = () => {
   );
 };
 
-export default ItemList;
+export default StoresList;

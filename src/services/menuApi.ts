@@ -24,12 +24,12 @@ export const menuApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.map((menu) => ({
-                type: "Menus" as const,
-                id: menu.id,
-              })),
-              { type: "Menus" },
-            ]
+            ...result.map((menu) => ({
+              type: "Menus" as const,
+              id: menu.id,
+            })),
+            { type: "Menus" },
+          ]
           : [{ type: "Menus" }],
     }),
     getMenuById: builder.query<Menu, string>({
@@ -41,12 +41,12 @@ export const menuApi = baseApi.injectEndpoints({
       providesTags: (result, _error, menuId) =>
         result
           ? [
-              ...result.map((cat) => ({
-                type: "MenuCategory" as const,
-                id: cat.id,
-              })),
-              { type: "MenuCategory", id: menuId },
-            ]
+            ...result.map((cat) => ({
+              type: "MenuCategory" as const,
+              id: cat.id,
+            })),
+            { type: "MenuCategory", id: menuId },
+          ]
           : [{ type: "MenuCategory", id: menuId }],
     }),
     createCategory: builder.mutation<
@@ -89,12 +89,12 @@ export const menuApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.map((mod) => ({
-                type: "MenuModifiers" as const,
-                id: mod.id,
-              })),
-              { type: "MenuModifiers" },
-            ]
+            ...result.map((mod) => ({
+              type: "MenuModifiers" as const,
+              id: mod.id,
+            })),
+            { type: "MenuModifiers" },
+          ]
           : [{ type: "MenuModifiers" }],
     }),
     getAllMenuItems: builder.query<MenuItem[], string>({
@@ -126,13 +126,24 @@ export const menuApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Menus" }],
     }),
-    syncMenuToUber: builder.mutation<void, any>({
-      query: ({ id }) => ({
-        url: `/menus/${id}/sync-to-uber`,
-        method: "POST",
+    // syncMenuToUber: builder.mutation<void, any>({
+    //   query: ({ id }) => ({
+    //     url: `/menus/${id}/sync-to-uber`,
+    //     method: "POST",
+    //   }),
+    //   invalidatesTags: [{ type: "Menus" }],
+    // }),
+    syncMenuToUber: builder.mutation<void, { id: string; storeIds: string[] }>({
+      query: ({ id, storeIds }) => ({
+        url: `/uber-eats/sync-menu/${id}`,
+        method: "PUT",
+        params: {
+          storeIds: storeIds.join(","),
+        },
       }),
       invalidatesTags: [{ type: "Menus" }],
     }),
+
     assignMenuToManyStores: builder.mutation<
       void,
       { menuId: string; storeIds: string[] }
