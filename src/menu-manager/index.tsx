@@ -15,6 +15,7 @@ import { useDropzone } from 'react-dropzone';
 import { ArrowUpTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export interface StoreBasicInfo {
+  email: any;
   id: string;
   name: string;
   companyName: string;
