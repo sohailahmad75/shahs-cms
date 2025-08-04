@@ -121,7 +121,7 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
         {/* Top Info */}
         <div className="flex flex-col md:flex-row gap-4 items-start">
           <img
-            src={menu.image}
+            src={menu.signedUrl}
             alt="menu header"
             className="w-full max-w-[280px] h-auto object-contain rounded-md"
           />
