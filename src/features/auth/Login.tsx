@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { useLoginMutation } from "../../services/authApi";
-import { setUser } from "./authSlice";
+import { setAdmin } from "./authSlice";
 import Button from "../../components/Button";
 
 interface LoginFormValues {
@@ -36,9 +36,9 @@ const Login = () => {
       const res = await login(values).unwrap();
 
       dispatch(
-        setUser({
-          user: {
-            ...res.user,
+        setAdmin({
+          admin: {
+            ...res.admin,
             imageUrl:
               "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250",
           },

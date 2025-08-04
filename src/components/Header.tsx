@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SelectField from "../components/SelectField";
-import { useUser } from "../hooks/useAuth";
+import { useAdmin } from "../hooks/useAuth";
 import { ROLES } from "../helper";
 import { useDispatch } from "react-redux";
 import { logout } from "../features/auth/authSlice"; // Your location dropdown
@@ -19,7 +19,7 @@ const locationOptions = [
 ];
 
 export default function Header({ isMobile, openSidebar }: Props) {
-  const { user: activeUser } = useUser();
+  const { admin: activeAdmin } = useAdmin();
   const [selectedLocation, setSelectedLocation] = useState("harrow");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
@@ -63,7 +63,7 @@ export default function Header({ isMobile, openSidebar }: Props) {
       )}
 
       <div className="flex items-center gap-4">
-        {activeUser.user.role === ROLES.STORE_MANAGER && (
+        {activeAdmin.admin.role === ROLES.STORE_MANAGER && (
           <div className="w-60">
             <SelectField
               value={selectedLocation}
@@ -79,15 +79,15 @@ export default function Header({ isMobile, openSidebar }: Props) {
             onClick={() => setShowUserMenu((prev) => !prev)}
             className="flex items-center gap-2 focus:outline-none cursor-pointer"
           >
-            {activeUser.user.imageUrl ? (
+            {activeAdmin.admin.imageUrl ? (
               <img
-                src={activeUser.user.imageUrl}
+                src={activeAdmin.admin.imageUrl}
                 alt="User"
                 className="w-8 h-8 rounded-full border object-cover"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-orange-100 text-white flex items-center justify-center text-sm font-semibold uppercase border">
-                {activeUser.user.firstName?.charAt(0) || "U"}
+                {activeAdmin.admin.firstName?.charAt(0) || "U"}
               </div>
             )}
             <span className="text-sm font-medium">Sohail</span>

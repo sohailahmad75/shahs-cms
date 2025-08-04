@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useUser } from "../hooks/useAuth";
+import { useAdmin } from "../hooks/useAuth";
 import type { SidebarSubMenuItem, UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 import ShahsIcon from "../assets/styledIcons/ShahsIcon";
@@ -23,8 +23,8 @@ const Sidebar = ({
   isMobile,
 }: SidebarProps) => {
   const location = useLocation();
-  const { user: activeUser } = useUser();
-  const role = activeUser?.user?.role as UserRole;
+  const { admin: activeAdmin } = useAdmin();
+  const role = activeAdmin?.admin?.role as UserRole;
   console.log("activeUserRole:", role, typeof role);
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
   const isAnyChildActive = (
