@@ -44,7 +44,6 @@ const KioskModal = ({
         initialValues={{
           ...emptyInitialValues,
           ...editingKiosk,
-          status: editingKiosk?.status ?? 1,
         }}
         validationSchema={KioskSchema}
         enableReinitialize
