@@ -10,6 +10,7 @@ import {
   useCreateMenuMutation,
   useGenerateDefaultMenuMutation,
   useGetMenusQuery,
+  useGetPresignedUrlMutation
 } from "../services/menuApi";
 import { useDropzone } from 'react-dropzone';
 import { ArrowUpTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -41,6 +42,8 @@ export interface Menu {
   createdAt: string;
   updatedAt: string;
   storeMenus: StoreMenu[];
+  signedUrl?: string; 
+  storeCount?: number; 
 }
 
 const MenuManager: React.FC = () => {
@@ -54,28 +57,54 @@ const MenuManager: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  const [getPresignedUrl] = useGetPresignedUrlMutation();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
     setIsUploading(true);
-
     const previewUrl = URL.createObjectURL(file);
     setPreviewImage(previewUrl);
 
-    setTimeout(() => {
+    try {
+      const presignedResponse = await getPresignedUrl({
+        fileName: file.name,
+        fileType: file.type,
+        path: "menu-categories"
+      }).unwrap();
+
+      const uploadResponse = await fetch(presignedResponse.url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) throw new Error('Upload failed');
+      setMenu(prev => ({
+        ...prev,
+        image: presignedResponse.key
+      }));
+
+      toast.success("Image uploaded successfully");
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error("Image upload failed");
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewImage(null);
+    } finally {
       setIsUploading(false);
-      setMenu(prev => ({ ...prev, image: `https://example.com/uploads/${file.name}` }));
-    }, 1500);
-  }, []);
+    }
+  }, [getPresignedUrl]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/jpeg': ['.jpeg', '.jpg'],
-      'image/png': ['.png'],
-      'image/webp': ['.webp']
+      'jpeg': ['.jpeg', '.jpg'],
+      'png': ['.png'],
+      'webp': ['.webp']
     },
     maxFiles: 1,
     maxSize: 5 * 1024 * 1024
@@ -112,12 +141,14 @@ const MenuManager: React.FC = () => {
 
   const handleCreate = async () => {
     if (!menu.name.trim()) return toast.error("Menu name is required");
+    if (!menu.image) return toast.error("Please upload an image");
 
     try {
-      await createMenu(menu).unwrap(); // Triggers refetch via invalidatesTags
+      await createMenu(menu).unwrap();
       toast.success("Menu created successfully");
       setIsModalOpen(false);
       setMenu({ name: "", description: "", image: "" });
+      setPreviewImage(null);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to create menu");
     }
@@ -165,7 +196,7 @@ const MenuManager: React.FC = () => {
             >
               <div className="relative w-full pt-[50%] overflow-hidden rounded">
                 <img
-                  src={menu.image}
+                  src={menu.signedUrl}
                   alt={menu.name}
                   className="absolute top-0 left-0 w-full h-full object-cover"
                 />
@@ -205,38 +236,6 @@ const MenuManager: React.FC = () => {
           ))}
         </div>
       )}
-
-      {/* <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Create New Menu"
-      >
-        <div className="space-y-4">
-          <InputField
-            name="name"
-            placeholder="Menu name"
-            value={menu.name}
-            onChange={handleChange}
-          />
-          <InputField
-            name="description"
-            type="textarea"
-            placeholder="Menu description"
-            value={menu.description}
-            onChange={handleChange}
-          />
-          <InputField
-            name="image"
-            placeholder="Image URL"
-            value={menu.image}
-            onChange={handleChange}
-          />
-          <Button className="w-full" onClick={handleCreate} loading={isLoading}>
-            Create Menu
-          </Button>
-        </div>
-      </Modal> */}
-
 
       <Modal
         isOpen={isModalOpen}
@@ -293,17 +292,15 @@ const MenuManager: React.FC = () => {
               <div
                 {...getRootProps()}
                 className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive
-                  ? "border-indigo-500 bg-indigo-50"
-                  : "border-gray-300 hover:border-indigo-400"
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-gray-300 hover:border-indigo-400"
                   }`}
               >
                 <input {...getInputProps()} />
                 {isUploading ? (
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-                    <p className="text-sm text-gray-600">
-                      Uploading image...
-                    </p>
+                    <p className="text-sm text-gray-600">Uploading image...</p>
                   </div>
                 ) : (
                   <>
@@ -339,4 +336,5 @@ const MenuManager: React.FC = () => {
     </div>
   );
 };
+
 export default MenuManager;

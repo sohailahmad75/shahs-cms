@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import Modal from "../../components/Modal";
 import InputField from "../../components/InputField";
 import Button from "../../components/Button";
-import { useCreateCategoryMutation } from "../../services/menuApi";
+import { useCreateCategoryMutation, useGetPresignedUrlMutation } from "../../services/menuApi";
 import { toast } from "react-toastify";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -15,7 +15,6 @@ type Props = {
   menuId: string;
 };
 
-// Validation schema
 const CategorySchema = Yup.object().shape({
   name: Yup.string().required("Category name is required"),
   image: Yup.string().nullable(),
@@ -23,23 +22,47 @@ const CategorySchema = Yup.object().shape({
 
 const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
   const [createCategory, { isLoading }] = useCreateCategoryMutation();
+  const [getPresignedUrl] = useGetPresignedUrlMutation();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImageKey, setUploadedImageKey] = useState<string>("");
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
     setIsUploading(true);
-
     const previewUrl = URL.createObjectURL(file);
     setPreviewImage(previewUrl);
 
-    // Simulate upload
-    setTimeout(() => {
+    try {
+      const presignedResponse = await getPresignedUrl({
+        fileName: file.name,
+        fileType: file.type,
+        path: "menu-categories" 
+      }).unwrap();
+
+      const uploadResponse = await fetch(presignedResponse.url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) throw new Error('Upload failed');
+      
+      setUploadedImageKey(presignedResponse.key);
+      toast.success("Image uploaded successfully");
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error("Image upload failed");
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewImage(null);
+    } finally {
       setIsUploading(false);
-    }, 1500);
-  }, []);
+    }
+  }, [getPresignedUrl]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -49,7 +72,7 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
       'image/webp': ['.webp']
     },
     maxFiles: 1,
-    maxSize: 5 * 1024 * 1024 // 5MB
+    maxSize: 5 * 1024 * 1024
   });
 
   const removeImage = () => {
@@ -57,6 +80,7 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
       URL.revokeObjectURL(previewImage);
     }
     setPreviewImage(null);
+    setUploadedImageKey("");
   };
 
   const handleSubmit = async (
@@ -64,21 +88,26 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
     { resetForm }: any,
   ) => {
     try {
-      // If we have a preview image, use a mock URL (in a real app, you would upload to a server)
-      const imageUrl = previewImage ? `https://example.com/uploads/category-${Date.now()}.jpg` : "";
+      if (!values.name.trim()) {
+        return toast.error("Category name is required");
+      }
+
+      if (!uploadedImageKey) {
+        return toast.error("Please upload an image");
+      }
 
       await createCategory({
         menuId,
-        payload: { ...values, image: imageUrl }
+        payload: { 
+          name: values.name,
+          image: uploadedImageKey
+        }
       }).unwrap();
 
-      toast.success("Category created");
+      toast.success("Category created successfully");
       onClose();
       resetForm();
-      if (previewImage) {
-        URL.revokeObjectURL(previewImage);
-        setPreviewImage(null);
-      }
+      removeImage();
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to create category");
     }
@@ -89,10 +118,7 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
       isOpen={isOpen}
       onClose={() => {
         onClose();
-        if (previewImage) {
-          URL.revokeObjectURL(previewImage);
-          setPreviewImage(null);
-        }
+        removeImage();
       }}
       title="Add New Category"
     >
@@ -101,7 +127,7 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
         validationSchema={CategorySchema}
         onSubmit={handleSubmit}
       >
-        {({ values, handleChange, errors, touched, setFieldValue }) => (
+        {({ values, handleChange, errors, touched }) => (
           <Form className="flex flex-col h-full space-y-4">
             <div className="space-y-4 flex-1 mt-4">
               <InputField
@@ -116,7 +142,7 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category Image
+                  Category Image {!uploadedImageKey && <span className="text-red-500">*</span>}
                 </label>
 
                 {previewImage ? (
@@ -137,18 +163,17 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
                 ) : (
                   <div
                     {...getRootProps()}
-                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      isDragActive
                         ? "border-indigo-500 bg-indigo-50"
                         : "border-gray-300 hover:border-indigo-400"
-                      }`}
+                    }`}
                   >
                     <input {...getInputProps()} />
                     {isUploading ? (
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-                        <p className="text-sm text-gray-600">
-                          Uploading image...
-                        </p>
+                        <p className="text-sm text-gray-600">Uploading image...</p>
                       </div>
                     ) : (
                       <>
@@ -174,7 +199,7 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
               type="submit"
               loading={isLoading}
               className="w-full"
-              disabled={!values.name}
+              disabled={!values.name || !uploadedImageKey}
             >
               Create Category
             </Button>
