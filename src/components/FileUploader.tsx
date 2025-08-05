@@ -8,14 +8,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 import Loader from "./Loader";
+import { uploadToS3 } from "../helper";
+import { useGetPresignedStoreDocUrlMutation } from "../services/documentApi";
 
 interface FileUploaderProps {
   value: string; // The s3 key
   onChange: (key: string) => void;
-  type?: "image" | "file";
+  type?: "image" | "file" | "all"; // Type of file to upload
   path: string;
   initialPreview?: string;
   error?: string | null;
+  pathId?: string; // Optional, used for a store path, user path, etc. stores/${storeId}/documents
 }
 
 const FileUploader: React.FC<FileUploaderProps> = ({
@@ -25,11 +28,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   path,
   initialPreview,
   error,
+  pathId,
 }) => {
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [getPresignedUrl] = useGetPresignedUrlMutation();
+  const [getPresignedStoreDocUrl] = useGetPresignedStoreDocUrlMutation();
 
   const isImageType = (fileType: string) => fileType.startsWith("image/");
 
@@ -57,21 +62,39 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       }
 
       try {
-        const presigned = await getPresignedUrl({
-          fileName: file.name,
-          fileType: file.type,
-          path,
-        }).unwrap();
+        let presigned;
 
-        const res = await fetch(presigned.url, {
-          method: "PUT",
-          body: file,
-          headers: {
-            "Content-Type": file.type,
-          },
-        });
+        switch (path) {
+          case "menu-categories":
+          case "menu-items":
+          case "menu-banner":
+            presigned = await getPresignedUrl({
+              fileName: file.name,
+              fileType: file.type,
+              path,
+            }).unwrap();
+            break;
 
-        if (!res.ok) throw new Error("Upload failed");
+          case "store-documents":
+            if (!pathId) {
+              const errorMessage =
+                "Store ID is required for store document uploads.";
+              toast.error(errorMessage);
+              throw new Error(errorMessage);
+            }
+
+            presigned = await getPresignedStoreDocUrl({
+              fileName: file.name,
+              fileType: file.type,
+              storeId: pathId,
+            }).unwrap();
+            break;
+
+          default:
+            throw new Error(`Unsupported path: ${path}`);
+        }
+
+        await uploadToS3(presigned.url, file);
 
         toast.success("File uploaded successfully");
         onChange(presigned.key);
@@ -109,11 +132,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
   const previewSrc = getPreviewSource();
 
+  console.log("FileUploader render", previewSrc, fileName, value);
   return (
     <>
-      {value && previewSrc ? (
+      {value ? (
         <div className="relative group border rounded-md p-2 bg-gray-50">
-          {type === "image" ? (
+          {previewSrc ? (
             <img
               src={previewSrc}
               alt="Uploaded Preview"
@@ -122,15 +146,17 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           ) : (
             <div className="flex items-center gap-2">
               <DocumentIcon className="w-6 h-6 text-gray-500" />
-              <span className="text-sm text-gray-700">
-                {fileName || "File uploaded"}
+              <span className="text-sm text-gray-700 break-all">
+                {fileName ||
+                  initialPreview?.split("/").pop() ||
+                  "File uploaded"}
               </span>
             </div>
           )}
           <button
             type="button"
             onClick={removeFile}
-            className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm cursor-pointer "
+            className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm cursor-pointer"
           >
             <XMarkIcon className="w-5 h-5 text-red-500" />
           </button>
@@ -168,6 +194,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           )}
         </div>
       )}
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </>
   );
 };

@@ -83,10 +83,6 @@ const AddCategoryModal: React.FC<Props> = ({ isOpen, onClose, menuId }) => {
                   type="image"
                   error={touched.s3Key && errors.s3Key ? errors.s3Key : ""}
                 />
-
-                {errors.s3Key && (
-                  <p className="text-sm text-red-500 mt-1">{errors.s3Key}</p>
-                )}
               </div>
             </div>
 

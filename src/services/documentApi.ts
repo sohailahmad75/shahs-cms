@@ -8,9 +8,8 @@ export const documentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getDocuments: builder.query<Document[], any>({
       query: (params) => ({
-        url: "/documents",
+        url: `/documents/store-documents/${params.storeId}`,
         method: "GET",
-        params,
       }),
       providesTags: ["Documents"],
     }),
@@ -22,7 +21,7 @@ export const documentApi = baseApi.injectEndpoints({
 
     createDocument: builder.mutation<Document, CreateDocumentDto>({
       query: (body) => ({
-        url: "/documents",
+        url: "/documents/store-documents",
         method: "POST",
         body,
       }),
@@ -52,17 +51,16 @@ export const documentApi = baseApi.injectEndpoints({
       invalidatesTags: ["Documents"],
     }),
 
-    getPresignedUrl: builder.mutation<
+    getPresignedStoreDocUrl: builder.mutation<
       { url: string; key: string; method: string },
       {
         fileName: string;
         fileType: string;
-        ownerType: "user" | "store" | "warehouse" | "device";
-        ownerId: string;
+        storeId: string;
       }
     >({
       query: (body) => ({
-        url: "/documents/presigned-url",
+        url: "/stores/presigned-url",
         method: "PUT",
         body,
       }),
@@ -76,5 +74,5 @@ export const {
   useCreateDocumentMutation,
   useUpdateDocumentMutation,
   useDeleteDocumentMutation,
-  useGetPresignedUrlMutation,
+  useGetPresignedStoreDocUrlMutation,
 } = documentApi;

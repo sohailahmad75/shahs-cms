@@ -14,6 +14,7 @@ import {
 import FileUploader from "../components/FileUploader";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import Loader from "../components/Loader";
 
 const MenuSchema = Yup.object().shape({
   name: Yup.string().required("Menu name is required"),
@@ -73,7 +74,7 @@ const MenuManager: React.FC = () => {
       </div>
 
       {isFetching ? (
-        <p>Loading menus...</p>
+        <Loader />
       ) : menus.length === 0 ? (
         <div className="p-6 text-center italic text-slate-500 dark:text-slate-400">
           <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md py-10 px-6 mx-auto">
@@ -152,6 +153,7 @@ const MenuManager: React.FC = () => {
               <InputField
                 name="name"
                 label="Menu Name"
+                placeholder="Enter menu name"
                 value={values.name}
                 onChange={handleChange}
                 error={touched.name && errors.name ? errors.name : ""}
@@ -179,10 +181,6 @@ const MenuManager: React.FC = () => {
                   type="image"
                   error={touched.s3Key && errors.s3Key ? errors.s3Key : ""}
                 />
-
-                {touched.s3Key && errors.s3Key && (
-                  <p className="text-sm text-red-500 mt-1">{errors.s3Key}</p>
-                )}
               </div>
 
               <Button type="submit" loading={isLoading} className="w-full">

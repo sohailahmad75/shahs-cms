@@ -50,19 +50,13 @@ export const getErrorMessage = (
   return "Something went wrong";
 };
 // url,key,method, file
-export async function uploadToS3(
-  url: string,
-  method: string,
-  file: File,
-): Promise<void> {
-  const formData = new FormData();
-
-  // Append the actual file last
-  formData.append("file", file);
-
+export async function uploadToS3(url: string, file: File): Promise<void> {
   const res = await fetch(url, {
-    method: method,
-    body: formData,
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-Type": file.type,
+    },
   });
 
   if (!res.ok) {

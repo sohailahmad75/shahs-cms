@@ -8,8 +8,7 @@ import { toast } from "react-toastify";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import type { MenuCategory } from "../../types";
-import { useDropzone } from 'react-dropzone';
-import { ArrowUpTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import FileUploader from "../../components/FileUploader";
 
 type Props = {
   isOpen: boolean;
@@ -23,7 +22,11 @@ const AddItemSchema = Yup.object().shape({
   price: Yup.number()
     .typeError("Price must be a number")
     .required("Price is required"),
+  deliveryPrice: Yup.number()
+    .typeError("Delivery Price must be a number")
+    .required("Delivery Price is required"),
   categoryId: Yup.string().required("Category is required"),
+  s3Key: Yup.string().required("Item image is required"),
 });
 
 const AddItemModal: React.FC<Props> = ({
@@ -34,61 +37,23 @@ const AddItemModal: React.FC<Props> = ({
 }) => {
   const [createItem, { isLoading }] = useCreateItemMutation();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
-
-    setIsUploading(true);
-
-    const previewUrl = URL.createObjectURL(file);
-    setPreviewImage(previewUrl);
-
-    // Simulate upload
-    setTimeout(() => {
-      setIsUploading(false);
-    }, 1500);
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/jpeg': ['.jpeg', '.jpg'],
-      'image/png': ['.png'],
-      'image/webp': ['.webp']
-    },
-    maxFiles: 1,
-    maxSize: 5 * 1024 * 1024 // 5MB
-  });
-
-  const removeImage = () => {
-    if (previewImage) {
-      URL.revokeObjectURL(previewImage);
-    }
-    setPreviewImage(null);
-  };
 
   const initialValues = {
     name: "",
     description: "",
     price: "",
     deliveryPrice: "",
-    image: "",
+    s3Key: "",
     categoryId: selectedCategory?.id || "",
   };
 
   const handleSubmit = async (values: typeof initialValues) => {
     try {
-      // If we have a preview image, use a mock URL (in a real app, you would upload to a server)
-      const imageUrl = previewImage ? `https://example.com/uploads/item-${Date.now()}.jpg` : values.image;
-
       await createItem({
         categoryId: values.categoryId,
         payload: {
-          name: values.name,
-          description: values.description,
-          image: imageUrl,
+          ...values,
+          categoryId: undefined,
           price: parseFloat(values.price),
           deliveryPrice: parseFloat(values.deliveryPrice),
         },
@@ -123,7 +88,7 @@ const AddItemModal: React.FC<Props> = ({
         enableReinitialize
         onSubmit={handleSubmit}
       >
-        {({ values, handleChange, errors, touched }) => (
+        {({ values, handleChange, errors, touched, setFieldValue }) => (
           <Form className="space-y-4 h-full flex flex-col justify-between">
             <div className="space-y-4">
               <div>
@@ -200,54 +165,13 @@ const AddItemModal: React.FC<Props> = ({
                   Item Image
                 </label>
 
-                {previewImage ? (
-                  <div className="relative group">
-                    <img
-                      src={previewImage}
-                      alt="Preview"
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-all"
-                    >
-                      <XMarkIcon className="w-5 h-5 text-red-500" />
-                    </button>
-                  </div>
-                ) : (
-                  <div
-                    {...getRootProps()}
-                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive
-                        ? "border-indigo-500 bg-indigo-50"
-                        : "border-gray-300 hover:border-indigo-400"
-                      }`}
-                  >
-                    <input {...getInputProps()} />
-                    {isUploading ? (
-                      <div className="flex flex-col items-center justify-center space-y-2">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-                        <p className="text-sm text-gray-600">
-                          Uploading image...
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="mx-auto h-10 w-10 text-gray-400 mb-2">
-                          <ArrowUpTrayIcon />
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {isDragActive
-                            ? "Drop the image here"
-                            : "Drag & drop an image here, or click to select"}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          JPEG, PNG, WEBP (Max. 5MB)
-                        </p>
-                      </>
-                    )}
-                  </div>
-                )}
+                <FileUploader
+                  value={values.s3Key}
+                  onChange={(key) => setFieldValue("s3Key", key)}
+                  path="menu-items"
+                  type="image"
+                  error={touched.s3Key && errors.s3Key ? errors.s3Key : ""}
+                />
               </div>
             </div>
 

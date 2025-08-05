@@ -15,14 +15,19 @@ import DocumentModal from "./DocumentModal";
 import ActionIcon from "../../../components/ActionIcon";
 import { DownloadIcon, TrashIcon } from "lucide-react";
 import EditIcon from "../../../assets/styledIcons/EditIcon";
+import { useParams } from "react-router-dom";
+import EyeOpen from "../../../assets/styledIcons/EyeOpen";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import DocumentPreviewModal from "./DocumentPreviewModal";
 
 const StoreDocuments: React.FC = () => {
+  const { id } = useParams();
   const {
     data: documents = [],
     isLoading,
     refetch,
   } = useGetDocumentsQuery({
-    ownerType: "store",
+    storeId: id,
   });
 
   const [createDocument, { isLoading: creating }] = useCreateDocumentMutation();
@@ -40,10 +45,27 @@ const StoreDocuments: React.FC = () => {
     toast.success("Document deleted");
     refetch();
   };
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<"image" | "file">("file");
+  const handlePreview = (doc: Document) => {
+    setPreviewUrl(doc.signedUrl);
 
+    // Auto-detect if it's image or not
+    const isImage = doc.signedUrl?.match(/\.(jpeg|jpg|png|webp)$/i);
+    setPreviewType(isImage ? "image" : "file");
+  };
   const columns: Column<Document>[] = [
     { key: "name", label: "Name" },
-    { key: "type", label: "Type" },
+    {
+      key: "documentType",
+      label: "Type",
+      render: (_, row) =>
+        row.documentType ? (
+          <span className="capitalize">{row?.documentType}</span>
+        ) : (
+          "—"
+        ),
+    },
     {
       key: "expiresAt",
       label: "Expiry Date",
@@ -55,8 +77,12 @@ const StoreDocuments: React.FC = () => {
       label: "Actions",
       render: (_, row) => (
         <div className="flex gap-2">
+          <ActionIcon
+            icon={<EyeOpen size={22} />}
+            onClick={() => handlePreview(row)}
+          />
           <a
-            href={`https://your-s3-bucket-url/${row.fileS3Key}`}
+            href={`${row.signedUrl}`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -111,10 +137,13 @@ const StoreDocuments: React.FC = () => {
         }}
         onSubmit={async (values) => {
           if (editingId) {
-            await updateDocument({ id: editingId, data: values }).unwrap();
+            await updateDocument({
+              id: editingId,
+              data: { ...values, storeId: id },
+            }).unwrap();
             toast.success("Updated successfully");
           } else {
-            await createDocument(values).unwrap();
+            await createDocument({ ...values, storeId: id }).unwrap();
             toast.success("Created successfully");
           }
           refetch();
@@ -123,8 +152,14 @@ const StoreDocuments: React.FC = () => {
         }}
         editingDocument={editingId ? editingDoc : null}
         isSubmitting={creating || updating}
-        defaultOwnerType="store"
       />
+      {previewUrl && (
+        <DocumentPreviewModal
+          url={previewUrl}
+          name="Document"
+          onClose={() => setPreviewUrl(null)}
+        />
+      )}
     </div>
   );
 };
