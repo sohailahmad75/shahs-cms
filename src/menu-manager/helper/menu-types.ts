@@ -35,3 +35,34 @@ export type ModifierOption = {
   modifierId?: string;
   deliveryPrice: number;
 };
+
+export interface StoreBasicInfo {
+  email: any;
+  id: string;
+  name: string;
+  companyName: string;
+}
+
+export interface StoreMenu {
+  isPublished: any;
+  id: number;
+  storeId: string;
+  menuId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  store: StoreBasicInfo;
+}
+
+export interface Menu {
+  id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  s3Key: string;
+  createdAt: string;
+  updatedAt: string;
+  storeMenus: StoreMenu[];
+  signedUrl?: string;
+  storeCount?: number;
+}

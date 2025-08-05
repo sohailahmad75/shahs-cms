@@ -9,13 +9,13 @@ import {
 } from "./services/kiosksApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
-import type { Kiosk } from "./types";
 import Loader from "../../components/Loader";
 import KioskModal from "./components/KioskModal";
 import EditIcon from "../../assets/styledIcons/EditIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
 import StatusTag from "../../components/StatusTag";
+import type { Kiosk } from "./kiosks.types";
 
 const KiosksListPage: React.FC = () => {
   const { data: kiosks = [], isLoading, refetch } = useGetKiosksQuery();
@@ -115,20 +115,21 @@ const KiosksListPage: React.FC = () => {
           setEditingKioskId(null);
         }}
         onSubmit={async (values) => {
-          try {
-            if (editingKioskId) {
-              await updateKiosk({ id: editingKioskId, data: values }).unwrap();
-              toast.success("Kiosk updated");
-            } else {
-              await createKiosk(values).unwrap();
-              toast.success("Kiosk created");
-            }
-            refetch();
-            setModalOpen(false);
-            setEditingKioskId(null);
-          } catch (err: any) {
-            toast.error(err?.data?.message || "Error occurred");
+          if (editingKioskId) {
+            await updateKiosk({
+              id: editingKioskId,
+              data: values,
+            }).unwrap();
+
+            toast.success("Kiosk updated");
+          } else {
+            await createKiosk(values).unwrap();
+
+            toast.success("Kiosk created");
           }
+          refetch();
+          setModalOpen(false);
+          setEditingKioskId(null);
         }}
         editingKiosk={editingKioskId ? editingKioskData : null}
         isSubmitting={creating || updating}

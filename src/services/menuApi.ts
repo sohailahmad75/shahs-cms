@@ -1,8 +1,6 @@
-// src/features/dashboard/dashboardApi.ts
-
-import type { Menu } from "../menu-manager";
 import { baseApi } from "./baseApi";
-import {
+import type {
+  Menu,
   MenuCategory,
   MenuItem,
   MenuModifier,
@@ -24,12 +22,12 @@ export const menuApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-            ...result.map((menu) => ({
-              type: "Menus" as const,
-              id: menu.id,
-            })),
-            { type: "Menus" },
-          ]
+              ...result.map((menu) => ({
+                type: "Menus" as const,
+                id: menu.id,
+              })),
+              { type: "Menus" },
+            ]
           : [{ type: "Menus" }],
     }),
     getMenuById: builder.query<Menu, string>({
@@ -41,12 +39,12 @@ export const menuApi = baseApi.injectEndpoints({
       providesTags: (result, _error, menuId) =>
         result
           ? [
-            ...result.map((cat) => ({
-              type: "MenuCategory" as const,
-              id: cat.id,
-            })),
-            { type: "MenuCategory", id: menuId },
-          ]
+              ...result.map((cat) => ({
+                type: "MenuCategory" as const,
+                id: cat.id,
+              })),
+              { type: "MenuCategory", id: menuId },
+            ]
           : [{ type: "MenuCategory", id: menuId }],
     }),
     createCategory: builder.mutation<
@@ -89,12 +87,12 @@ export const menuApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-            ...result.map((mod) => ({
-              type: "MenuModifiers" as const,
-              id: mod.id,
-            })),
-            { type: "MenuModifiers" },
-          ]
+              ...result.map((mod) => ({
+                type: "MenuModifiers" as const,
+                id: mod.id,
+              })),
+              { type: "MenuModifiers" },
+            ]
           : [{ type: "MenuModifiers" }],
     }),
     getAllMenuItems: builder.query<MenuItem[], string>({
@@ -127,15 +125,18 @@ export const menuApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "Menus" }],
     }),
 
-    getPresignedUrl: builder.mutation<{
-      method: string;
-      url: string;
-      key: string;
-    }, {
-      fileName: string;
-      fileType: string;
-      path: string;
-    }>({
+    getPresignedUrl: builder.mutation<
+      {
+        method: string;
+        url: string;
+        key: string;
+      },
+      {
+        fileName: string;
+        fileType: string;
+        path: string;
+      }
+    >({
       query: (payload) => ({
         url: "/menus/presigned-url",
         method: "PUT",
@@ -143,15 +144,18 @@ export const menuApi = baseApi.injectEndpoints({
       }),
     }),
 
-      getCategoriesPresignedUrl: builder.mutation<{
-      method: string;
-      url: string;
-      key: string;
-    }, {
-      fileName: string;
-      fileType: string;
-      path: string;
-    }>({
+    getCategoriesPresignedUrl: builder.mutation<
+      {
+        method: string;
+        url: string;
+        key: string;
+      },
+      {
+        fileName: string;
+        fileType: string;
+        path: string;
+      }
+    >({
       query: (payload) => ({
         url: "/menu-categories/presigned-url",
         method: "PUT",
@@ -214,5 +218,5 @@ export const {
   useSyncMenuToUberMutation,
   useAssignMenuToManyStoresMutation,
   useGetAllModificationTypesQuery,
-  useGetPresignedUrlMutation
+  useGetPresignedUrlMutation,
 } = menuApi;

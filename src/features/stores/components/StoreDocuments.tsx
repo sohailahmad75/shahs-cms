@@ -36,13 +36,9 @@ const StoreDocuments: React.FC = () => {
   });
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteDocument(id).unwrap();
-      toast.success("Document deleted");
-      refetch();
-    } catch (err: any) {
-      toast.error("Failed to delete");
-    }
+    await deleteDocument(id).unwrap();
+    toast.success("Document deleted");
+    refetch();
   };
 
   const columns: Column<Document>[] = [
@@ -114,20 +110,16 @@ const StoreDocuments: React.FC = () => {
           setEditingId(null);
         }}
         onSubmit={async (values) => {
-          try {
-            if (editingId) {
-              await updateDocument({ id: editingId, data: values }).unwrap();
-              toast.success("Updated successfully");
-            } else {
-              await createDocument(values).unwrap();
-              toast.success("Created successfully");
-            }
-            refetch();
-            setModalOpen(false);
-            setEditingId(null);
-          } catch (err: any) {
-            toast.error(err?.data?.message || "Error occurred");
+          if (editingId) {
+            await updateDocument({ id: editingId, data: values }).unwrap();
+            toast.success("Updated successfully");
+          } else {
+            await createDocument(values).unwrap();
+            toast.success("Created successfully");
           }
+          refetch();
+          setModalOpen(false);
+          setEditingId(null);
         }}
         editingDocument={editingId ? editingDoc : null}
         isSubmitting={creating || updating}

@@ -5,6 +5,7 @@ export interface Kiosk {
   name: string;
   model: string;
   deviceId: string;
+  deviceType: string;
   status: number;
   storeId?: string;
   createdAt: string;
@@ -17,6 +18,4 @@ export interface CreateKioskDto {
   storeId?: string;
   deviceType: number;
 }
-export interface UpdateKioskDto extends Partial<CreateKioskDto> {
-  id: string;
-}
+export type UpdateKioskDto = CreateKioskDto;

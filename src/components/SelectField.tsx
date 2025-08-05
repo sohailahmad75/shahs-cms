@@ -3,11 +3,11 @@ import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 
 type Option = {
   label: string;
-  value: string;
+  value: string | number;
 };
 
 type SelectFieldProps = {
-  value: string;
+  value: string | number;
   onChange: (e: React.ChangeEvent<any>) => void;
   options: Option[];
   placeholder?: string;

@@ -22,7 +22,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
   const [imageError, setImageError] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
 
-  const hasValidImage = category.image && !imageError;
+  const hasValidImage = category.signedUrl && !imageError;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-100">
@@ -30,7 +30,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
         <div className="flex items-center gap-3">
           {hasValidImage ? (
             <img
-              src={category.image}
+              src={category.signedUrl}
               alt={category.name}
               onError={() => setImageError(true)}
               className="w-16 h-16 rounded object-cover border border-gray-200"
@@ -110,4 +110,3 @@ const CategoryCard: React.FC<CategoryProps> = ({
 };
 
 export default CategoryCard;
-

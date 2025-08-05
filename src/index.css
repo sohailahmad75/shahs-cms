@@ -2,6 +2,7 @@
 
 @theme {
     --color-primary-100: #eb0029;     /* Red */
+    --color-orange-05: rgba(255, 79, 4, 0.05);
     --color-orange-100: #FF4F04;      /* Bright Orange */
     --color-orange-200: #ffe8d9;      /* Light Orange Background */
     --color-orange-300: #fcd9bd;      /* Hover */
