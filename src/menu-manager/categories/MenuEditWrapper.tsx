@@ -14,7 +14,6 @@ const tabs = [
   { label: "Categories", slug: "categories" },
   { label: "Items", slug: "items" },
   { label: "Modifications", slug: "modifications" },
-  { label: "Connected Stores", slug: "connected" },
 ];
 
 interface SyncButtonsProps {
@@ -120,11 +119,14 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
       <div className="flex flex-col gap-4">
         {/* Top Info */}
         <div className="flex flex-col md:flex-row gap-4 items-start">
-          <img
-            src={menu.signedUrl}
-            alt="menu header"
-            className="w-full max-w-[280px] h-auto object-contain rounded-md"
-          />
+          <div className="w-full max-w-[280px] max-h-[160px] rounded-md overflow-hidden flex items-center justify-center bg-gray-100">
+            <img
+              src={menu.signedUrl}
+              alt="menu header"
+              className="object-contain max-w-full max-h-full"
+            />
+          </div>
+
           <div className="flex-1">
             <h1 className="text-lg font-semibold text-gray-800">{menu.name}</h1>
             <p className="text-sm text-gray-600 mt-1">{menu.description}</p>
@@ -147,9 +149,10 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
               key={tab.slug}
               onClick={() => handleTabClick(tab.slug)}
               className={`relative cursor-pointer pb-1 transition-all duration-100 ease-in-out font-semibold
-                ${i === activeTab
-                  ? "text-primary-100 after:scale-x-100"
-                  : "text-gray-500 hover:text-primary-100 font-normal after:scale-x-0"
+                ${
+                  i === activeTab
+                    ? "text-primary-100 after:scale-x-100"
+                    : "text-gray-500 hover:text-primary-100 font-normal after:scale-x-0"
                 }
                 after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-[2px] after:w-full after:bg-primary-100 after:transition-transform after:duration-100 after:origin-left
               `}

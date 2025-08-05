@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HomeIcon from "../assets/styledIcons/HomeIcon";
 import Button from "../components/Button";
@@ -10,113 +10,20 @@ import {
   useCreateMenuMutation,
   useGenerateDefaultMenuMutation,
   useGetMenusQuery,
-  useGetPresignedUrlMutation
 } from "../services/menuApi";
-import { useDropzone } from 'react-dropzone';
-import { ArrowUpTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import FileUploader from "../components/FileUploader";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 
-export interface StoreBasicInfo {
-  email: any;
-  id: string;
-  name: string;
-  companyName: string;
-}
-
-export interface StoreMenu {
-  isPublished: any;
-  id: number;
-  storeId: string;
-  menuId: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  store: StoreBasicInfo;
-}
-
-export interface Menu {
-  id: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  image: string;
-  createdAt: string;
-  updatedAt: string;
-  storeMenus: StoreMenu[];
-  signedUrl?: string; 
-  storeCount?: number; 
-}
+const MenuSchema = Yup.object().shape({
+  name: Yup.string().required("Menu name is required"),
+  description: Yup.string(),
+  s3Key: Yup.string().required("Menu image is required"),
+});
 
 const MenuManager: React.FC = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [menu, setMenu] = useState({
-    name: "",
-    description: "",
-    image: "",
-  });
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const [getPresignedUrl] = useGetPresignedUrlMutation();
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    const previewUrl = URL.createObjectURL(file);
-    setPreviewImage(previewUrl);
-
-    try {
-      const presignedResponse = await getPresignedUrl({
-        fileName: file.name,
-        fileType: file.type,
-        path: "menu-categories"
-      }).unwrap();
-
-      const uploadResponse = await fetch(presignedResponse.url, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (!uploadResponse.ok) throw new Error('Upload failed');
-      setMenu(prev => ({
-        ...prev,
-        image: presignedResponse.key
-      }));
-
-      toast.success("Image uploaded successfully");
-    } catch (err) {
-      console.error('Upload error:', err);
-      toast.error("Image upload failed");
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewImage(null);
-    } finally {
-      setIsUploading(false);
-    }
-  }, [getPresignedUrl]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'jpeg': ['.jpeg', '.jpg'],
-      'png': ['.png'],
-      'webp': ['.webp']
-    },
-    maxFiles: 1,
-    maxSize: 5 * 1024 * 1024
-  });
-
-  const removeImage = () => {
-    if (previewImage) {
-      URL.revokeObjectURL(previewImage);
-    }
-    setPreviewImage(null);
-    setMenu(prev => ({ ...prev, image: "" }));
-  };
 
   const { data: menus = [], isFetching } = useGetMenusQuery();
   const [createMenu, { isLoading }] = useCreateMenuMutation();
@@ -132,23 +39,15 @@ const MenuManager: React.FC = () => {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  const handleSubmit = async (
+    values: { name: string; description: string; s3Key: string },
+    { resetForm }: any,
   ) => {
-    const { name, value } = e.target;
-    setMenu((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCreate = async () => {
-    if (!menu.name.trim()) return toast.error("Menu name is required");
-    if (!menu.image) return toast.error("Please upload an image");
-
     try {
-      await createMenu(menu).unwrap();
+      await createMenu(values).unwrap();
       toast.success("Menu created successfully");
+      resetForm();
       setIsModalOpen(false);
-      setMenu({ name: "", description: "", image: "" });
-      setPreviewImage(null);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to create menu");
     }
@@ -163,7 +62,7 @@ const MenuManager: React.FC = () => {
             Add New
           </Button>
           <Button
-            onClick={() => handleGenerate()}
+            onClick={handleGenerate}
             variant="outlined"
             loading={isDefaultMenuLoading}
             icon={<AddIcon />}
@@ -237,101 +136,61 @@ const MenuManager: React.FC = () => {
         </div>
       )}
 
+      {/* ✅ Modal with Formik */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          if (previewImage) {
-            URL.revokeObjectURL(previewImage);
-            setPreviewImage(null);
-          }
-        }}
+        onClose={() => setIsModalOpen(false)}
         title="Create New Menu"
       >
-        <div className="space-y-4">
-          <InputField
-            name="name"
-            label="Menu Name"
-            placeholder="e.g. Summer Specials"
-            value={menu.name}
-            onChange={handleChange}
-            required
-          />
+        <Formik
+          initialValues={{ name: "", description: "", s3Key: "" }}
+          validationSchema={MenuSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ values, handleChange, setFieldValue, errors, touched }) => (
+            <Form className="space-y-4">
+              <InputField
+                name="name"
+                label="Menu Name"
+                value={values.name}
+                onChange={handleChange}
+                error={touched.name && errors.name ? errors.name : ""}
+              />
 
-          <InputField
-            name="description"
-            type="textarea"
-            label="Description"
-            placeholder="Brief description of the menu"
-            value={menu.description}
-            onChange={handleChange}
-            rows={3}
-          />
+              <InputField
+                name="description"
+                type="textarea"
+                label="Description"
+                placeholder="Brief description of the menu"
+                value={values.description}
+                onChange={handleChange}
+                rows={3}
+              />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Menu Image {!menu.image && <span className="text-red-500">*</span>}
-            </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Menu Image <span className="text-red-500">*</span>
+                </label>
 
-            {previewImage ? (
-              <div className="relative group">
-                <img
-                  src={previewImage}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-lg"
+                <FileUploader
+                  value={values.s3Key}
+                  onChange={(key) => setFieldValue("s3Key", key)}
+                  path="menu-banner"
+                  type="image"
+                  error={touched.s3Key && errors.s3Key ? errors.s3Key : ""}
                 />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-all"
-                >
-                  <XMarkIcon className="w-5 h-5 text-red-500" />
-                </button>
-              </div>
-            ) : (
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-gray-300 hover:border-indigo-400"
-                  }`}
-              >
-                <input {...getInputProps()} />
-                {isUploading ? (
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-                    <p className="text-sm text-gray-600">Uploading image...</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="mx-auto h-10 w-10 text-gray-400 mb-2">
-                      <ArrowUpTrayIcon />
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {isDragActive
-                        ? "Drop the image here"
-                        : "Drag & drop an image here, or click to select"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      JPEG, PNG, WEBP (Max. 5MB)
-                    </p>
-                  </>
+
+                {touched.s3Key && errors.s3Key && (
+                  <p className="text-sm text-red-500 mt-1">{errors.s3Key}</p>
                 )}
               </div>
-            )}
-          </div>
 
-          <div className="pt-2">
-            <Button
-              onClick={handleCreate}
-              loading={isLoading}
-              disabled={!menu.name || !menu.image}
-              className="w-full"
-            >
-              Create Menu
-            </Button>
-          </div>
-        </div>
+              <Button type="submit" loading={isLoading} className="w-full">
+                Create Menu
+              </Button>
+            </Form>
+          )}
+        </Formik>
       </Modal>
     </div>
   );

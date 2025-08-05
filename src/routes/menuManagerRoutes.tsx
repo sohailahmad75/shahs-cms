@@ -6,7 +6,6 @@ import CategoryList from "../menu-manager/categories/CategoryList";
 import MenuManager from "../menu-manager";
 import ItemList from "../menu-manager/items/ItemList";
 import ModifierList from "../menu-manager/modifications";
-import StoreList from "../menu-manager/connected/StoreList";
 
 const menuManagerRoutes = [
   {
@@ -46,17 +45,6 @@ const menuManagerRoutes = [
           <MainLayout>
             <MenuEditWrapper>
               <ModifierList />
-            </MenuEditWrapper>
-          </MainLayout>
-        ),
-      },
-
-       {
-        path: "/menus/:id/connected",
-        element: (
-          <MainLayout>
-            <MenuEditWrapper>
-              <StoreList />
             </MenuEditWrapper>
           </MainLayout>
         ),

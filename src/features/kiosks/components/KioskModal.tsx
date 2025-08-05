@@ -29,10 +29,10 @@ const KioskModal = ({
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (values: CreateKioskDto | UpdateKioskDto) => void;
-  editingKiosk: Kiosk | null;
+  editingKiosk: UpdateKioskDto | null | undefined;
   isSubmitting: boolean;
 }) => {
-  const { data: stores = [], isLoading } = useGetStoresQuery();
+  const { data: stores = [] } = useGetStoresQuery();
   return (
     <Modal
       isOpen={isOpen}
@@ -43,7 +43,13 @@ const KioskModal = ({
       <Formik
         initialValues={{
           ...emptyInitialValues,
-          ...editingKiosk,
+          ...(editingKiosk
+            ? {
+                deviceId: editingKiosk.deviceId,
+                storeId: editingKiosk.storeId,
+                deviceType: editingKiosk.deviceType,
+              }
+            : {}),
         }}
         validationSchema={KioskSchema}
         enableReinitialize
@@ -106,11 +112,11 @@ const KioskModal = ({
                 </label>
                 <SelectField
                   name="deviceType"
-                  value={values.deviceType.toString()}
+                  value={values.deviceType}
                   onChange={handleChange}
                   options={[
-                    { label: "Self-Service", value: "1" },
-                    { label: "Till", value: "2" },
+                    { label: "Self-Service", value: 1 },
+                    { label: "Till", value: 2 },
                   ]}
                   error={touched.deviceType ? errors.deviceType : ""}
                 />
