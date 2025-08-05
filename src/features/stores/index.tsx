@@ -23,7 +23,8 @@ const ITEMS_PER_PAGE = 10;
 
 const StoreListPage: React.FC = () => {
   const { data: stores = [], isLoading, refetch } = useGetStoresQuery();
-  const [createStore, { isLoading: creatingLoading }] = useCreateStoreMutation();
+  const [createStore, { isLoading: creatingLoading }] =
+    useCreateStoreMutation();
   const [updateStore, { isLoading: updateLoading }] = useUpdateStoreMutation();
   const [deleteStore] = useDeleteStoreMutation();
 
@@ -40,8 +41,8 @@ const StoreListPage: React.FC = () => {
     const lowerSearch = search.toLowerCase();
     return stores.filter((store) =>
       Object.values(store).some((val) =>
-        String(val).toLowerCase().includes(lowerSearch)
-      )
+        String(val).toLowerCase().includes(lowerSearch),
+      ),
     );
   }, [stores, search]);
 
@@ -87,10 +88,20 @@ const StoreListPage: React.FC = () => {
       render: (_value: unknown, row: Store) => (
         <div className="flex gap-2">
           <Link to={`/stores/${row.id}`} className="hover:underline">
-            <ActionIcon className="text-secondary-100" icon={<EyeOpen size={22} />} />
+            <ActionIcon
+              className="text-secondary-100"
+              icon={<EyeOpen size={22} />}
+            />
           </Link>
-          <ActionIcon icon={<EditIcon size={22} />} onClick={() => handleEdit(row.id)} />
-          <ActionIcon className="text-red-500" icon={<TrashIcon size={22} />} onClick={() => handleDelete(row.id)} />
+          <ActionIcon
+            icon={<EditIcon size={22} />}
+            onClick={() => handleEdit(row.id)}
+          />
+          <ActionIcon
+            className="text-red-500"
+            icon={<TrashIcon size={22} />}
+            onClick={() => handleDelete(row.id)}
+          />
         </div>
       ),
     },
@@ -99,7 +110,12 @@ const StoreListPage: React.FC = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Stores</h1>
-        <Button onClick={() => { setEditingStoreId(null); setModalOpen(true); }}>
+        <Button
+          onClick={() => {
+            setEditingStoreId(null);
+            setModalOpen(true);
+          }}
+        >
           Add Store
         </Button>
       </div>
@@ -112,14 +128,21 @@ const StoreListPage: React.FC = () => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          placeholder="Search" name={""} />
+          placeholder="Search"
+          name={""}
+        />
       </div>
 
       {isLoading ? (
         <Loader />
       ) : (
         <>
-          <DynamicTable data={paginatedData} columns={columns} rowKey="id" tableClassName="bg-white" />
+          <DynamicTable
+            data={paginatedData}
+            columns={columns}
+            rowKey="id"
+            tableClassName="bg-white"
+          />
 
           {/* Pagination controls */}
           {/* <div className="mt-4 flex justify-end items-center gap-2">
@@ -138,15 +161,20 @@ const StoreListPage: React.FC = () => {
               Page {page} of {totalPages}
             </span>
             <div className="flex gap-2">
-              <Button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+              <Button
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
                 Previous
               </Button>
-              <Button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+              <Button
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
                 Next
               </Button>
             </div>
           </div>
-
         </>
       )}
 
@@ -157,20 +185,16 @@ const StoreListPage: React.FC = () => {
           setEditingStoreId(null);
         }}
         onSubmit={async (values) => {
-          try {
-            if (editingStoreId) {
-              await updateStore({ id: editingStoreId, data: values }).unwrap();
-              toast.success("Store updated successfully");
-            } else {
-              await createStore(values).unwrap();
-              toast.success("Store created successfully");
-            }
-            refetch();
-            setModalOpen(false);
-            setEditingStoreId(null);
-          } catch (err: any) {
-            toast.error(err?.data?.message || "Error occurred");
+          if (editingStoreId) {
+            await updateStore({ id: editingStoreId, data: values }).unwrap();
+            toast.success("Store updated successfully");
+          } else {
+            await createStore(values).unwrap();
+            toast.success("Store created successfully");
           }
+          refetch();
+          setModalOpen(false);
+          setEditingStoreId(null);
         }}
         editingStore={editingStoreId ? editingStoreData : null}
         isSubmitting={creatingLoading || updateLoading}

@@ -90,6 +90,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
               variant="outlined"
               className="w-full sm:w-auto"
               icon={<AddIcon />}
+              disabled
             >
               Add existing items
             </Button>

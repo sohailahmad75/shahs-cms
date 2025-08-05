@@ -25,7 +25,7 @@ export type MenuModifier = {
   isMoreOnce: boolean;
   items: string[]; // item IDs
   options: ModifierOption[];
-  modificationType: string;
+  modificationTypeId: string;
 };
 
 export type ModifierOption = {

@@ -12,62 +12,11 @@ import Button from "../../../components/Button";
 import type { UpdateStoreDto } from "../types";
 import { useEffect, useState } from "react";
 import OpeningHoursFormSection from "./OpeningHoursFormSection";
-
-const StoreSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  phone: Yup.string().required("Phone is required"),
-  street: Yup.string().required("Street is required"),
-  city: Yup.string().required("City is required"),
-  postcode: Yup.string().required("Postcode is required"),
-  country: Yup.string().required("Country is required"),
-  storeType: Yup.number().required("Store type is required"),
-  companyName: Yup.string().required("Company Name is required"),
-  companyNumber: Yup.string().required("Company Number is required"),
-  bankDetails: Yup.array().of(
-    Yup.object().shape({
-      bankName: Yup.string().required("Bank name is required"),
-      accountNumber: Yup.string()
-        .matches(/^\d+$/, "Account number must be digits only")
-        .required("Account number is required"),
-      sortCode: Yup.string()
-        .matches(/^\d{6}$/, "Sort code must be 6 digits")
-        .required("Sort code is required"),
-    }),
-  ),
-});
-
-const defaultDays = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-const emptyInitialValues = {
-  name: "",
-  email: "",
-  phone: "",
-  street: "",
-  city: "",
-  postcode: "",
-  country: "United Kingdom",
-  uberStoreId: "",
-  deliverooStoreId: "",
-  justEatStoreId: "",
-  vatNumber: "",
-  googlePlaceId: "",
-  fsaId: "",
-  companyName: "",
-  companyNumber: "",
-  storeType: StoreTypeEnum.SHOP,
-  bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
-  lat: "",
-  lon: "",
-};
+import {
+  createStoreInitialValues,
+  CreateStoreSchema,
+  defaultDays,
+} from "../helper/store-helper";
 
 const StoreModal = ({
   isOpen,
@@ -123,14 +72,14 @@ const StoreModal = ({
       </div>
       <Formik
         initialValues={{
-          ...emptyInitialValues,
+          ...createStoreInitialValues,
           ...editingStore,
           storeType:
             editingStore?.storeType !== undefined
               ? Number(editingStore.storeType)
               : StoreTypeEnum.SHOP,
         }}
-        validationSchema={StoreSchema}
+        validationSchema={CreateStoreSchema}
         enableReinitialize
         onSubmit={(values) => {
           const finalValues = {
