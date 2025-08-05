@@ -126,6 +126,38 @@ export const menuApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Menus" }],
     }),
+
+    getPresignedUrl: builder.mutation<{
+      method: string;
+      url: string;
+      key: string;
+    }, {
+      fileName: string;
+      fileType: string;
+      path: string;
+    }>({
+      query: (payload) => ({
+        url: "/menus/presigned-url",
+        method: "PUT",
+        body: payload,
+      }),
+    }),
+
+      getCategoriesPresignedUrl: builder.mutation<{
+      method: string;
+      url: string;
+      key: string;
+    }, {
+      fileName: string;
+      fileType: string;
+      path: string;
+    }>({
+      query: (payload) => ({
+        url: "/menu-categories/presigned-url",
+        method: "PUT",
+        body: payload,
+      }),
+    }),
     // syncMenuToUber: builder.mutation<void, any>({
     //   query: ({ id }) => ({
     //     url: `/menus/${id}/sync-to-uber`,
@@ -182,4 +214,5 @@ export const {
   useSyncMenuToUberMutation,
   useAssignMenuToManyStoresMutation,
   useGetAllModificationTypesQuery,
+  useGetPresignedUrlMutation
 } = menuApi;
