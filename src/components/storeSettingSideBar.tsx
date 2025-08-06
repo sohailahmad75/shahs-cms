@@ -46,7 +46,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
       ref={panelRef}
       className={`h-full shadow-lg flex flex-col bg-gray-900 text-secondary-100 
         ${shouldShow ? "block" : "hidden"} 
-        ${isCollapsed && !isMobile ? "w-16" : "w-64"} 
+        ${isCollapsed && !isMobile ? "w-16" : "w-55"} 
         fixed md:relative top-0 left-0 shadow-xl transition-all duration-500 ease-in-out`}
     >
       <div className="h-full flex flex-col">
