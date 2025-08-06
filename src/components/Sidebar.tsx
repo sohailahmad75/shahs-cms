@@ -13,6 +13,7 @@ interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
   isMobile: boolean;
+  openSettingsPanel: () => void;
 }
 
 const Sidebar = ({
@@ -21,6 +22,8 @@ const Sidebar = ({
   isCollapsed,
   setIsCollapsed,
   isMobile,
+  openSettingsPanel
+
 }: SidebarProps) => {
   const location = useLocation();
   const { admin: activeAdmin } = useAdmin();
@@ -67,9 +70,8 @@ const Sidebar = ({
         )}
 
         <div
-          className={`flex items-center px-3 ${
-            isCollapsed ? "py-3 justify-center" : "py-6 justify-between"
-          }`}
+          className={`flex items-center px-3 ${isCollapsed ? "py-3 justify-center" : "py-6 justify-between"
+            }`}
         >
           {!isCollapsed && <ShahsLogo />}
           {!isMobile && (
@@ -96,16 +98,29 @@ const Sidebar = ({
 
               return (
                 <li key={id} className="relative group">
-                  {link ? (
+                  {/* ⚠️ Special case: Settings opens panel instead of navigating */}
+                  {id === "setting" ? (
+                    <div
+                      onClick={openSettingsPanel}
+                      className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+        ${isActive
+                          ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                          : "hover:text-orange-100 hover:font-semibold"
+                        }
+      `}
+                    >
+                      <div>{icon}</div>
+                      {!isCollapsed && <span>{name}</span>}
+                    </div>
+                  ) : link ? (
                     <Link
                       to={link}
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
-              ${
-                isActive
-                  ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                  : "hover:text-orange-100 hover:font-semibold"
-              }
-            `}
+        ${isActive
+                          ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                          : "hover:text-orange-100 hover:font-semibold"
+                        }
+      `}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -114,28 +129,22 @@ const Sidebar = ({
                     <div>
                       <div
                         onClick={() =>
-                          setOpenSubmenuId(
-                            openSubmenuId === id || childIsActive ? null : id,
-                          )
+                          setOpenSubmenuId(openSubmenuId === id || childIsActive ? null : id)
                         }
                         className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-                ${
-                  isActive
-                    ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                    : "hover:text-orange-100 hover:font-semibold"
-                }
-              `}
+          ${isActive
+                            ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                            : "hover:text-orange-100 hover:font-semibold"
+                          }
+        `}
                       >
                         <div>{icon}</div>
                         {!isCollapsed && <span>{name}</span>}
-                        {!isCollapsed && (
+                        {!isCollapsed && children && (
                           <span className="ml-auto transition-transform duration-300">
                             <ArrowIcon
-                              className={`transition-transform duration-300 ${
-                                openSubmenuId === id || childIsActive
-                                  ? "rotate-180"
-                                  : ""
-                              }`}
+                              className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive ? "rotate-180" : ""
+                                }`}
                             />
                           </span>
                         )}
@@ -143,40 +152,37 @@ const Sidebar = ({
 
                       {children && (
                         <ul
-                          className={`transition-all duration-300 overflow-hidden ${
-                            isCollapsed && !isMobile
-                              ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
-                              : openSubmenuId === id || isMobile
-                                ? "ml-6 mt-1 space-y-1"
-                                : "hidden"
-                          }`}
+                          className={`transition-all duration-300 overflow-hidden ${isCollapsed && !isMobile
+                            ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
+                            : openSubmenuId === id || isMobile
+                              ? "ml-6 mt-1 space-y-1"
+                              : "hidden"
+                            }`}
                         >
                           {children
                             .filter((sub) => sub.roles.includes(role))
-                            .map(
-                              ({ id: subId, name: subName, link: subLink }) => (
-                                <li key={subId}>
-                                  <Link
-                                    to={subLink}
-                                    className={`flex items-center gap-2 p-2 text-sm rounded-md transition-all duration-300
-                          ${
-                            location.pathname === subLink
-                              ? "bg-orange-200 text-orange-100 font-semibold"
-                              : "hover:text-orange-100 hover:font-semibold"
-                          }
-                        `}
-                                  >
-                                    {isCollapsed && <span>•</span>}
-                                    <span>{subName}</span>
-                                  </Link>
-                                </li>
-                              ),
-                            )}
+                            .map(({ id: subId, name: subName, link: subLink }) => (
+                              <li key={subId}>
+                                <Link
+                                  to={subLink}
+                                  className={`flex items-center gap-2 p-2 text-sm rounded-md transition-all duration-300
+                    ${location.pathname === subLink
+                                      ? "bg-orange-200 text-orange-100 font-semibold"
+                                      : "hover:text-orange-100 hover:font-semibold"
+                                    }
+                  `}
+                                >
+                                  {isCollapsed && <span>•</span>}
+                                  <span>{subName}</span>
+                                </Link>
+                              </li>
+                            ))}
                         </ul>
                       )}
                     </div>
                   )}
                 </li>
+
               );
             })}
         </ul>
