@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import SettingsPanel from "../features/storeSettings/index";
+import SettingsPanel from "../components/storeSettingSideBar";
 
 interface Props {
   children: ReactNode;

@@ -101,7 +101,7 @@ export const sidebarMenuList: {
     id: "setting",
     name: "Settings",
     icon: <SettingIcon />,
-    link: "/setting",
+    // link: "/setting",
     roles: [ROLES.SUPER_ADMIN],
   },
 ];
