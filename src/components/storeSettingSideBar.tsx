@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAdmin } from "../../hooks/useAuth";
-import type { SidebarSubMenuItem, UserRole } from "../../helper";
-import ArrowIcon from "../../assets/styledIcons/ArrowIcon";
-import { sidebarMenuList } from "../../constants";
+import { useAdmin } from "../hooks/useAuth";
+import type { SidebarSubMenuItem, UserRole } from "../helper";
+import ArrowIcon from "../assets/styledIcons/ArrowIcon";
+import { sidebarMenuList } from "../constants";
 
 interface SettingsPanelProps {
   onClose: () => void;
