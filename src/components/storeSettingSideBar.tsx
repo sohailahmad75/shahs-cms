@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAdmin } from "../hooks/useAuth";
 import type { SidebarSubMenuItem, UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
-import { sidebarMenuList } from "../constants";
+import { settingsidebarMenuList } from "../constants";
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -65,7 +65,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, isOpen,
       // ref={sidebarRef}
       className={`h-full  shadow-lg  flex flex-col  bg-gray-900 text-secondary-100 
         ${shouldShow ? "block" : "hidden"} 
-        ${isCollapsed && !isMobile ? "w-16" : "w-64"} 
+        ${isCollapsed && !isMobile ? "w-16" : "w-50"} 
         fixed md:relative top-0 left-0 shadow-xl
         `}
 
@@ -109,7 +109,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, isOpen,
           )}
         </div>
         <ul className="flex-1 space-y-1 px-2">
-          {sidebarMenuList
+          {settingsidebarMenuList
             .filter((item) => item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
               const childIsActive =
