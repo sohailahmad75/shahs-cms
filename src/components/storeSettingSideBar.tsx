@@ -46,18 +46,17 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
       ref={panelRef}
       className={`h-full shadow-lg flex flex-col bg-gray-900 text-secondary-100 
         ${shouldShow ? "block" : "hidden"} 
-        ${isCollapsed && !isMobile ? "w-16" : "w-64"} 
+        ${isCollapsed && !isMobile ? "w-16" : "w-50"} 
         fixed md:relative top-0 left-0 shadow-xl`}
     >
       <div className="h-full flex flex-col">
         <h2 className="text-orange-600 mt-8 ml-5 flex items-center gap-2">
-          <span className="block md:hidden">
+          <span className="md:hidden">
             <SettingIcon size={24} color="#ea580c" />
           </span>
           <span className="hidden md:block text-2xl font-semibold">Settings</span>
         </h2>
-
-        <ul className="flex-1 space-y-1 px-0 mt-9">
+        <ul className="flex-1 space-y-1 px-2">
           {settingsidebarMenuList
             .filter((item) => item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
@@ -99,8 +98,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                           <span className="ml-auto transition-transform duration-300">
                             <ArrowIcon
                               className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive
-                                ? "rotate-180"
-                                : ""
+                                  ? "rotate-180"
+                                  : ""
                                 }`}
                             />
                           </span>
@@ -110,10 +109,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       {children && (
                         <ul
                           className={`transition-all duration-300 overflow-hidden ${isCollapsed && !isMobile
-                            ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
-                            : openSubmenuId === id || isMobile
-                              ? "ml-6 mt-1 space-y-1"
-                              : "hidden"
+                              ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
+                              : openSubmenuId === id || isMobile
+                                ? "ml-6 mt-1 space-y-1"
+                                : "hidden"
                             }`}
                         >
                           {children
