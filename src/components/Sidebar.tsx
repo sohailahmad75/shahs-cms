@@ -100,18 +100,30 @@ const Sidebar = ({
                 <li key={id} className="relative group">
                   {/* ⚠️ Special case: Settings opens panel instead of navigating */}
                   {id === "setting" ? (
-                    <div
-                      onClick={openSettingsPanel}
-                      className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-        ${isActive
+                    //               <div
+                    //                 onClick={openSettingsPanel}
+                    //                 className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+                    //   ${isActive
+                    //                     ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                    //                     : "hover:text-orange-100 hover:font-semibold"
+                    //                   }
+                    // `}
+                    //               >
+                    //                 <div>{icon}</div>
+                    //                 {!isCollapsed && <span>{name}</span>}
+                    //               </div>
+                    <Link
+                      to="/setting"
+                      className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
+      ${isActive
                           ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
                           : "hover:text-orange-100 hover:font-semibold"
                         }
-      `}
+    `}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
-                    </div>
+                    </Link>
                   ) : link ? (
                     <Link
                       to={link}
