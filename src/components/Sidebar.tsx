@@ -13,7 +13,8 @@ interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
   isMobile: boolean;
-  openSettingsPanel: () => void;
+toggleSettingsPanel: () => void;  
+isSettingsOpen: boolean; 
 }
 
 const Sidebar = ({
@@ -22,7 +23,9 @@ const Sidebar = ({
   isCollapsed,
   setIsCollapsed,
   isMobile,
-  openSettingsPanel
+  toggleSettingsPanel,
+  isSettingsOpen 
+
 
 }: SidebarProps) => {
   const location = useLocation();
@@ -98,17 +101,16 @@ const Sidebar = ({
 
               return (
                 <li key={id} className="relative group">
-                  {/* ⚠️ Special case: Settings opens panel instead of navigating */}
                   {id === "setting" ? (
                     <div
-                      onClick={openSettingsPanel}
+                      onClick={toggleSettingsPanel} 
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-        ${isActive
+                       ${isSettingsOpen
                           ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
                           : "hover:text-orange-100 hover:font-semibold"
                         }
-      `}
-                    >
+                       `}
+                        >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
                     </div>
