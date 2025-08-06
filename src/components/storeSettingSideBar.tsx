@@ -57,17 +57,17 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         >
 
           {isCollapsed ? (
-            <div className="flex justify-center w-full">
+            <div className="flex justify-center w-full mt-12">
               <SettingIcon size={24} color="#ea580c" />
             </div>
           ) : (
-            <span className="text-2xl font-semibold">Settings</span>
+            <span className="text-2xl font-semibold  mt-2">Settings</span>
           )}
         </div>
 
 
 
-        <ul className="flex-1 space-y-1 px-2 mt-9">
+        <ul className="flex-1 space-y-1 px-2 mt-3">
           {settingsidebarMenuList
             .filter((item) => item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
