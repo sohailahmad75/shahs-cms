@@ -6,6 +6,7 @@ import type { JSX } from "react";
 import HouseCheckIcon from "../assets/styledIcons/HouseCheckIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 import KioskIcon from "../assets/styledIcons/KioskIcon";
+import SettingIcon from "../assets/styledIcons/SettingIcon";
 
 export const sidebarMenuList: {
   id: string;
@@ -94,6 +95,13 @@ export const sidebarMenuList: {
     name: "Sales",
     icon: <DashboardIcon />,
     link: "/sales",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+   {
+    id: "setting",
+    name: "Settings",
+    icon: <SettingIcon />,
+    // link: "/setting",
     roles: [ROLES.SUPER_ADMIN],
   },
 ];
