@@ -198,6 +198,22 @@ export const menuApi = baseApi.injectEndpoints({
     >({
       query: () => "/menus/modification-types",
     }),
+
+    duplicateMenu: builder.mutation<void, { menuId: string }>({
+      query: ({ menuId }) => ({
+        url: `/menus/${menuId}/duplicate`,
+        method: "POST",
+      }),
+      invalidatesTags: [{ type: "Menus" }],
+    }),
+
+    deleteMenu: builder.mutation<void, { menuId: string }>({
+      query: ({ menuId }) => ({
+        url: `/menus/${menuId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Menus" }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -219,4 +235,6 @@ export const {
   useAssignMenuToManyStoresMutation,
   useGetAllModificationTypesQuery,
   useGetPresignedUrlMutation,
+  useDuplicateMenuMutation,
+  useDeleteMenuMutation,
 } = menuApi;
