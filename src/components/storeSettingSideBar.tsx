@@ -4,6 +4,7 @@ import { useAdmin } from "../hooks/useAuth";
 import type { SidebarSubMenuItem, UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 import { settingsidebarMenuList } from "../constants";
+import SettingIcon from "../assets/styledIcons/SettingIcon";
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const { admin: activeAdmin } = useAdmin();
   const role = activeAdmin?.admin?.role as UserRole;
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
-  
+
   const isAnyChildActive = (
     children: SidebarSubMenuItem[] | undefined,
     pathname: string,
@@ -49,7 +50,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         fixed md:relative top-0 left-0 shadow-xl`}
     >
       <div className="h-full flex flex-col">
-        <ul className="flex-1 space-y-1 px-2">
+        <h2 className="text-orange-600 mt-8 ml-5 flex items-center gap-2">
+          <span className="block md:hidden">
+            <SettingIcon size={24} color="#ea580c" />
+          </span>
+          <span className="hidden md:block text-2xl font-semibold">Settings</span>
+        </h2>
+
+        <ul className="flex-1 space-y-1 px-0 mt-9">
           {settingsidebarMenuList
             .filter((item) => item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
@@ -90,11 +98,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {!isCollapsed && (
                           <span className="ml-auto transition-transform duration-300">
                             <ArrowIcon
-                              className={`transition-transform duration-300 ${
-                                openSubmenuId === id || childIsActive
-                                  ? "rotate-180"
-                                  : ""
-                              }`}
+                              className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive
+                                ? "rotate-180"
+                                : ""
+                                }`}
                             />
                           </span>
                         )}
@@ -102,13 +109,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
                       {children && (
                         <ul
-                          className={`transition-all duration-300 overflow-hidden ${
-                            isCollapsed && !isMobile
-                              ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
-                              : openSubmenuId === id || isMobile
-                                ? "ml-6 mt-1 space-y-1"
-                                : "hidden"
-                          }`}
+                          className={`transition-all duration-300 overflow-hidden ${isCollapsed && !isMobile
+                            ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
+                            : openSubmenuId === id || isMobile
+                              ? "ml-6 mt-1 space-y-1"
+                              : "hidden"
+                            }`}
                         >
                           {children
                             .filter((sub) => sub.roles.includes(role))
