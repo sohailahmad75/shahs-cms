@@ -63,3 +63,40 @@ export async function uploadToS3(url: string, file: File): Promise<void> {
     throw new Error("Failed to upload to S3");
   }
 }
+
+export const filterEditableFields = <T extends Record<string, unknown>>(
+  source: unknown,
+  template: T,
+): T => {
+  const result = {} as T;
+
+  for (const key in template) {
+    const templateValue = template[key];
+    const sourceValue = (source as Record<string, unknown>)?.[key];
+
+    if (Array.isArray(templateValue)) {
+      if (
+        Array.isArray(sourceValue) &&
+        templateValue.length > 0 &&
+        typeof templateValue[0] === "object" &&
+        templateValue[0] !== null
+      ) {
+        result[key] = sourceValue.map((item: unknown) =>
+          filterEditableFields(
+            item,
+            templateValue[0] as Record<string, unknown>,
+          ),
+        ) as typeof templateValue;
+      } else {
+        result[key] = templateValue;
+      }
+    } else {
+      result[key] =
+        sourceValue !== undefined
+          ? (sourceValue as typeof templateValue)
+          : templateValue;
+    }
+  }
+
+  return result;
+};

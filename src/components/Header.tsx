@@ -4,7 +4,8 @@ import SelectField from "../components/SelectField";
 import { useAdmin } from "../hooks/useAuth";
 import { ROLES } from "../helper";
 import { useDispatch } from "react-redux";
-import { logout } from "../features/auth/authSlice"; // Your location dropdown
+import { logout } from "../features/auth/authSlice";
+import DropdownMenu from "./DropdownMenu"; // Your location dropdown
 
 interface Props {
   isMobile: boolean;
@@ -21,34 +22,9 @@ const locationOptions = [
 export default function Header({ isMobile, openSidebar }: Props) {
   const { admin: activeAdmin } = useAdmin();
   const [selectedLocation, setSelectedLocation] = useState("harrow");
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        userMenuRef.current &&
-        !(userMenuRef.current as HTMLElement).contains(event.target as Node)
-      ) {
-        setShowUserMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleUserAction = (action: string) => {
-    setShowUserMenu(false);
-    if (action === "logout") {
-      dispatch(logout());
-      navigate("/login");
-    } else if (action === "profile") {
-      navigate("/profile");
-    }
-  };
 
   return (
     <header className="flex justify-end bg-white text-black px-4 py-3 shadow-sm">
@@ -74,42 +50,40 @@ export default function Header({ isMobile, openSidebar }: Props) {
           </div>
         )}
 
-        <div className="relative" ref={userMenuRef}>
-          <button
-            onClick={() => setShowUserMenu((prev) => !prev)}
-            className="flex items-center gap-2 focus:outline-none cursor-pointer"
-          >
-            {activeAdmin.admin.imageUrl ? (
-              <img
-                src={activeAdmin.admin.imageUrl}
-                alt="User"
-                className="w-8 h-8 rounded-full border object-cover"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-orange-100 text-white flex items-center justify-center text-sm font-semibold uppercase border">
-                {activeAdmin.admin.firstName?.charAt(0) || "U"}
-              </div>
-            )}
-            <span className="text-sm font-medium">Sohail</span>
-          </button>
-
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-40 z-50 bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn">
-              <div
-                onClick={() => handleUserAction("profile")}
-                className="px-4 py-2 cursor-pointer transition-colors duration-150 text-gray-700 hover:bg-orange-50"
-              >
-                Profile
-              </div>
-              <div
-                onClick={() => handleUserAction("logout")}
-                className="px-4 py-2 cursor-pointer transition-colors duration-150 text-primary-100 hover:bg-orange-50"
-              >
-                Logout
-              </div>
+        <DropdownMenu
+          trigger={
+            <div className="flex items-center gap-2">
+              {activeAdmin.admin.imageUrl ? (
+                <img
+                  src={activeAdmin.admin.imageUrl}
+                  alt="User"
+                  className="w-8 h-8 rounded-full border object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-orange-100 text-white flex items-center justify-center text-sm font-semibold uppercase border">
+                  {activeAdmin.admin.firstName?.charAt(0) || "U"}
+                </div>
+              )}
+              <span className="text-sm font-medium">Sohail</span>
             </div>
-          )}
-        </div>
+          }
+          items={[
+            {
+              label: "Profile",
+              onClick: () => {
+                navigate("/profile");
+              },
+            },
+            {
+              label: "Logout",
+              danger: true,
+              onClick: () => {
+                dispatch(logout());
+                navigate("/login");
+              },
+            },
+          ]}
+        />
       </div>
     </header>
   );

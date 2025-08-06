@@ -32,25 +32,21 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const handleLogin = async (values: LoginFormValues) => {
-    try {
-      const res = await login(values).unwrap();
+    const res = await login(values).unwrap();
 
-      dispatch(
-        setAdmin({
-          admin: {
-            ...res.admin,
-            imageUrl:
-              "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250",
-          },
-          token: res.token,
-          isAuthenticated: true,
-        }),
-      );
+    dispatch(
+      setAdmin({
+        admin: {
+          ...res.admin,
+          imageUrl:
+            "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250",
+        },
+        token: res.token,
+        isAuthenticated: true,
+      }),
+    );
 
-      navigate("/dashboard");
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Login failed");
-    }
+    navigate("/dashboard");
   };
 
   return (
