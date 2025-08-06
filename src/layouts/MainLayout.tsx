@@ -14,12 +14,12 @@ export default function MainLayout({ children }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const openSettingsPanel = () => {
-    setIsSettingsOpen(true);
-    if (isMobile) setIsSidebarOpen(false);
+  const toggleSettingsPanel = () => {
+    setIsSettingsOpen(prev => !prev);
+    if (isMobile) {
+      setIsSidebarOpen(!isSettingsOpen);
+    }
   };
-
-  const closeSettingsPanel = () => setIsSettingsOpen(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -32,7 +32,7 @@ export default function MainLayout({ children }: Props) {
       }
     };
 
-    handleResize(); // Initial call
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -46,11 +46,11 @@ export default function MainLayout({ children }: Props) {
           isCollapsed={isCollapsed}
           setIsCollapsed={setIsCollapsed}
           isMobile={isMobile}
-          openSettingsPanel={openSettingsPanel}
+         toggleSettingsPanel={toggleSettingsPanel} 
+          isSettingsOpen={isSettingsOpen}
         />
         {isSettingsOpen && (
           <SettingsPanel
-            onClose={closeSettingsPanel}
             isOpen={isSidebarOpen}
             setIsOpen={setIsSidebarOpen}
             isCollapsed={isCollapsed}
