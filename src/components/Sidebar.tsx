@@ -13,8 +13,8 @@ interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
   isMobile: boolean;
-toggleSettingsPanel: () => void;  
-isSettingsOpen: boolean; 
+  toggleSettingsPanel: () => void;
+  isSettingsOpen: boolean;
 }
 
 const Sidebar = ({
@@ -24,7 +24,7 @@ const Sidebar = ({
   setIsCollapsed,
   isMobile,
   toggleSettingsPanel,
-  isSettingsOpen 
+  isSettingsOpen
 
 
 }: SidebarProps) => {
@@ -90,39 +90,20 @@ const Sidebar = ({
             </span>
           )}
         </div>
-
         <ul className="flex-1 space-y-1 px-2">
           {sidebarMenuList
-            .filter((item) => item.roles.includes(role))
+            .filter((item) => item.id !== "setting" && item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
-              const childIsActive =
-                children && isAnyChildActive(children, location.pathname);
+              const childIsActive = children && isAnyChildActive(children, location.pathname);
               const isActive = location.pathname === link || childIsActive;
 
               return (
                 <li key={id} className="relative group">
-                  {id === "setting" ? (
-                    <div
-                      onClick={toggleSettingsPanel} 
-                      className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-                       ${isSettingsOpen
-                          ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                          : "hover:text-orange-100 hover:font-semibold"
-                        }
-                       `}
-                        >
-                      <div>{icon}</div>
-                      {!isCollapsed && <span>{name}</span>}
-                    </div>
-                  ) : link ? (
+                  {link ? (
                     <Link
                       to={link}
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
-        ${isActive
-                          ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                          : "hover:text-orange-100 hover:font-semibold"
-                        }
-      `}
+                ${isActive ? "bg-orange-200 text-orange-100 font-semibold shadow-xs" : "hover:text-orange-100 hover:font-semibold"}`}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -130,24 +111,15 @@ const Sidebar = ({
                   ) : (
                     <div>
                       <div
-                        onClick={() =>
-                          setOpenSubmenuId(openSubmenuId === id || childIsActive ? null : id)
-                        }
+                        onClick={() => setOpenSubmenuId(openSubmenuId === id || childIsActive ? null : id)}
                         className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-          ${isActive
-                            ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                            : "hover:text-orange-100 hover:font-semibold"
-                          }
-        `}
+                  ${isActive ? "bg-orange-200 text-orange-100 font-semibold shadow-xs" : "hover:text-orange-100 hover:font-semibold"}`}
                       >
                         <div>{icon}</div>
                         {!isCollapsed && <span>{name}</span>}
                         {!isCollapsed && children && (
                           <span className="ml-auto transition-transform duration-300">
-                            <ArrowIcon
-                              className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive ? "rotate-180" : ""
-                                }`}
-                            />
+                            <ArrowIcon className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive ? "rotate-180" : ""}`} />
                           </span>
                         )}
                       </div>
@@ -168,11 +140,7 @@ const Sidebar = ({
                                 <Link
                                   to={subLink}
                                   className={`flex items-center gap-2 p-2 text-sm rounded-md transition-all duration-300
-                    ${location.pathname === subLink
-                                      ? "bg-orange-200 text-orange-100 font-semibold"
-                                      : "hover:text-orange-100 hover:font-semibold"
-                                    }
-                  `}
+                            ${location.pathname === subLink ? "bg-orange-200 text-orange-100 font-semibold" : "hover:text-orange-100 hover:font-semibold"}`}
                                 >
                                   {isCollapsed && <span>•</span>}
                                   <span>{subName}</span>
@@ -184,10 +152,28 @@ const Sidebar = ({
                     </div>
                   )}
                 </li>
-
               );
             })}
         </ul>
+        <div className="px-2 py-3">
+          {sidebarMenuList
+            .filter((item) => item.id === "setting" && item.roles.includes(role))
+            .map(({ id, name, icon }) => (
+              <div
+                key={id}
+                onClick={toggleSettingsPanel}
+                className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"
+                  } py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+          ${isSettingsOpen
+                    ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                    : "hover:text-orange-100 hover:font-semibold"
+                  }`}
+              >
+                <div>{icon}</div>
+                {!isCollapsed && <span>{name}</span>}
+              </div>
+            ))}
+        </div>
       </div>
     </div>
   );
