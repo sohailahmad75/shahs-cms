@@ -15,7 +15,6 @@ interface SettingsPanelProps {
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
   isOpen,
-  setIsOpen,
   isCollapsed,
   isMobile,
 }) => {
