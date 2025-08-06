@@ -61,8 +61,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, isOpen,
 
   return (
     <div
-      // ref={panelRef}
-      ref={sidebarRef}
+      ref={panelRef}
+      // ref={sidebarRef}
       className={`h-full  shadow-lg  flex flex-col  bg-gray-900 text-secondary-100 
         ${shouldShow ? "block" : "hidden"} 
         ${isCollapsed && !isMobile ? "w-16" : "w-64"} 
@@ -83,7 +83,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, isOpen,
           </div>
         )}
         <div
-          className={`flex items-center px-3 ${isCollapsed ? "py-3 justify-center" : "py-8 justify-between"
+          className={`flex items-center px-3 ${isCollapsed ? "py-3 justify-center" : "py-9 justify-between"
             }`}
         >
           {!isCollapsed && (
