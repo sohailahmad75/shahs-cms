@@ -124,7 +124,16 @@ export const settingsidebarMenuList: {
     icon: <ProfileIcon />,
     link: "/setting/profile",
     roles: [ROLES.SUPER_ADMIN],
-  }]
+  },
+{
+    id: "New Profile",
+    name: "New Profile",
+    icon: <ProfileIcon />,
+    link: "/setting/profile",
+    roles: [ROLES.SUPER_ADMIN],
+  }
+
+]
 
 
 
