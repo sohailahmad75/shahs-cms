@@ -13,9 +13,12 @@ interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
   isMobile: boolean;
-  toggleSettingsPanel: () => void;
-  isSettingsOpen: boolean;
+  openSettingsPanel: () => void;
+  openInvoicesPanel: () => void;
+  openTransactionsPanel: () => void;
+  activePanel: "settings" | "invoice" | "transactions" | null;
 }
+
 
 const Sidebar = ({
   isOpen,
@@ -23,10 +26,10 @@ const Sidebar = ({
   isCollapsed,
   setIsCollapsed,
   isMobile,
-  toggleSettingsPanel,
-  isSettingsOpen
-
-
+  openSettingsPanel,
+  openInvoicesPanel,
+  openTransactionsPanel,
+  activePanel
 }: SidebarProps) => {
   const location = useLocation();
   const { admin: activeAdmin } = useAdmin();
@@ -97,6 +100,23 @@ const Sidebar = ({
               const childIsActive = children && isAnyChildActive(children, location.pathname);
               const isActive = location.pathname === link || childIsActive;
 
+                 if (id === 'invoice' || id === 'transactions') {
+                return (
+                  <li key={id}>
+                    <div
+                      onClick={
+                        id === 'invoice' ? openInvoicesPanel : openTransactionsPanel
+                      }
+                      className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+                        ${activePanel === id ? "bg-orange-200 text-orange-100 font-semibold shadow-xs" : "hover:text-orange-100 hover:font-semibold"}`}
+                    >
+                      <div>{icon}</div>
+                      {!isCollapsed && <span>{name}</span>}
+                    </div>
+                  </li>
+                );
+              }
+
               return (
                 <li key={id} className="relative group">
                   {link ? (
@@ -156,24 +176,41 @@ const Sidebar = ({
             })}
         </ul>
         <div className="px-2 py-3">
-          {sidebarMenuList
-            .filter((item) => item.id === "setting" && item.roles.includes(role))
-            .map(({ id, name, icon }) => (
-              <div
-                key={id}
-                onClick={toggleSettingsPanel}
-                className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"
-                  } py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-          ${isSettingsOpen
-                    ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                    : "hover:text-orange-100 hover:font-semibold"
-                  }`}
-              >
-                <div>{icon}</div>
-                {!isCollapsed && <span>{name}</span>}
-              </div>
-            ))}
+          <div
+            onClick={openSettingsPanel}
+            className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
+      py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+      ${activePanel === "settings"
+                ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                : "hover:text-orange-100 hover:font-semibold"}`}
+          >
+            <div>{sidebarMenuList.find(item => item.id === "setting")?.icon}</div>
+            {!isCollapsed && <span>Settings</span>}
+          </div>
+
+          {/* <div
+            onClick={openInvoicesPanel}
+            className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
+      py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+      ${activePanel === "invoice"
+                ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                : "hover:text-orange-100 hover:font-semibold"}`}
+          >
+            {!isCollapsed && <span>Invoices</span>}
+          </div> */}
+{/* 
+          <div
+            onClick={openTransactionsPanel}
+            className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
+      py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
+      ${activePanel === "transactions"
+                ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
+                : "hover:text-orange-100 hover:font-semibold"}`}
+          >
+            {!isCollapsed && <span>Transactions</span>}
+          </div> */}
         </div>
+
       </div>
     </div>
   );
