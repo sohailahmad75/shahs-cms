@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, type JSX } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAdmin } from "../hooks/useAuth";
 import type { SidebarSubMenuItem, UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
-import { settingsidebarMenuList } from "../constants";
 import SettingIcon from "../assets/styledIcons/SettingIcon";
 
 interface SettingsPanelProps {
@@ -12,12 +11,30 @@ interface SettingsPanelProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
   isMobile: boolean;
+  menuItems: {
+    id: string;
+    name: string;
+    icon: JSX.Element;
+    link?: string;
+    children?: {
+      id: string;
+      name: string;
+      link: string;
+      roles: UserRole[];
+    }[];
+    roles: UserRole[];
+  }[];
+  panelTitle?: string;
+  panelIcon?: JSX.Element;
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
   isOpen,
   isCollapsed,
   isMobile,
+  menuItems,
+  panelTitle = "Settings",
+  panelIcon = <SettingIcon size={24} color="#ea580c" />,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -50,25 +67,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         fixed md:relative top-0 left-0 shadow-xl transition-all duration-500 ease-in-out`}
     >
       <div className="h-full flex flex-col">
-
         <div
           className={`text-orange-600 flex items-center px-3 
-    ${isCollapsed ? "py-3 justify-center" : "py-6 justify-start"}`}
+            ${isCollapsed ? "py-3 justify-center" : "py-6 justify-start"}`}
         >
-
           {isCollapsed ? (
             <div className="flex justify-center w-full mt-12">
-              <SettingIcon size={24} color="#ea580c" />
+              {panelIcon}
             </div>
           ) : (
-            <span className="text-2xl font-semibold  mt-2">Settings</span>
+            <span className="text-2xl font-semibold mt-2">{panelTitle}</span>
           )}
         </div>
 
-
-
         <ul className="flex-1 space-y-1 px-2 mt-3">
-          {settingsidebarMenuList
+          {menuItems
             .filter((item) => item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
               const childIsActive =
