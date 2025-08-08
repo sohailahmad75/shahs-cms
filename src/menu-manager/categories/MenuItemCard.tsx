@@ -1,10 +1,11 @@
 import React from "react";
+import type { MenuItem } from "../helper/menu-types";
 
 const MenuItemCard: React.FC<{ item: MenuItem }> = ({ item }) => {
   return (
     <div className="border border-gray-200 rounded p-2 flex gap-3 items-start">
       <img
-        src={item.image}
+        src={item.signedUrl}
         alt={item.name}
         className="w-[64px] h-[64px] object-cover rounded flex-shrink-0"
       />

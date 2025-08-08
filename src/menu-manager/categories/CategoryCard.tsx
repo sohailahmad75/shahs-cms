@@ -5,6 +5,7 @@ import ArrowIcon from "../../assets/styledIcons/ArrowIcon";
 import AddItemModal from "../items/AddItemModal";
 import type { MenuCategory } from "../../types";
 import AddIcon from "../../assets/styledIcons/AddIcon";
+import type { MenuItem } from "../helper/menu-types";
 
 interface CategoryProps {
   category: MenuCategory;
@@ -67,7 +68,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
           <div className="mb-4">
             {category?.items?.length ? (
               <div className="grid md:grid-cols-2 gap-4">
-                {category.items.map((item: any) => (
+                {category.items.map((item: MenuItem) => (
                   <MenuItemCard key={item.name} item={item} />
                 ))}
               </div>

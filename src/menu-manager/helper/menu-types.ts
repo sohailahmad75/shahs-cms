@@ -3,15 +3,17 @@ export type MenuItem = {
   name: string;
   description: string;
   price: string;
-  image: string;
+  s3Key: string;
   deliveryPrice: number;
+  signedUrl?: string;
 };
 
 export type MenuCategory = {
   id: string;
   name: string;
   description?: string;
-  image?: string;
+  s3Key: string;
+  signedUrl?: string;
   items?: MenuItem[] | undefined;
 };
 
