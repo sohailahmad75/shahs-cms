@@ -20,24 +20,24 @@ const CategoryCard: React.FC<CategoryProps> = ({
   setExpanded,
   menuCategories,
 }) => {
-  const [imageError, setImageError] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
-
-  const hasValidImage = category.signedUrl && !imageError;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-100">
       <div className="flex justify-between items-center mb-2 pb-2">
         <div className="flex items-center gap-3">
-          {hasValidImage ? (
-            <img
-              src={category.signedUrl}
-              alt={category.name}
-              onError={() => setImageError(true)}
-              className="w-16 h-16 rounded object-cover border border-gray-200"
-            />
+          {category.signedUrl ? (
+            <div className="w-20 h-20 flex items-center justify-center rounded border border-gray-200 bg-white overflow-hidden p-1">
+              <img
+                src={category.signedUrl}
+                alt={category.name}
+                className="w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
           ) : (
-            <div className="w-16 h-16 rounded bg-gray-100 flex items-center justify-center text-xs text-gray-500 border border-gray-200 text-center">
+            <div className="w-20 h-20 rounded bg-gray-100 flex items-center justify-center text-xs text-gray-500 border border-gray-200 text-center">
               No Image
             </div>
           )}

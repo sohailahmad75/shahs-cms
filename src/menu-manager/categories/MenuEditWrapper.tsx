@@ -19,17 +19,16 @@ const tabs = [
 interface SyncButtonsProps {
   menuId: string;
   hasConnectedStores: boolean;
-  isSyncing: boolean;
   selectedStores: string[];
 }
 
 const SyncButtons = ({
   menuId,
   hasConnectedStores,
-  isSyncing,
   selectedStores,
 }: SyncButtonsProps) => {
-  const [syncMenuToUber] = useSyncMenuToUberMutation();
+  const [syncMenuToUber, { isLoading: isSyncMenuToUberLoading }] =
+    useSyncMenuToUberMutation();
 
   const handleSync = async () => {
     try {
@@ -48,8 +47,8 @@ const SyncButtons = ({
     <div className="flex justify-end mt-2 gap-2 flex-wrap">
       <Button
         variant="outlined"
-        disabled={!hasConnectedStores}
-        loading={isSyncing}
+        disabled={!hasConnectedStores || isSyncMenuToUberLoading}
+        loading={isSyncMenuToUberLoading}
         onClick={handleSync}
       >
         Sync with Uber
@@ -70,9 +69,6 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
   const { id = "" } = useParams();
 
   const [selectedSites, setSelectedSites] = useState<string[]>([]);
-
-  const [syncMenuToUber, { isLoading: isSyncMenuToUberLoading }] =
-    useSyncMenuToUberMutation();
 
   const [assignMenuToManyStores, { isLoading: isAssigning }] =
     useAssignMenuToManyStoresMutation();
@@ -136,7 +132,6 @@ const MenuEditWrapper = ({ children }: PropsWithChildren) => {
         <SyncButtons
           menuId={id}
           hasConnectedStores={hasConnectedStores}
-          isSyncing={isSyncMenuToUberLoading}
           selectedStores={selectedSites}
         />
       </div>
