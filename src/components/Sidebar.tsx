@@ -98,7 +98,9 @@ const Sidebar = ({
             .filter((item) => item.id !== "setting" && item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
               const childIsActive = children && isAnyChildActive(children, location.pathname);
-              const isActive = location.pathname === link || childIsActive;
+              // const isActive = location.pathname === link || childIsActive;
+              const isActive = (location.pathname === link || childIsActive) && activePanel === null;
+
 
                  if (id === 'invoice' || id === 'transactions') {
                 return (
@@ -187,28 +189,6 @@ const Sidebar = ({
             <div>{sidebarMenuList.find(item => item.id === "setting")?.icon}</div>
             {!isCollapsed && <span>Settings</span>}
           </div>
-
-          {/* <div
-            onClick={openInvoicesPanel}
-            className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
-      py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-      ${activePanel === "invoice"
-                ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                : "hover:text-orange-100 hover:font-semibold"}`}
-          >
-            {!isCollapsed && <span>Invoices</span>}
-          </div> */}
-{/* 
-          <div
-            onClick={openTransactionsPanel}
-            className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
-      py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-      ${activePanel === "transactions"
-                ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                : "hover:text-orange-100 hover:font-semibold"}`}
-          >
-            {!isCollapsed && <span>Transactions</span>}
-          </div> */}
         </div>
 
       </div>
