@@ -58,6 +58,19 @@ const Sidebar = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setIsOpen, isMobile]);
 
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+
+  const toggleDarkMode = () => {
+    const newTheme = isDarkMode ? "light" : "dark";
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    localStorage.setItem("theme", newTheme);
+    setIsDarkMode(!isDarkMode);
+  };
+
+
   const shouldShow = isMobile ? isOpen : true;
 
   return (
@@ -102,7 +115,7 @@ const Sidebar = ({
               const isActive = (location.pathname === link || childIsActive) && activePanel === null;
 
 
-                 if (id === 'invoice' || id === 'transactions') {
+              if (id === 'invoice' || id === 'transactions') {
                 return (
                   <li key={id}>
                     <div
@@ -177,7 +190,7 @@ const Sidebar = ({
               );
             })}
         </ul>
-        <div className="px-2 py-3">
+        <div className="px-2 py-2">
           <div
             onClick={openSettingsPanel}
             className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
@@ -190,6 +203,35 @@ const Sidebar = ({
             {!isCollapsed && <span>Settings</span>}
           </div>
         </div>
+        <div
+          className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
+    py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out`}
+        >
+          <div
+            className={`flex items-center w-full justify-between px-3 py-2 rounded-md
+      ${isDarkMode ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-800"}`}
+          >
+            {!isCollapsed && <span>{isDarkMode ? "Dark Mode" : "Light Mode"}</span>}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={isDarkMode}
+                onChange={toggleDarkMode}
+              />
+              <div
+                className={`w-11 h-6 bg-white rounded-full transition-colors duration-300
+        peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-100 shadow-inner`}
+              >
+                <div
+                  className={`absolute top-[2px] left-[2px] w-5 h-5 bg-gray-500 rounded-full transition-transform duration-300
+          ${isDarkMode ? "translate-x-full bg-orange-600" : "translate-x-0"}`}
+                ></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
 
       </div>
     </div>
