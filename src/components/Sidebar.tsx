@@ -204,7 +204,7 @@ const Sidebar = ({
           </div>
         </div>
         <div
-          className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
+          className={`flex items-center pb-4 ${isCollapsed ? "justify-center" : "gap-3 px-4"}
     py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out`}
         >
           <div
