@@ -3,28 +3,18 @@ import { useNavigate } from "react-router-dom";
 import HomeIcon from "../assets/styledIcons/HomeIcon";
 import Button from "../components/Button";
 import AddIcon from "../assets/styledIcons/AddIcon";
-import Modal from "../components/Modal";
-import InputField from "../components/InputField";
 import { toast } from "react-toastify";
 import {
-  useCreateMenuMutation,
   useDeleteMenuMutation,
   useDuplicateMenuMutation,
   useGenerateDefaultMenuMutation,
   useGetMenusQuery,
 } from "../services/menuApi";
-import FileUploader from "../components/FileUploader";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
 import Loader from "../components/Loader";
 import ThreeDotsVerticalIcon from "../assets/styledIcons/ThreeDotsVerticalIcon";
 import DropdownMenu from "../components/DropdownMenu";
-
-const MenuSchema = Yup.object().shape({
-  name: Yup.string().required("Menu name is required"),
-  description: Yup.string(),
-  s3Key: Yup.string().required("Menu image is required"),
-});
+import EditIcon from "../assets/styledIcons/EditIcon";
+import CreateMenuModal from "./listing/CreateMenuModal";
 
 const MenuActions: React.FC<{ menu: any }> = ({ menu }) => {
   const [duplicateMenu, { isLoading: isDuplicating }] =
@@ -69,31 +59,15 @@ const MenuActions: React.FC<{ menu: any }> = ({ menu }) => {
 
 const MenuManager: React.FC = () => {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: menus = [], isFetching } = useGetMenusQuery();
-  const [createMenu, { isLoading }] = useCreateMenuMutation();
 
   const [generateDefaultMenu, { isLoading: isDefaultMenuLoading }] =
     useGenerateDefaultMenuMutation();
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const handleGenerate = async () => {
-    try {
-      await generateDefaultMenu({}).unwrap();
-      toast.success("Default menu generated");
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to generate menu");
-    }
-  };
-
-  const handleSubmit = async (
-    values: { name: string; description: string; s3Key: string },
-    { resetForm }: any,
-  ) => {
-    await createMenu(values).unwrap();
-    toast.success("Menu created successfully");
-    resetForm();
-    setIsModalOpen(false);
+    await generateDefaultMenu({}).unwrap();
+    toast.success("Default menu generated");
   };
 
   return (
@@ -145,9 +119,14 @@ const MenuManager: React.FC = () => {
               </div>
 
               <div className="p-4 flex flex-col flex-1 justify-between">
-                <h2 className="font-semibold text-lg line-clamp-1">
-                  {menu.name}
-                </h2>
+                <div className="flex items-center">
+                  <h2 className="font-semibold text-lg line-clamp-1 overflow-hidden text-ellipsis">
+                    {menu.name}
+                  </h2>
+                  <span className="ml-2 text-gray-500 text-sm cursor-pointer">
+                    <EditIcon className="text-orange-100 shrink-0 " />
+                  </span>
+                </div>
 
                 <div className="text-gray-600 text-sm mt-2 space-y-1">
                   <div className="flex items-center justify-between gap-2 py-2 flex-wrap">
@@ -182,59 +161,10 @@ const MenuManager: React.FC = () => {
         </div>
       )}
 
-      {/* ✅ Modal with Formik */}
-      <Modal
+      <CreateMenuModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Create New Menu"
-      >
-        <Formik
-          initialValues={{ name: "", description: "", s3Key: "" }}
-          validationSchema={MenuSchema}
-          onSubmit={handleSubmit}
-        >
-          {({ values, handleChange, setFieldValue, errors, touched }) => (
-            <Form className="space-y-4">
-              <InputField
-                name="name"
-                label="Menu Name"
-                placeholder="Enter menu name"
-                value={values.name}
-                onChange={handleChange}
-                error={touched.name && errors.name ? errors.name : ""}
-              />
-
-              <InputField
-                name="description"
-                type="textarea"
-                label="Description"
-                placeholder="Brief description of the menu"
-                value={values.description}
-                onChange={handleChange}
-                rows={3}
-              />
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Menu Image <span className="text-red-500">*</span>
-                </label>
-
-                <FileUploader
-                  value={values.s3Key}
-                  onChange={(key) => setFieldValue("s3Key", key)}
-                  path="menu-banner"
-                  type="image"
-                  error={touched.s3Key && errors.s3Key ? errors.s3Key : ""}
-                />
-              </div>
-
-              <Button type="submit" loading={isLoading} className="w-full">
-                Create Menu
-              </Button>
-            </Form>
-          )}
-        </Formik>
-      </Modal>
+      />
     </div>
   );
 };

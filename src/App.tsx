@@ -15,7 +15,7 @@ function App() {
 
       <ToastContainer
         position="top-right"
-        autoClose={1500} // 1.5 seconds
+        autoClose={3000}
         hideProgressBar
         closeOnClick
         pauseOnHover={false}
@@ -25,7 +25,7 @@ function App() {
         transition={Slide}
         toastClassName={(context) => {
           const base =
-            "rounded-lg shadow-xl p-4 text-sm font-medium flex gap-3 relative my-1 items-center ";
+            "rounded-lg shadow-xl p-4 text-sm font-medium flex gap-3 relative my-1 items-start max-w-sm sm:max-w-md break-words";
           const type = context?.type || "default";
 
           const styles = {
