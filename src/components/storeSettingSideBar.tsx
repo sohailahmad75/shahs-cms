@@ -4,6 +4,8 @@ import { useAdmin } from "../hooks/useAuth";
 import type { SidebarSubMenuItem, UserRole } from "../helper";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 import SettingIcon from "../assets/styledIcons/SettingIcon";
+import { useTheme } from "../context/themeContext";
+
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -41,6 +43,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const { admin: activeAdmin } = useAdmin();
   const role = activeAdmin?.admin?.role as UserRole;
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
+   const { isDarkMode } = useTheme();
 
   const isAnyChildActive = (
     children: SidebarSubMenuItem[] | undefined,
@@ -61,14 +64,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className={`h-full shadow-lg flex flex-col bg-gray-900 text-secondary-100 
+      className={`h-full shadow-lg flex flex-col ${isDarkMode ? 'bg-slate-900' : 'bg-gray-900'} ${isDarkMode ? 'text-white' : 'text-secondary-100'}
         ${shouldShow ? "block" : "hidden"} 
         ${isCollapsed && !isMobile ? "w-16" : "w-55"} 
         fixed md:relative top-0 left-0 shadow-xl transition-all duration-500 ease-in-out`}
     >
       <div className="h-full flex flex-col">
         <div
-          className={`text-orange-600 flex items-center px-3 
+          className={`${isDarkMode ? 'text-slate-500' : 'text-orange-600'} flex items-center px-3 
             ${isCollapsed ? "py-3 justify-center" : "py-6 justify-start"}`}
         >
           {isCollapsed ? (
@@ -96,8 +99,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       className={`flex items-center w-full ${isCollapsed ? "justify-center" : "gap-3 px-4"
                         } py-2 rounded-md transition-all duration-300 ease-in-out
                         ${isActive
-                          ? "bg-orange-500 text-white font-semibold"
-                          : "hover:bg-orange-500 hover:text-white hover:font-semibold"
+                          ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-500'}  text-white font-semibold`
+                          :   `${isDarkMode ? 'hover:bg-slate-950' : 'hover:bg-orange-500'} hover:bg-orange-500 hover:text-white hover:font-semibold`
                         }`}
                     >
                       <div>{icon}</div>
