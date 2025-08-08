@@ -39,13 +39,9 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [signup, { isLoading }] = useRegisterMutation();
   const handleSignup = async (values: SignupFormValues) => {
-    try {
-      const { message } = await signup(values).unwrap();
-      toast.success(message || "Account created successfully!");
-      navigate("/login");
-    } catch (err: any | { data: { message: string } }) {
-      toast.error(err?.data?.message || "Signup failed");
-    }
+    const { message } = await signup(values).unwrap();
+    toast.success(message || "Account created successfully!");
+    navigate("/login");
   };
 
   return (
