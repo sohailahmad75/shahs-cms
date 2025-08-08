@@ -7,6 +7,7 @@ import { inviovesidebarMenuList, settingsidebarMenuList, transcationsidebarMenuL
 import SettingIcon from "../assets/styledIcons/SettingIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 import TransactionIcon from "../assets/styledIcons/TransactionIcon"; 
+import { useTheme } from "../context/themeContext";
 
 interface Props {
   children: ReactNode;
@@ -19,6 +20,7 @@ export default function MainLayout({ children }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelType>(null);
+   const { isDarkMode } = useTheme();
 
   const openSettingsPanel = () => {
     setActivePanel(prev => (prev === "settings" ? null : "settings"));
@@ -111,7 +113,7 @@ export default function MainLayout({ children }: Props) {
           isMobile={isMobile}
           openSidebar={() => setIsSidebarOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-4">{children}</main>
+        <main className={`flex-1 overflow-y-auto p-4 ${isDarkMode ? 'bg-slate-950' : 'bg-gary-900' } ${isDarkMode ? 'text-white' : 'text-black' } `}>{children}</main>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "../context/themeContext";
 
 type ButtonProps = {
   type?: "button" | "submit" | "reset";
@@ -22,6 +23,7 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   ...props
 }) => {
+  const { isDarkMode } = useTheme();
   const isDisabled = loading || disabled;
 
   const baseClasses =
@@ -37,7 +39,7 @@ const Button: React.FC<ButtonProps> = ({
         return `bg-red-500 text-white hover:bg-red-600`;
       case "solid":
       default:
-        return `bg-orange-500 text-white hover:bg-orange-600`;
+        return `${isDarkMode ? "bg-slate-900 hover:bg-slate-800" : "bg-orange-500 hover:bg-orange-600"} bg-orange-500 text-white hover:bg-orange-600`;
     }
   })();
 

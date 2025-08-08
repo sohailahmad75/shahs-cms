@@ -6,6 +6,7 @@ import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 import ShahsIcon from "../assets/styledIcons/ShahsIcon";
 import ShahsLogo from "../assets/styledIcons/ShahsLogo";
 import { sidebarMenuList } from "../constants";
+import { useTheme } from "../context/themeContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ const Sidebar = ({
   ) => children?.some((child) => child.link === pathname);
 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-
+const { isDarkMode, toggleDarkMode } = useTheme()
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -57,29 +58,16 @@ const Sidebar = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setIsOpen, isMobile]);
-
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
-
-
-  const toggleDarkMode = () => {
-    const newTheme = isDarkMode ? "light" : "dark";
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
-    localStorage.setItem("theme", newTheme);
-    setIsDarkMode(!isDarkMode);
-  };
-
-
   const shouldShow = isMobile ? isOpen : true;
 
   return (
     <div
       ref={sidebarRef}
-      className={`z-40 bg-gray-900 text-secondary-100 h-full transition-all duration-300 
+      className={`z-40 ${isDarkMode ? 'bg-slate-950' : 'bg-gray-900'}   ${isDarkMode ? 'text-white' : 'text-secondary-100'} h-full transition-all duration-300 
         ${shouldShow ? "block" : "hidden"} 
         ${isCollapsed && !isMobile ? "w-16" : "w-64"} 
-        fixed md:relative top-0 left-0 shadow-xl`}
+        fixed md:relative top-0 left-0 shadow-xl
+         `}
     >
       <div className="h-full flex flex-col">
         {isCollapsed && (
@@ -96,7 +84,7 @@ const Sidebar = ({
           {!isMobile && (
             <span
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="text-white cursor-pointer bg-orange-100  rounded-full p-2 transition-transform duration-300 ease-in-out"
+              className={`cursor-pointer ${isDarkMode ? 'bg-slate-900' : 'bg-orange-100'} bg-orange-100  rounded-full p-2 transition-transform duration-300 ease-in-out`}
               title={isCollapsed ? "Expand" : "Collapse"}
             >
               <ArrowIcon
@@ -111,7 +99,6 @@ const Sidebar = ({
             .filter((item) => item.id !== "setting" && item.roles.includes(role))
             .map(({ id, name, icon, link, children }) => {
               const childIsActive = children && isAnyChildActive(children, location.pathname);
-              // const isActive = location.pathname === link || childIsActive;
               const isActive = (location.pathname === link || childIsActive) && activePanel === null;
 
 
@@ -123,7 +110,7 @@ const Sidebar = ({
                         id === 'invoice' ? openInvoicesPanel : openTransactionsPanel
                       }
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-                        ${activePanel === id ? "bg-orange-200 text-orange-100 font-semibold shadow-xs" : "hover:text-orange-100 hover:font-semibold"}`}
+                        ${activePanel === id ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-200'} ${isDarkMode ? 'text-slate-500' : 'text-orange-100'} font-semibold shadow-xs` : ` ${isDarkMode ? 'hover:text-slate-600' : 'hover:text-orange-100 '} hover:font-semibold`}`}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -138,7 +125,7 @@ const Sidebar = ({
                     <Link
                       to={link}
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
-                ${isActive ? "bg-orange-200 text-orange-100 font-semibold shadow-xs" : "hover:text-orange-100 hover:font-semibold"}`}
+                ${isActive ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-200'} ${isDarkMode ? 'text-slate-500' : 'text-orange-100'} font-semibold shadow-xs` : ` ${isDarkMode ? 'hover:text-slate-600' : 'hover:text-orange-100 '} hover:font-semibold`}`}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -196,8 +183,7 @@ const Sidebar = ({
             className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
       py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
       ${activePanel === "settings"
-                ? "bg-orange-200 text-orange-100 font-semibold shadow-xs"
-                : "hover:text-orange-100 hover:font-semibold"}`}
+                ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-200'} ${isDarkMode ? 'text-slate-500' : 'text-orange-100'} font-semibold shadow-xs` : ` ${isDarkMode ? 'hover:text-slate-600' : 'hover:text-orange-100 '} hover:font-semibold`}`}
           >
             <div>{sidebarMenuList.find(item => item.id === "setting")?.icon}</div>
             {!isCollapsed && <span>Settings</span>}
@@ -209,7 +195,7 @@ const Sidebar = ({
         >
           <div
             className={`flex items-center w-full justify-between px-3 py-2 rounded-md
-      ${isDarkMode ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-800"}`}
+      ${isDarkMode ? "bg-slate-900 text-white" : "bg-gray-200 text-gray-800"}`}
           >
             {!isCollapsed && <span>{isDarkMode ? "Dark Mode" : "Light Mode"}</span>}
             <label className="relative inline-flex items-center cursor-pointer">
@@ -221,11 +207,11 @@ const Sidebar = ({
               />
               <div
                 className={`w-11 h-6 bg-white rounded-full transition-colors duration-300
-        peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-100 shadow-inner`}
+        peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-slate-900 shadow-inner`}
               >
                 <div
                   className={`absolute top-[2px] left-[2px] w-5 h-5 bg-gray-500 rounded-full transition-transform duration-300
-          ${isDarkMode ? "translate-x-full bg-orange-600" : "translate-x-0"}`}
+          ${isDarkMode ? "translate-x-full bg-slate-950" : "translate-x-0"}`}
                 ></div>
               </div>
             </label>
