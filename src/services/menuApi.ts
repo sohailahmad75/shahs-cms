@@ -47,6 +47,12 @@ export const menuApi = baseApi.injectEndpoints({
             ]
           : [{ type: "MenuCategory", id: menuId }],
     }),
+    getMenuItems: builder.query<MenuItem[], string>({
+      query: (menuId) => `/menus/${menuId}/items`,
+      providesTags: (_result, _err, menuId) => [
+        { type: "MenuItems", id: menuId },
+      ],
+    }),
     createCategory: builder.mutation<
       void,
       { menuId: string; payload: Partial<MenuCategory> }
@@ -223,6 +229,7 @@ export const {
   useCreateMenuMutation,
   useGetMenuByIdQuery,
   useGetMenuCategoriesQuery,
+  useGetMenuItemsQuery,
   useCreateCategoryMutation,
   useCreateItemMutation,
   useCreateModifierMutation,

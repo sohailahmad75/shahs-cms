@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useGetMenuCategoriesQuery } from "../../services/menuApi";
+import { useGetMenuItemsQuery } from "../../services/menuApi";
 import AddItemModal from "./AddItemModal";
 import Button from "../../components/Button";
 import { DynamicTable } from "../../components/DynamicTable";
@@ -9,32 +9,59 @@ import InputField from "../../components/InputField";
 import SelectField from "../../components/SelectField";
 import AddIcon from "../../assets/styledIcons/AddIcon";
 
+type Item = {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  signedUrl?: string;
+  tags?: string | null;
+  categoryName?: string;
+  category?: { id: string; name: string };
+};
+
 const ItemList: React.FC = () => {
   const { id: menuId = "" } = useParams();
-  const { data: categories = [], isLoading } =
-    useGetMenuCategoriesQuery(menuId);
+  const { data: items = [], isLoading } = useGetMenuItemsQuery(menuId);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [showAddItem, setShowAddItem] = useState(false);
 
-  const allItems: any[] = categories.flatMap((category) =>
-    category?.items?.map((item: any) => ({
-      ...item,
-      category: category.name,
-    })),
-  );
+  // Build category list from API data
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach((i: Item) =>
+      set.add(i.category?.name || i.categoryName || "Uncategorized"),
+    );
+    return ["All", ...Array.from(set)];
+  }, [items]);
 
-  const filtered = allItems.filter((item) => {
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "All" || item.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
+  // Shape data for table (flatten category + image)
+  const tableData = useMemo(() => {
+    return (items as Item[]).map((i) => ({
+      ...i,
+      image: i.signedUrl || "",
+      categoryLabel: i.category?.name || i.categoryName || "Uncategorized",
+    }));
+  }, [items]);
 
-  const uniqueCategories = ["All", ...new Set(categories.map((c) => c.name))];
+  // Search + Filter
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return tableData.filter((row) => {
+      const matchesSearch =
+        !q ||
+        row.name.toLowerCase().includes(q) ||
+        (row.description || "").toLowerCase().includes(q) ||
+        (row.tags || "").toLowerCase().includes(q);
+
+      const matchesCategory =
+        categoryFilter === "All" || row.categoryLabel === categoryFilter;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [tableData, search, categoryFilter]);
 
   const columns = [
     {
@@ -53,7 +80,7 @@ const ItemList: React.FC = () => {
     },
     { key: "price", label: "Price" },
     {
-      key: "category",
+      key: "categoryLabel",
       label: "Category",
       render: (value: string) => (
         <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
@@ -75,7 +102,6 @@ const ItemList: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-        {/* Left side: search + filter (on large screens takes 50%) */}
         <div className="flex flex-col sm:flex-row flex-1 gap-3 w-full lg:max-w-[50%]">
           <InputField
             name="search"
@@ -88,14 +114,13 @@ const ItemList: React.FC = () => {
             name="categoryFilter"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            options={uniqueCategories.map((cat) => ({
+            options={categories.map((cat) => ({
               label: cat,
               value: cat,
             }))}
           />
         </div>
 
-        {/* Right side: Add Button */}
         <div className="w-full lg:w-auto">
           <Button
             onClick={() => setShowAddItem(true)}
@@ -118,8 +143,21 @@ const ItemList: React.FC = () => {
       <AddItemModal
         isOpen={showAddItem}
         onClose={() => setShowAddItem(false)}
-        categories={categories.map((cat) => ({ id: cat.id, name: cat.name }))}
-        selectedCategory={categories[0] || { id: "", name: "" }}
+        categories={
+          // pass minimal category list for the modal
+          Array.from(
+            new Map(
+              (items as Item[]).map((i) => [
+                i.category?.id || i.categoryName || "uncat",
+                {
+                  id: i.category?.id || "",
+                  name: i.category?.name || i.categoryName || "Uncategorized",
+                },
+              ]),
+            ).values(),
+          )
+        }
+        selectedCategory={{ id: "", name: "" }}
       />
     </div>
   );
