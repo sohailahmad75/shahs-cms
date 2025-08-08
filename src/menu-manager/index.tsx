@@ -8,6 +8,8 @@ import InputField from "../components/InputField";
 import { toast } from "react-toastify";
 import {
   useCreateMenuMutation,
+  useDeleteMenuMutation,
+  useDuplicateMenuMutation,
   useGenerateDefaultMenuMutation,
   useGetMenusQuery,
 } from "../services/menuApi";
@@ -15,6 +17,8 @@ import FileUploader from "../components/FileUploader";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import Loader from "../components/Loader";
+import ThreeDotsVerticalIcon from "../assets/styledIcons/ThreeDotsVerticalIcon";
+import DropdownMenu from "../components/DropdownMenu";
 
 const MenuSchema = Yup.object().shape({
   name: Yup.string().required("Menu name is required"),
@@ -22,12 +26,54 @@ const MenuSchema = Yup.object().shape({
   s3Key: Yup.string().required("Menu image is required"),
 });
 
+const MenuActions: React.FC<{ menu: any }> = ({ menu }) => {
+  const [duplicateMenu, { isLoading: isDuplicating }] =
+    useDuplicateMenuMutation();
+  const [deleteMenu, { isLoading: isDeleting }] = useDeleteMenuMutation();
+
+  const handleDuplicate = async () => {
+    await duplicateMenu({ menuId: menu.id }).unwrap();
+    toast.success("Menu duplicated successfully");
+  };
+
+  const handleDelete = async () => {
+    if (menu.storeMenus?.length > 0) return;
+
+    await deleteMenu({ menuId: menu.id }).unwrap();
+    toast.success("Menu deleted successfully");
+  };
+
+  return (
+    <DropdownMenu
+      loading={isDuplicating || isDeleting}
+      trigger={
+        <Button
+          variant="outlined"
+          icon={<ThreeDotsVerticalIcon rotation={90} />}
+        />
+      }
+      items={[
+        {
+          label: "Duplicate Menu",
+          onClick: handleDuplicate,
+        },
+        {
+          disabled: menu.storeMenus?.length > 0,
+          label: "Delete Menu",
+          onClick: handleDelete,
+        },
+      ]}
+    />
+  );
+};
+
 const MenuManager: React.FC = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: menus = [], isFetching } = useGetMenusQuery();
   const [createMenu, { isLoading }] = useCreateMenuMutation();
+
   const [generateDefaultMenu, { isLoading: isDefaultMenuLoading }] =
     useGenerateDefaultMenuMutation();
 
@@ -44,14 +90,10 @@ const MenuManager: React.FC = () => {
     values: { name: string; description: string; s3Key: string },
     { resetForm }: any,
   ) => {
-    try {
-      await createMenu(values).unwrap();
-      toast.success("Menu created successfully");
-      resetForm();
-      setIsModalOpen(false);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to create menu");
-    }
+    await createMenu(values).unwrap();
+    toast.success("Menu created successfully");
+    resetForm();
+    setIsModalOpen(false);
   };
 
   return (
@@ -92,7 +134,7 @@ const MenuManager: React.FC = () => {
           {menus.map((menu) => (
             <div
               key={menu.id}
-              className="bg-white rounded-md shadow-sm overflow-hidden flex flex-col"
+              className="bg-white rounded-md shadow-sm flex flex-col"
             >
               <div className="relative w-full pt-[50%] overflow-hidden rounded">
                 <img
@@ -124,13 +166,16 @@ const MenuManager: React.FC = () => {
                   <hr className="border-gray-200 my-4" />
                 </div>
 
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate(`/menus/${menu.id}/categories`)}
-                  className="w-full"
-                >
-                  Edit Menu
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => navigate(`/menus/${menu.id}/categories`)}
+                    className="w-full text-xs font-semibold"
+                  >
+                    Edit Menu
+                  </Button>
+
+                  <MenuActions menu={menu} />
+                </div>
               </div>
             </div>
           ))}

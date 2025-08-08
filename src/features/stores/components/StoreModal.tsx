@@ -1,5 +1,4 @@
 import { Formik, Form } from "formik";
-import * as Yup from "yup";
 import Modal from "../../../components/Modal";
 import {
   StoreTypeEnum,
@@ -17,6 +16,7 @@ import {
   CreateStoreSchema,
   defaultDays,
 } from "../helper/store-helper";
+import { filterEditableFields } from "../../../helper";
 
 const StoreModal = ({
   isOpen,
@@ -72,8 +72,7 @@ const StoreModal = ({
       </div>
       <Formik
         initialValues={{
-          ...createStoreInitialValues,
-          ...editingStore,
+          ...filterEditableFields(editingStore, createStoreInitialValues),
           storeType:
             editingStore?.storeType !== undefined
               ? Number(editingStore.storeType)
