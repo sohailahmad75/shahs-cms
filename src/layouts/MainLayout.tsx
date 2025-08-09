@@ -2,15 +2,40 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import SettingsPanel from "../components/storeSettingSideBar";
+import { inviovesidebarMenuList, settingsidebarMenuList, transcationsidebarMenuList } from "../constants";
+import SettingIcon from "../assets/styledIcons/SettingIcon";
+import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
+import TransactionIcon from "../assets/styledIcons/TransactionIcon"; 
+import { useTheme } from "../context/themeContext";
 
 interface Props {
   children: ReactNode;
 }
 
+type PanelType = "settings" | "invoice" | "transactions" | null;
+
 export default function MainLayout({ children }: Props) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [activePanel, setActivePanel] = useState<PanelType>(null);
+   const { isDarkMode } = useTheme();
+
+  const openSettingsPanel = () => {
+    setActivePanel(prev => (prev === "settings" ? null : "settings"));
+    if (isMobile) setIsSidebarOpen(true);
+  };
+
+  const openInvoicesPanel = () => {
+    setActivePanel(prev => (prev === "invoice" ? null : "invoice"));
+    if (isMobile) setIsSidebarOpen(true);
+  };
+
+  const openTransactionsPanel = () => {
+    setActivePanel(prev => (prev === "transactions" ? null : "transactions"));
+    if (isMobile) setIsSidebarOpen(true);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -22,6 +47,7 @@ export default function MainLayout({ children }: Props) {
         setIsCollapsed(false);
       }
     };
+
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -29,27 +55,65 @@ export default function MainLayout({ children }: Props) {
 
   return (
     <div className="flex h-screen">
-      {" "}
-      {/* ✅ NO overflow-hidden here */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen}
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
-        isMobile={isMobile}
-      />
+      <div className="flex flex-row h-full">
+        <Sidebar
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+          isMobile={isMobile}
+          openSettingsPanel={openSettingsPanel}
+          openInvoicesPanel={openInvoicesPanel}
+          openTransactionsPanel={openTransactionsPanel}
+          activePanel={activePanel}
+        />
+
+        {activePanel === "settings" && (
+          <SettingsPanel
+            isOpen={isSidebarOpen}
+            setIsOpen={setIsSidebarOpen}
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+            isMobile={isMobile}
+            menuItems={settingsidebarMenuList}
+            panelTitle="Settings"
+            panelIcon={<SettingIcon />}
+          />
+        )}
+
+        {activePanel === "invoice" && (
+          <SettingsPanel
+            isOpen={isSidebarOpen}
+            setIsOpen={setIsSidebarOpen}
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+            isMobile={isMobile}
+            menuItems={inviovesidebarMenuList}
+            panelTitle="Invoices"
+            panelIcon={<InvoiceIcon />}
+          />
+        )}
+
+        {activePanel === "transactions" && (
+          <SettingsPanel
+            isOpen={isSidebarOpen}
+            setIsOpen={setIsSidebarOpen}
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+            isMobile={isMobile}
+            menuItems={transcationsidebarMenuList} 
+            panelTitle="Transactions"
+            panelIcon={<TransactionIcon />}
+          />
+        )}
+      </div>
+
       <div className="flex flex-col flex-1 overflow-hidden">
-        {" "}
-        {/* ✅ Restrict overflow here */}
         <Header
           isMobile={isMobile}
           openSidebar={() => setIsSidebarOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-4">
-          {" "}
-          {/* ✅ Makes children scrollable */}
-          {children}
-        </main>
+        <main className={`flex-1 overflow-y-auto p-4 ${isDarkMode ? 'bg-slate-950' : 'bg-gary-900' } ${isDarkMode ? 'text-white' : 'text-black' } `}>{children}</main>
       </div>
     </div>
   );

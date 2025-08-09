@@ -6,6 +6,7 @@ import { ROLES } from "../helper";
 import { useDispatch } from "react-redux";
 import { logout } from "../features/auth/authSlice";
 import DropdownMenu from "./DropdownMenu"; // Your location dropdown
+import { useTheme } from "../context/themeContext";
 
 interface Props {
   isMobile: boolean;
@@ -22,12 +23,13 @@ const locationOptions = [
 export default function Header({ isMobile, openSidebar }: Props) {
   const { admin: activeAdmin } = useAdmin();
   const [selectedLocation, setSelectedLocation] = useState("harrow");
+  const { isDarkMode } = useTheme()
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
   return (
-    <header className="flex justify-end bg-white text-black px-4 py-3 shadow-sm">
+    <header className={`flex justify-end ${isDarkMode ? 'bg-slate-900' : 'bg-white'}   ${isDarkMode ? 'text-white' : 'text-black'} px-4 py-3 shadow-sm`}>
       {isMobile && (
         <button onClick={openSidebar}>
           <img
