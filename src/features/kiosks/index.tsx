@@ -16,13 +16,14 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
 import StatusTag from "../../components/StatusTag";
 import type { Kiosk } from "./kiosks.types";
+import { useTheme } from "../../context/themeContext";
 
 const KiosksListPage: React.FC = () => {
   const { data: kiosks = [], isLoading, refetch } = useGetKiosksQuery();
   const [createKiosk, { isLoading: creating }] = useCreateKioskMutation();
   const [updateKiosk, { isLoading: updating }] = useUpdateKioskMutation();
   const [deleteKiosk] = useDeleteKioskMutation();
-
+ const { isDarkMode } = useTheme();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingKioskId, setEditingKioskId] = useState<string | null>(null);
   const { data: editingKioskData } = useGetKioskByIdQuery(editingKioskId!, {
@@ -72,11 +73,13 @@ const KiosksListPage: React.FC = () => {
           <ActionIcon
             icon={<EditIcon size={22} />}
             onClick={() => handleEdit(row.id)}
+            className={isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-gray-500 hover:text-gray-700"}
           />
           <ActionIcon
             className="text-red-500"
             icon={<TrashIcon size={22} />}
             onClick={() => handleDelete(row.id)}
+            
           />
         </div>
       ),
