@@ -5,6 +5,7 @@ import ArrowIcon from "../../assets/styledIcons/ArrowIcon";
 import AddItemModal from "../items/AddItemModal";
 import type { MenuCategory } from "../../types";
 import AddIcon from "../../assets/styledIcons/AddIcon";
+import { useTheme } from "../../context/themeContext";
 
 interface CategoryProps {
   category: MenuCategory;
@@ -21,11 +22,12 @@ const CategoryCard: React.FC<CategoryProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
+  const { isDarkMode } = useTheme();
 
   const hasValidImage = category.signedUrl && !imageError;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-100">
+    <div className={`${isDarkMode ? "bg-slate-950" : "bg-white"} rounded-lg shadow-sm p-5 mb-6 ${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-100"} `}>
       <div className="flex justify-between items-center mb-2 pb-2">
         <div className="flex items-center gap-3">
           {hasValidImage ? (
@@ -33,7 +35,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
               src={category.signedUrl}
               alt={category.name}
               onError={() => setImageError(true)}
-              className="w-16 h-16 rounded object-cover border border-gray-200"
+              className={`w-16 h-16 rounded object-cover ${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"}`}
             />
           ) : (
             <div className="w-16 h-16 rounded bg-gray-100 flex items-center justify-center text-xs text-gray-500 border border-gray-200 text-center">
@@ -60,7 +62,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
         </div>
       </div>
 
-      <hr className="mb-5 border-gray-200" />
+      <hr className={`mb-5 ${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"}`} />
 
       {isExpanded && (
         <>
@@ -72,7 +74,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 italic px-2 py-4 text-center border border-dashed border-gray-200 rounded">
+              <div className={`text-sm text-gray-500 italic px-2 py-4 text-center border border-dashed ${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"} rounded`}>
                 No items in this category yet.
               </div>
             )}

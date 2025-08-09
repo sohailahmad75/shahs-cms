@@ -7,6 +7,7 @@ import { useGetMenuCategoriesQuery } from "../../services/menuApi";
 import { useParams } from "react-router-dom";
 import Loader from "../../components/Loader";
 import AddIcon from "../../assets/styledIcons/AddIcon";
+import { useTheme } from "../../context/themeContext";
 
 import AddCategoryModal from "./AddCategoryModal";
 
@@ -19,6 +20,7 @@ const CategoryList: React.FC = () => {
     Record<string, boolean>
   >({});
   const [isModalOpen, setIsModalOpen] = useState(false);
+   const { isDarkMode } = useTheme();
 
   const toggleAll = (expand: boolean) => {
     const newState: Record<string, boolean> = {};
@@ -49,7 +51,7 @@ const CategoryList: React.FC = () => {
             </Button>
           </div>
 
-          <div className="space-y-6 mt-10 bg-white p-6 rounded shadow-sm">
+          <div className={`space-y-6 mt-10  ${isDarkMode ? "bg-slate-900" : "bg-white"} p-6 rounded shadow-sm`}>
             {categories.length === 0 ? (
               <p className="text-center text-gray-500 text-sm">
                 No categories found
