@@ -5,13 +5,15 @@ import { store } from "./store";
 import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CloseIcon from "./assets/styledIcons/CloseIcon";
+import { ThemeProvider } from "../src/context/themeContext";
 
 function App() {
   return (
     <Provider store={store}>
-      <div className="bg-gray-50">
-        <RouterProvider router={router} />
-      </div>
+      <ThemeProvider>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+          <RouterProvider router={router} />
+        </div>
 
       <ToastContainer
         position="top-right"
@@ -28,22 +30,23 @@ function App() {
             "rounded-lg shadow-xl p-4 text-sm font-medium flex gap-3 relative my-1 items-start max-w-sm sm:max-w-md break-words";
           const type = context?.type || "default";
 
-          const styles = {
-            success: "bg-green-600 text-white",
-            error: "bg-red-600 text-white",
-            warning: "bg-yellow-400 text-black",
-            info: "bg-blue-500 text-white",
-            default: "bg-gray-800 text-white",
-          };
+            const styles = {
+              success: "bg-green-600 dark:bg-green-700 text-white",
+              error: "bg-red-600 dark:bg-red-700 text-white",
+              warning: "bg-yellow-400 dark:bg-yellow-500 text-black dark:text-white",
+              info: "bg-blue-500 dark:bg-blue-600 text-white",
+              default: "bg-gray-800 dark:bg-gray-700 text-white",
+            };
 
-          return `${base} ${styles[type]}`;
-        }}
-        closeButton={
-          <span className="text-white hover:text-gray-200 text-lg px-2 cursor-pointer">
-            <CloseIcon size={14} />
-          </span>
-        }
-      />
+            return `${base} ${styles[type]}`;
+          }}
+          closeButton={
+            <span className="text-white hover:text-gray-200 dark:hover:text-gray-300 text-lg px-2 cursor-pointer">
+              <CloseIcon size={14} />
+            </span>
+          }
+        />
+      </ThemeProvider>
     </Provider>
   );
 }

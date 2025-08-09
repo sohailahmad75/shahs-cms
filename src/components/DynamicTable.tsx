@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "../../src/context/themeContext";
 
 export interface Column<T> {
   key: keyof T | "actions" | "index";
@@ -24,6 +25,7 @@ export function DynamicTable<T>({
   headerClassName,
   rowClassName,
 }: DynamicTableProps<T>) {
+  const { isDarkMode } = useTheme();
   return (
     <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-800">
       <table className={`min-w-full table-auto ${tableClassName || ""}`}>
@@ -41,7 +43,7 @@ export function DynamicTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+        <tbody className={`divide-y ${isDarkMode ? "bg-slate-950" : "bg-white"} divide-slate-200 dark:divide-slate-700`}>
           {data.length === 0 ? (
             <tr>
               <td

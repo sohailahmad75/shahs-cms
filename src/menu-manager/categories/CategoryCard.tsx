@@ -6,6 +6,7 @@ import AddItemModal from "../items/AddItemModal";
 import type { MenuCategory } from "../../types";
 import AddIcon from "../../assets/styledIcons/AddIcon";
 import type { MenuItem } from "../helper/menu-types";
+import { useTheme } from "../../context/themeContext";
 
 interface CategoryProps {
   category: MenuCategory;
@@ -21,9 +22,10 @@ const CategoryCard: React.FC<CategoryProps> = ({
   menuCategories,
 }) => {
   const [showAddItem, setShowAddItem] = useState(false);
+  const { isDarkMode } = useTheme();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-100">
+    <div className={`${isDarkMode ? "bg-slate-950" : "bg-white"} rounded-lg shadow-sm p-5 mb-6 ${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-100"} `}>
       <div className="flex justify-between items-center mb-2 pb-2">
         <div className="flex items-center gap-3">
           {category.signedUrl ? (
@@ -61,7 +63,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
         </div>
       </div>
 
-      <hr className="mb-5 border-gray-200" />
+      <hr className={`mb-5 ${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"}`} />
 
       {isExpanded && (
         <>
@@ -73,7 +75,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 italic px-2 py-4 text-center border border-dashed border-gray-200 rounded">
+              <div className={`text-sm text-gray-500 italic px-2 py-4 text-center border border-dashed ${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"} rounded`}>
                 No items in this category yet.
               </div>
             )}
