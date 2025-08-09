@@ -14,6 +14,7 @@ import SelectField from "../../../components/SelectField";
 import Button from "../../../components/Button";
 import Loader from "../../../components/Loader";
 import InvoiceFormHeader from "./InvoiceFormHeader";
+import { useTheme } from "../../../context/themeContext";
 
 const productOptions = [
   { label: "Burger", value: "burger" },
@@ -29,12 +30,13 @@ const DraggableRow = memo(({ item, index, handleRemove }) => {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+ const { isDarkMode } = useTheme();
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="grid grid-cols-8 gap-2 items-center border border-gray-200 rounded-md px-3 py-2 bg-white shadow-sm mb-2"
+      className={`grid grid-cols-8 gap-2 items-center border border-gray-200 rounded-md px-3 py-2 ${isDarkMode ? "bg-slate-950" : "bg-white"} shadow-sm mb-2`}
       {...attributes}
       {...listeners}
     >
@@ -103,6 +105,8 @@ const InvoiceForm = () => {
   const isEditMode = Boolean(id);
   const [initialValues, setInitialValues] = useState(defaultForm);
   const [loading, setLoading] = useState(isEditMode);
+    const { isDarkMode } = useTheme();
+
 
   useEffect(() => {
     if (isEditMode) {
@@ -149,7 +153,7 @@ const InvoiceForm = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+    <div className={`${isDarkMode ? "bg-slate-900" : "bg-gray-50"} p-6 rounded-lg shadow-md`}>
       <h1 className="text-2xl font-semibold mb-6">
         {isEditMode ? "Edit Invoice" : "Create Invoice"}
       </h1>

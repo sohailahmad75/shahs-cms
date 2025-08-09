@@ -29,17 +29,25 @@ const Button: React.FC<ButtonProps> = ({
   const baseClasses =
     "flex items-center justify-center gap-2 py-2 px-4 rounded transition duration-200 ease-in-out cursor-pointer text-sm";
   const disabledClasses =
-    "disabled:bg-gray-300 disabled:text-gray-600 disabled:border-gray-400 disabled:cursor-not-allowed";
+    `${isDarkMode ? "disabled:bg-slate-900" : "disabled:bg-gray-300"}  ${isDarkMode ? "disabled:bg-slate-950 border border-slate-800" : "disabled:border-gray-400"}  disabled:text-gray-600 disabled:cursor-not-allowed`;
 
   const variantClasses = (() => {
     switch (variant) {
       case "outlined":
-        return `border ${loading ? "text-gray-600 border-gray-600" : "border-orange-500 text-orange-500"} bg-white hover:bg-orange-50`;
+        return `border ${loading 
+  ? (isDarkMode ? "text-slate-500" : "text-gray-600") 
+  : (isDarkMode ? "bg-slate-950 border border-slate-800" : "border-orange-500")
+}
+border ${loading 
+  ? (isDarkMode ? "border-slate-400" : "border-gray-600") 
+  : (isDarkMode ? "text-slate-500" : "text-orange-500")
+}
+ ${isDarkMode ? "bg-slate-900" : "bg-white"} ${isDarkMode ? "hover:bg-slate-800" : "hover:bg-orange-50"}`;
       case "destructive":
-        return `bg-red-500 text-white hover:bg-red-600`;
+        return ` ${isDarkMode ? "bg-slate-900" : "bg-red-500"} bg-red-500 text-white hover:bg-red-600`;
       case "solid":
       default:
-        return `${isDarkMode ? "bg-slate-900 hover:bg-slate-800" : "bg-orange-500 hover:bg-orange-600"} bg-orange-500 text-white hover:bg-orange-600`;
+        return `${isDarkMode ? "bg-slate-900" : "bg-orange-500"} ${isDarkMode ? "hover:bg-slate-800" : "hover:bg-orange-600"} text-white`;
     }
   })();
 

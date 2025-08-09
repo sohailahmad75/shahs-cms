@@ -1,8 +1,10 @@
 import React from "react";
+import { useTheme } from "../../context/themeContext";
 
 const MenuItemCard: React.FC<{ item: MenuItem }> = ({ item }) => {
+  const { isDarkMode } = useTheme();
   return (
-    <div className="border border-gray-200 rounded p-2 flex gap-3 items-start">
+    <div className={`${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"} rounded p-2 flex gap-3 items-start`}>
       <img
         src={item.image}
         alt={item.name}
