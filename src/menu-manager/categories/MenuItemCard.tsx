@@ -4,9 +4,11 @@ import { useTheme } from "../../context/themeContext";
 const MenuItemCard: React.FC<{ item: MenuItem }> = ({ item }) => {
   const { isDarkMode } = useTheme();
   return (
-    <div className={`${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"} rounded p-2 flex gap-3 items-start`}>
+    <div
+      className={`${isDarkMode ? "bg-slate-950 border border-slate-800" : "border border-gray-200"} rounded p-2 flex gap-3 items-start`}
+    >
       <img
-        src={item.image}
+        src={item.signedUrl}
         alt={item.name}
         className="w-[64px] h-[64px] object-cover rounded flex-shrink-0"
       />
