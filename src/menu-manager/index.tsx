@@ -1,3 +1,4 @@
+// MenuManager.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HomeIcon from "../assets/styledIcons/HomeIcon";
@@ -28,7 +29,6 @@ const MenuActions: React.FC<{ menu: any }> = ({ menu }) => {
 
   const handleDelete = async () => {
     if (menu.storeMenus?.length > 0) return;
-
     await deleteMenu({ menuId: menu.id }).unwrap();
     toast.success("Menu deleted successfully");
   };
@@ -43,10 +43,7 @@ const MenuActions: React.FC<{ menu: any }> = ({ menu }) => {
         />
       }
       items={[
-        {
-          label: "Duplicate Menu",
-          onClick: handleDuplicate,
-        },
+        { label: "Duplicate Menu", onClick: handleDuplicate },
         {
           disabled: menu.storeMenus?.length > 0,
           label: "Delete Menu",
@@ -59,12 +56,15 @@ const MenuActions: React.FC<{ menu: any }> = ({ menu }) => {
 
 const MenuManager: React.FC = () => {
   const navigate = useNavigate();
-
   const { data: menus = [], isFetching } = useGetMenusQuery();
 
   const [generateDefaultMenu, { isLoading: isDefaultMenuLoading }] =
     useGenerateDefaultMenuMutation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState<any | null>(null);
+
   const handleGenerate = async () => {
     await generateDefaultMenu({}).unwrap();
     toast.success("Default menu generated");
@@ -75,7 +75,7 @@ const MenuManager: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Menu Manager</h1>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setIsModalOpen(true)} icon={<AddIcon />}>
+          <Button onClick={() => setIsCreateOpen(true)} icon={<AddIcon />}>
             Add New
           </Button>
           <Button
@@ -123,8 +123,15 @@ const MenuManager: React.FC = () => {
                   <h2 className="font-semibold text-lg line-clamp-1 overflow-hidden text-ellipsis">
                     {menu.name}
                   </h2>
-                  <span className="ml-2 text-gray-500 text-sm cursor-pointer">
-                    <EditIcon className="text-orange-100 shrink-0 " />
+                  <span className="ml-2 text-gray-500 cursor-pointer flex">
+                    <EditIcon
+                      size={18}
+                      className="text-orange-100 shrink-0"
+                      onClick={() => {
+                        setSelectedMenu(menu);
+                        setIsUpdateOpen(true);
+                      }}
+                    />
                   </span>
                 </div>
 
@@ -152,7 +159,6 @@ const MenuManager: React.FC = () => {
                   >
                     Edit Menu
                   </Button>
-
                   <MenuActions menu={menu} />
                 </div>
               </div>
@@ -162,8 +168,14 @@ const MenuManager: React.FC = () => {
       )}
 
       <CreateMenuModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateOpen || isUpdateOpen}
+        isUpdate={isUpdateOpen}
+        menu={selectedMenu ?? undefined}
+        onClose={() => {
+          setIsCreateOpen(false);
+          setIsUpdateOpen(false);
+          setSelectedMenu(null);
+        }}
       />
     </div>
   );

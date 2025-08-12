@@ -16,7 +16,17 @@ export const menuApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Menus" }],
     }),
-
+    updateMenu: builder.mutation<void, { menuId: number; name: string }>({
+      query: ({ menuId, ...body }) => ({
+        url: `/menus/${menuId}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { menuId }) => [
+        { type: "Menus", id: "LIST" },
+        { type: "Menus", id: menuId },
+      ],
+    }),
     getMenus: builder.query<Menu[], void>({
       query: () => "/menus",
       providesTags: (result) =>
@@ -227,6 +237,7 @@ export const menuApi = baseApi.injectEndpoints({
 export const {
   useGetMenusQuery,
   useCreateMenuMutation,
+  useUpdateMenuMutation,
   useGetMenuByIdQuery,
   useGetMenuCategoriesQuery,
   useGetMenuItemsQuery,
