@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SelectField from "../components/SelectField";
 import { useAdmin } from "../hooks/useAuth";
@@ -23,13 +23,15 @@ const locationOptions = [
 export default function Header({ isMobile, openSidebar }: Props) {
   const { admin: activeAdmin } = useAdmin();
   const [selectedLocation, setSelectedLocation] = useState("harrow");
-  const { isDarkMode } = useTheme()
+  const { isDarkMode } = useTheme();
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
   return (
-    <header className={`flex justify-end ${isDarkMode ? 'bg-slate-900' : 'bg-white'}   ${isDarkMode ? 'text-white' : 'text-black'} px-4 py-3 shadow-sm`}>
+    <header
+      className={`flex justify-end ${isDarkMode ? "bg-slate-900" : "bg-white"}   ${isDarkMode ? "text-white" : "text-black"} px-4 py-3 shadow-sm`}
+    >
       {isMobile && (
         <button onClick={openSidebar}>
           <img

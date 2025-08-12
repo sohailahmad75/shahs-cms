@@ -230,6 +230,21 @@ export const menuApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Menus" }],
     }),
+    deleteCategory: builder.mutation<
+      void,
+      { menuId: string; categoryId: string }
+    >({
+      query: ({ menuId, categoryId }) => ({
+        url: `/menus/${menuId}/categories/${categoryId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_res, _err, { menuId }) => [
+        { type: "MenuCategory", id: menuId },
+        { type: "MenuItems", id: menuId },
+        { type: "MenuModifiers" },
+        { type: "Menus" },
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -255,4 +270,5 @@ export const {
   useGetPresignedUrlMutation,
   useDuplicateMenuMutation,
   useDeleteMenuMutation,
+  useDeleteCategoryMutation,
 } = menuApi;
