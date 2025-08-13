@@ -18,6 +18,7 @@ interface SidebarProps {
   openInvoicesPanel: () => void;
   openTransactionsPanel: () => void;
   activePanel: "settings" | "invoice" | "transactions" | null;
+  setActivePanel: (value: "settings" | "invoice" | "transactions" | null) => void;
 }
 
 
@@ -30,6 +31,7 @@ const Sidebar = ({
   openSettingsPanel,
   openInvoicesPanel,
   openTransactionsPanel,
+  setActivePanel,
   activePanel
 }: SidebarProps) => {
   const location = useLocation();
@@ -124,6 +126,7 @@ const { isDarkMode, toggleDarkMode } = useTheme()
                   {link ? (
                     <Link
                       to={link}
+                      onClick={() => setActivePanel(null)} 
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
                 ${isActive ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-200'} ${isDarkMode ? 'text-slate-500' : 'text-orange-100'} font-semibold shadow-xs` : ` ${isDarkMode ? 'hover:text-slate-600' : 'hover:text-orange-100 '} hover:font-semibold`}`}
                     >

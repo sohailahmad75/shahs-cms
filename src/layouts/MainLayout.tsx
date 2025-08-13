@@ -66,6 +66,7 @@ export default function MainLayout({ children }: Props) {
           openInvoicesPanel={openInvoicesPanel}
           openTransactionsPanel={openTransactionsPanel}
           activePanel={activePanel}
+          setActivePanel={setActivePanel}
         />
 
         {activePanel === "settings" && (

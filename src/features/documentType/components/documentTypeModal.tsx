@@ -32,7 +32,7 @@ const DocumentTypeModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingDocument ? "Edit Document" : "Add Document"}
+      title={editingDocument ? "Edit Document Type" : "Add Document Type"}
       width="max-w-2xl"
     >
       <Formik
