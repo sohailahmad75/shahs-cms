@@ -54,7 +54,7 @@ const DocumentTypeModal = ({
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
               <span className="text-orange-100 text-md font-medium whitespace-nowrap">
-                Document Details
+                Document Type Details
               </span>
               <div className="flex-grow h-px bg-gray-200" />
             </div>
@@ -62,7 +62,7 @@ const DocumentTypeModal = ({
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Document Name <span className="text-red-500">*</span>
+                  Document Type Name <span className="text-red-500">*</span>
                 </label>
                 <InputField
                   name="documentName"
@@ -75,7 +75,7 @@ const DocumentTypeModal = ({
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Document Description
+                  Document Type Description
                 </label>
                 <InputField
                   name="documentDescription"

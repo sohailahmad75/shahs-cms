@@ -155,7 +155,7 @@ const StoreListPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-lg shadow-sm ring-1 ring-gray-100">
+          <div className=" rounded-lg shadow-sm">
             <DynamicTable
               data={stores}
               columns={columns}

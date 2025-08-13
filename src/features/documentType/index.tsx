@@ -90,7 +90,7 @@ const DocumentTypeListPage: React.FC = () => {
             setModalOpen(true);
           }}
         >
-          Add Document
+          Add Document Type
         </Button>
       </div>
 
@@ -118,10 +118,10 @@ const DocumentTypeListPage: React.FC = () => {
               id: editingDocument.id,
               data: values,
             }).unwrap();
-            toast.success("Document updated");
+            toast.success("Document Type updated");
           } else {
             await createDocument(values).unwrap();
-            toast.success("Document created");
+            toast.success("Document Type created");
           }
           refetch();
           setModalOpen(false);
