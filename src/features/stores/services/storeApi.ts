@@ -1,15 +1,19 @@
 import { baseApi } from "../../../services/baseApi";
-import type { Store } from "../types";
-import type { CreateStoreDto, UpdateStoreDto } from "../types";
+import type {
+  Store,
+  StoreListResponse,
+  CreateStoreDto,
+  UpdateStoreDto,
+} from "../store.types";
 
 export const storeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getStores: builder.query<Store[], void>({
+    getStores: builder.query<StoreListResponse, void>({
       query: () => "/stores",
       providesTags: (result) =>
         result
           ? [
-              ...result.map((store) => ({
+              ...result.data.map((store) => ({
                 type: "Stores" as const,
                 id: store.id,
               })),

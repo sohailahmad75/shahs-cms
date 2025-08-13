@@ -1,3 +1,5 @@
+import { Meta } from "../../types";
+
 export interface BankDetail {
   id: string;
   ownerId: string;
@@ -27,6 +29,8 @@ export interface OpeningHour {
   close: string | null;
   closed: boolean;
 }
+import { BankDetail, FsaRating, OpeningHour } from "../features/stores/types";
+
 export interface Store {
   id: string;
   name: string;
@@ -49,7 +53,6 @@ export interface Store {
   bankDetails: BankDetail[];
   openingHours: OpeningHour[];
 }
-
 export interface CreateStoreDto {
   name: string;
   email: string;
@@ -78,4 +81,9 @@ export interface CreateStoreDto {
 
 export interface UpdateStoreDto extends Partial<CreateStoreDto> {
   id: string;
+}
+
+export interface StoreListResponse {
+  data: Store[];
+  meta: Meta;
 }

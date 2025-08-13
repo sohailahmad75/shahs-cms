@@ -8,7 +8,7 @@ import SelectField from "../../../components/SelectField";
 import InputField from "../../../components/InputField";
 import BankDetailsFields from "./BankDetailsFields";
 import Button from "../../../components/Button";
-import type { UpdateStoreDto } from "../types";
+import type { UpdateStoreDto } from "../store.types";
 import { useEffect, useState } from "react";
 import OpeningHoursFormSection from "./OpeningHoursFormSection";
 import {

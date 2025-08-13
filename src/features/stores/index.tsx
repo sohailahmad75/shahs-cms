@@ -9,7 +9,7 @@ import {
 } from "./services/storeApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
-import type { Store } from "./types";
+import type { Store } from "./store.types";
 import Loader from "../../components/Loader";
 import StoreModal from "./components/StoreModal";
 import { Link } from "react-router-dom";
@@ -22,7 +22,16 @@ import InputField from "../../components/InputField"; // Add a search input comp
 const ITEMS_PER_PAGE = 10;
 
 const StoreListPage: React.FC = () => {
-  const { data: stores = [], isLoading, refetch } = useGetStoresQuery();
+  const {
+    data: storesResp = {
+      data: [],
+      meta: { total: 0, page: 1, perPage: 10, totalPages: 0 },
+    },
+    isLoading,
+    refetch,
+  } = useGetStoresQuery();
+
+  console.log("storesResp:", storesResp);
   const [createStore, { isLoading: creatingLoading }] =
     useCreateStoreMutation();
   const [updateStore, { isLoading: updateLoading }] = useUpdateStoreMutation();
@@ -36,22 +45,6 @@ const StoreListPage: React.FC = () => {
   const { data: editingStoreData } = useGetStoreByIdQuery(editingStoreId!, {
     skip: !editingStoreId,
   });
-
-  const filteredData = useMemo(() => {
-    const lowerSearch = search.toLowerCase();
-    return stores.filter((store) =>
-      Object.values(store).some((val) =>
-        String(val).toLowerCase().includes(lowerSearch),
-      ),
-    );
-  }, [stores, search]);
-
-  const paginatedData = useMemo(() => {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    return filteredData.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredData, page]);
-
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
   const handleEdit = (storeId: string) => {
     setEditingStoreId(storeId);
@@ -138,7 +131,7 @@ const StoreListPage: React.FC = () => {
       ) : (
         <>
           <DynamicTable
-            data={paginatedData}
+            data={storesResp.data}
             columns={columns}
             rowKey="id"
             tableClassName="bg-white"
@@ -158,7 +151,7 @@ const StoreListPage: React.FC = () => {
           </div> */}
           <div className="mt-4 flex justify-between items-center">
             <span className="text-sm text-gray-600">
-              Page {page} of {totalPages}
+              Page {page} of {storesResp.meta.totalPages || 1}
             </span>
             <div className="flex gap-2">
               <Button
@@ -168,7 +161,7 @@ const StoreListPage: React.FC = () => {
                 Previous
               </Button>
               <Button
-                disabled={page >= totalPages}
+                disabled={page >= (storesResp.meta.totalPages || 1)}
                 onClick={() => setPage((p) => p + 1)}
               >
                 Next
