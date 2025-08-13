@@ -91,6 +91,7 @@ const { isDarkMode, toggleDarkMode } = useTheme()
             >
               <ArrowIcon
                 size={16}
+                color={isDarkMode ? "#ffffffff" : "#ffffffff"}
                 className={isCollapsed ? "rotate-270" : "rotate-90"}
               />
             </span>
@@ -144,7 +145,8 @@ const { isDarkMode, toggleDarkMode } = useTheme()
                         {!isCollapsed && <span>{name}</span>}
                         {!isCollapsed && children && (
                           <span className="ml-auto transition-transform duration-300">
-                            <ArrowIcon className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive ? "rotate-180" : ""}`} />
+                            <ArrowIcon 
+                            className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive ? "rotate-180" : ""}`} />
                           </span>
                         )}
                       </div>
