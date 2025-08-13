@@ -137,7 +137,7 @@ const ItemList: React.FC = () => {
         columns={columns}
         rowKey="id"
         tableClassName="w-full text-sm"
-        rowClassName="hover:bg-slate-50 dark:hover:bg-slate-900"
+        // rowClassName="hover:bg-slate-50 dark:hover:bg-slate-900"
       />
 
       <AddItemModal

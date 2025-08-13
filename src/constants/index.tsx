@@ -7,7 +7,8 @@ import HouseCheckIcon from "../assets/styledIcons/HouseCheckIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 import KioskIcon from "../assets/styledIcons/KioskIcon";
 import SettingIcon from "../assets/styledIcons/SettingIcon";
-import ProfileIcon from "../assets/styledIcons/ProfileIcon";
+import  DocumentIcon  from "../assets/styledIcons/DocumentIcon";
+import UserIcon from "../assets/styledIcons/UserIcon";
 
 export const sidebarMenuList: {
   id: string;
@@ -55,6 +56,13 @@ export const sidebarMenuList: {
       link: "/stores",
       roles: [ROLES.SUPER_ADMIN],
     },
+      {
+      id: "users",
+      name: "Users",
+      icon: <UserIcon />,
+      link: "/users",
+      roles: [ROLES.SUPER_ADMIN],
+    },
     {
       id: "kiosks",
       name: "Kiosks",
@@ -90,17 +98,10 @@ export const settingsidebarMenuList: {
   }[];
   roles: UserRole[];
 }[] = [{
-  id: "profile",
-  name: "Profile",
-  icon: <ProfileIcon />,
-  link: "/setting/profile",
-  roles: [ROLES.SUPER_ADMIN],
-},
-{
-  id: "New Profile",
-  name: "New Profile",
-  icon: <ProfileIcon />,
-  link: "/setting/profile",
+  id: "document-type",
+  name: "Document Type",
+  icon: <DocumentIcon />,
+  link: "/setting/document-type",
   roles: [ROLES.SUPER_ADMIN],
 }
 
