@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Button from "../../components/Button";
 import {
   useGetStoresQuery,
@@ -17,34 +17,38 @@ import EditIcon from "../../assets/styledIcons/EditIcon";
 import ActionIcon from "../../components/ActionIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
-import InputField from "../../components/InputField"; // Add a search input component
-
-const ITEMS_PER_PAGE = 10;
+import InputField from "../../components/InputField";
+import Pagination from "../../components/Pagination";
 
 const StoreListPage: React.FC = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState<number>(10);
+
   const {
     data: storesResp = {
       data: [],
-      meta: { total: 0, page: 1, perPage: 10, totalPages: 0 },
+      meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
+    isFetching,
     refetch,
-  } = useGetStoresQuery();
+  } = useGetStoresQuery({ page, perPage, search });
 
-  console.log("storesResp:", storesResp);
   const [createStore, { isLoading: creatingLoading }] =
     useCreateStoreMutation();
   const [updateStore, { isLoading: updateLoading }] = useUpdateStoreMutation();
   const [deleteStore] = useDeleteStoreMutation();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-
   const { data: editingStoreData } = useGetStoreByIdQuery(editingStoreId!, {
     skip: !editingStoreId,
   });
+
+  const stores = storesResp.data;
+  const meta = storesResp.meta;
+  const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
   const handleEdit = (storeId: string) => {
     setEditingStoreId(storeId);
@@ -55,17 +59,19 @@ const StoreListPage: React.FC = () => {
     try {
       await deleteStore(id).unwrap();
       toast.success("Store deleted");
+      // if your mutations invalidate tags, refetch is optional
       refetch();
-    } catch (err: any) {
+    } catch {
       toast.error("Failed to delete store");
     }
   };
+
   const columns: Column<Store>[] = [
     {
       key: "index",
       label: "#",
-      render: (_value: unknown, _row: Store, index?: number) => (
-        <span>{(page - 1) * ITEMS_PER_PAGE + (index || 0) + 1}</span>
+      render: (_v: unknown, _row: Store, index?: number) => (
+        <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
       ),
     },
     { key: "name", label: "Name" },
@@ -99,9 +105,11 @@ const StoreListPage: React.FC = () => {
       ),
     },
   ];
+
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-2xl font-bold">Stores</h1>
         <Button
           onClick={() => {
@@ -113,61 +121,61 @@ const StoreListPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="mb-4 flex justify-between">
-        <InputField
-          className="w-72"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Search"
-          name={""}
-        />
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <InputField
+            className="w-72"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search stores…"
+            name="search"
+          />
+        </div>
       </div>
 
-      {isLoading ? (
+      {/* Table / loader / empty state */}
+      {isLoading || isFetching ? (
         <Loader />
+      ) : stores.length === 0 ? (
+        <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
+          No stores found.
+          {search ? (
+            <span className="block text-sm text-gray-500 mt-1">
+              Try adjusting your search.
+            </span>
+          ) : (
+            <span className="block text-sm text-gray-500 mt-1">
+              Click <strong>Add Store</strong> to create your first one.
+            </span>
+          )}
+        </div>
       ) : (
         <>
-          <DynamicTable
-            data={storesResp.data}
-            columns={columns}
-            rowKey="id"
-            tableClassName="bg-white"
-          />
-
-          {/* Pagination controls */}
-          {/* <div className="mt-4 flex justify-end items-center gap-2">
-            <Button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-              Previous
-            </Button>
-            <Button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-              Next
-            </Button>
-             <span className="text-sm text-gray-600">
-              Page {page} of {totalPages}
-            </span>
-          </div> */}
-          <div className="mt-4 flex justify-between items-center">
-            <span className="text-sm text-gray-600">
-              Page {page} of {storesResp.meta.totalPages || 1}
-            </span>
-            <div className="flex gap-2">
-              <Button
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Previous
-              </Button>
-              <Button
-                disabled={page >= (storesResp.meta.totalPages || 1)}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
+          <div className="bg-white rounded-lg shadow-sm ring-1 ring-gray-100">
+            <DynamicTable
+              data={stores}
+              columns={columns}
+              rowKey="id"
+              tableClassName="bg-white"
+            />
           </div>
+
+          <Pagination
+            className="mt-4"
+            page={page}
+            perPage={perPage}
+            total={meta.total}
+            onPageChange={(p) => setPage(p)}
+            onPerPageChange={(pp) => {
+              setPerPage(pp);
+              setPage(1);
+            }}
+            perPageOptions={[10, 25, 50]}
+          />
         </>
       )}
 
