@@ -8,6 +8,7 @@ import DatePickerField from "../../../components/DatePickerField";
 import Button from "../../../components/Button";
 import FileUploader from "../../../components/FileUploader";
 import { useParams } from "react-router-dom";
+import MultiSelect from "../../../components/MultiSelect";
 
 // Static stores data
 const allStoreOptions = [
@@ -71,11 +72,11 @@ const UsersTypeModal = ({
 
   const handleStoreSelect = (selectedValue: string, values: any, setFieldValue: any) => {
     if (!selectedValue) return;
-    
+
     // Add to selected stores
     const newStores = [...values.stores, selectedValue];
     setFieldValue("stores", newStores);
-    
+
     // Update available stores by filtering out the selected one
     const updatedAvailableStores = availableStores.filter(
       store => store.value !== selectedValue
@@ -84,10 +85,10 @@ const UsersTypeModal = ({
   };
 
   const removeStore = (storeToRemove: string, values: any, setFieldValue: any) => {
-   
+
     const newStores = values.stores.filter((store: string) => store !== storeToRemove);
     setFieldValue("stores", newStores);
-    
+
     const storeToAddBack = allStoreOptions.find(store => store.value === storeToRemove);
     if (storeToAddBack) {
       setAvailableStores([...availableStores, storeToAddBack]);
@@ -112,7 +113,7 @@ const UsersTypeModal = ({
       >
         {({ values, handleChange, setFieldValue, errors, touched }) => (
           <Form className="space-y-6">
-       
+
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">
                 Name <span className="text-red-500">*</span>
@@ -126,7 +127,7 @@ const UsersTypeModal = ({
               />
             </div>
 
-       
+
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">
                 User Type <span className="text-red-500">*</span>
@@ -143,7 +144,7 @@ const UsersTypeModal = ({
               />
             </div>
 
-         
+
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">
                 Upload Document{" "}
@@ -165,7 +166,7 @@ const UsersTypeModal = ({
               />
             </div>
 
-       
+
             {values.fileS3Key && (
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -181,7 +182,7 @@ const UsersTypeModal = ({
               </div>
             )}
 
-      
+
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">
                 Expiry Date
@@ -193,7 +194,7 @@ const UsersTypeModal = ({
               />
             </div>
 
-          
+
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">
                 Remind Before (days)
@@ -208,55 +209,23 @@ const UsersTypeModal = ({
             </div>
 
             {values.userType === "store_owner" && (
-              <>
-               
-                {values.stores.length > 0 && (
-                  <div className="mb-4">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Selected Stores
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {values.stores.map((storeValue: string) => {
-                        const store = allStoreOptions.find(s => s.value === storeValue);
-                        return (
-                          <div
-                            key={storeValue}
-                            className="flex items-center bg-gray-100 px-3 py-1 rounded-full"
-                          >
-                            <span>{store?.label}</span>
-                            <button
-                              type="button"
-                              className="ml-2 text-gray-500 hover:text-red-500"
-                              onClick={() => removeStore(storeValue, values, setFieldValue)}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Select Stores <span className="text-red-500">*</span>
-                  </label>
-                  <SelectField
-                    name="storeSelect"
-                    value=""
-                    onChange={(e) => handleStoreSelect(e.target.value, values, setFieldValue)}
-                    options={[
-                      { label: "Select a store", value: "" },
-                      ...availableStores
-                    ]}
-                    error={touched.stores ? (errors.stores as string) : ""}
-                  />
-                </div>
-              </>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Select Stores <span className="text-red-500">*</span>
+                </label>
+                <MultiSelect
+                  name="stores"
+                  value={values.stores}
+                  onChange={(val) => setFieldValue("stores", val)}
+                  options={allStoreOptions}
+                  placeholder="Select stores"
+                  error={touched.stores ? (errors.stores as string) : ""}
+                />
+              </div>
             )}
 
-        
+
+
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outlined" onClick={onClose}>
                 Cancel
