@@ -8,6 +8,7 @@ import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 import KioskIcon from "../assets/styledIcons/KioskIcon";
 import SettingIcon from "../assets/styledIcons/SettingIcon";
 import  DocumentIcon  from "../assets/styledIcons/DocumentIcon";
+import UserIcon from "../assets/styledIcons/UserIcon";
 
 export const sidebarMenuList: {
   id: string;
@@ -53,6 +54,13 @@ export const sidebarMenuList: {
       name: "Stores",
       icon: <HouseCheckIcon />,
       link: "/stores",
+      roles: [ROLES.SUPER_ADMIN],
+    },
+      {
+      id: "users",
+      name: "Users",
+      icon: <UserIcon />,
+      link: "/users",
       roles: [ROLES.SUPER_ADMIN],
     },
     {
