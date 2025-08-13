@@ -1,7 +1,8 @@
 // components/Pagination.tsx
 import React from "react";
-import Button from "./Button";
 import SelectField from "./SelectField";
+import ArrowIcon from "../assets/styledIcons/ArrowIcon";
+import ForwardEndIcon from "../assets/styledIcons/ForwardEndIcon";
 
 type Props = {
   page: number;
@@ -12,22 +13,17 @@ type Props = {
   perPageOptions?: number[];
   className?: string;
   disabled?: boolean;
+  leftTitle?: string; // e.g. "Total Arrivals"
 };
 
-function getPageWindow(current: number, totalPages: number, delta = 1) {
-  const pages: (number | null)[] = [];
-  const set = new Set<number>([1, totalPages]);
-  for (let i = current - delta; i <= current + delta; i++) {
-    if (i >= 1 && i <= totalPages) set.add(i);
+// 👉 exactly one before & one after (handles edges)
+function getPageWindow(current: number, totalPages: number) {
+  if (totalPages <= 3) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
-  const sorted = Array.from(set).sort((a, b) => a - b);
-  let prev = 0;
-  for (const p of sorted) {
-    if (prev && p - prev > 1) pages.push(null);
-    pages.push(p);
-    prev = p;
-  }
-  return pages;
+  if (current <= 1) return [1, 2];
+  if (current >= totalPages) return [totalPages - 1, totalPages];
+  return [current - 1, current, current + 1];
 }
 
 const Pagination: React.FC<Props> = ({
@@ -36,98 +32,126 @@ const Pagination: React.FC<Props> = ({
   total,
   onPageChange,
   onPerPageChange,
-  perPageOptions = [10, 25, 50, 100],
+  perPageOptions = [5, 10, 25, 50, 100],
   className = "",
   disabled = false,
+  leftTitle,
 }) => {
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, perPage)));
   const safePage = Math.min(Math.max(1, page), totalPages);
+
   const start = total === 0 ? 0 : (safePage - 1) * perPage + 1;
   const end = total === 0 ? 0 : Math.min(safePage * perPage, total);
+
   const canPrev = !disabled && safePage > 1;
   const canNext = !disabled && safePage < totalPages;
-  const pages = getPageWindow(safePage, totalPages, 1);
+
+  const pages = getPageWindow(safePage, totalPages);
+
+  const numberBtnBase =
+    "h-8 min-w-8 px-2 text-sm rounded-md border transition select-none flex justify-center items-center " +
+    "cursor-pointer focus:outline-none ";
+  const numberBtn = `${numberBtnBase} border-gray-300 bg-white hover:bg-orange-50`;
+  const numberBtnActive = `${numberBtnBase} border-orange-500 bg-orange-500 text-white`;
+  const chevronBtn =
+    "h-8 min-w-8 px-2 text-sm rounded-md border border-gray-300 bg-white flex justify-center items-center " +
+    "hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition " +
+    "cursor-pointer focus:outline-none ";
 
   return (
     <div
-      className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${className}`}
+      className={
+        "w-full rounded-xl border border-gray-200 bg-white p-4 md:p-3 flex gap-3 mt-3 flex-wrap justify-center md:justify-between items-center md:flex-nowrap" +
+        className
+      }
     >
-      {/* Left: summary + per-page */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-600">
-          Showing <strong>{start}</strong>–<strong>{end}</strong> of{" "}
-          <strong>{total}</strong>
-        </span>
-
-        {onPerPageChange && (
-          <label className="flex items-center gap-2 text-sm">
-            <span className="whitespace-nowrap">Per page</span>
-            <SelectField
-              value={perPage}
-              onChange={(e) => onPerPageChange(Number(e.target.value))}
-              disabled={disabled}
-              options={[
-                { label: "10", value: 10 },
-                { label: "25", value: 25 },
-                { label: "50", value: 50 },
-              ]}
-              placeholder="Per page"
-              name="perPage"
-            />
-          </label>
+      {/* Left label */}
+      <div className="text-sm text-gray-700 order-3 md:order-1">
+        {leftTitle ? (
+          <span>
+            {leftTitle}: <strong>{total}</strong>
+          </span>
+        ) : (
+          <span className="text-gray-600">
+            Showing <span>{start}</span>–<span>{end}</span> of{" "}
+            <span>{total}</span>
+          </span>
         )}
       </div>
 
-      {/* Right: pager controls */}
-      <div className="flex items-center gap-1">
-        <Button
+      <div
+        className="w-100 justify-center md:w-auto flex items-center gap-1 overflow-x-auto whitespace-nowrap self-center order-1 md:order-2"
+        style={{ scrollbarWidth: "none" }} // firefox
+      >
+        <button
+          type="button"
+          className={chevronBtn}
           disabled={!canPrev}
           onClick={() => onPageChange(1)}
           aria-label="First page"
         >
-          ⏮
-        </Button>
-        <Button
+          <ForwardEndIcon className="rotate-180" size={10} />
+        </button>
+        <button
+          type="button"
+          className={chevronBtn}
           disabled={!canPrev}
           onClick={() => onPageChange(safePage - 1)}
           aria-label="Previous page"
         >
-          Previous
-        </Button>
+          <ArrowIcon className="rotate-90" size={12} />
+        </button>
 
-        {pages.map((p, i) =>
-          p === null ? (
-            <span key={`dots-${i}`} className="px-2 select-none">
-              …
-            </span>
-          ) : (
-            <Button
-              key={p}
-              onClick={() => onPageChange(p)}
-              disabled={disabled}
-              className={p === safePage ? "bg-gray-900 text-white" : ""}
-              aria-current={p === safePage ? "page" : undefined}
-            >
-              {p}
-            </Button>
-          ),
-        )}
+        {/* only [prev, current, next] */}
+        {pages.map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onPageChange(p)}
+            className={p === safePage ? numberBtnActive : numberBtn}
+            aria-current={p === safePage ? "page" : undefined}
+            disabled={disabled}
+          >
+            {p}
+          </button>
+        ))}
 
-        <Button
+        <button
+          type="button"
+          className={chevronBtn}
           disabled={!canNext}
           onClick={() => onPageChange(safePage + 1)}
           aria-label="Next page"
         >
-          Next
-        </Button>
-        <Button
+          <ArrowIcon className="rotate-270" size={12} />
+        </button>
+        <button
+          type="button"
+          className={chevronBtn}
           disabled={!canNext}
           onClick={() => onPageChange(totalPages)}
           aria-label="Last page"
         >
-          ⏭
-        </Button>
+          <ForwardEndIcon size={10} />
+        </button>
       </div>
+      {/* Pager + per-page */}
+      {onPerPageChange && (
+        <label className="flex items-center gap-2 text-sm text-gray-600 order-2 md:order-3">
+          <span className="whitespace-nowrap">Show per Page:</span>
+          <SelectField
+            value={perPage}
+            onChange={(e) => onPerPageChange(Number(e.target.value))}
+            disabled={disabled}
+            options={perPageOptions.map((v) => ({
+              label: String(v),
+              value: v,
+            }))}
+            placeholder="Per page"
+            name="perPage"
+          />
+        </label>
+      )}
     </div>
   );
 };

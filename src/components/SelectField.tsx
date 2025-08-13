@@ -53,7 +53,6 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
   return (
     <div className="relative inline-block w-full max-w-full" ref={dropdownRef}>
-      {/* Hidden span to calculate label width */}
       <span
         ref={labelRef}
         className="absolute opacity-0 pointer-events-none whitespace-nowrap"
@@ -61,7 +60,6 @@ const SelectField: React.FC<SelectFieldProps> = ({
         {selectedOption?.label || placeholder}
       </span>
 
-      {/* Trigger box */}
       <div
         className={`flex items-center justify-between border rounded px-4 py-2 transition-colors duration-200 w-full ${
           error ? "border-orange-100" : "border-gray-300"
@@ -81,7 +79,6 @@ const SelectField: React.FC<SelectFieldProps> = ({
         />
       </div>
 
-      {/* Dropdown */}
       {open && !disabled && (
         <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded shadow-md max-h-60 overflow-y-auto animate-fadeIn w-full p-2">
           {options.map((opt) => {
