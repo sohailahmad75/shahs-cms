@@ -1,4 +1,4 @@
-// src/features/auth/types.ts
+// src/features/auth/store.types.ts
 export interface LoginDto {
   email: string;
   password: string;

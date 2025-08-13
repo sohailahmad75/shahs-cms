@@ -1,4 +1,4 @@
-import type { Store } from "../stores/types";
+import type { Store } from "../stores/store.types";
 
 export interface Kiosk {
   id: string;
