@@ -8,18 +8,24 @@ import type {
 
 export const storeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getStores: builder.query<StoreListResponse, void>({
-      query: () => "/stores",
+    getStores: builder.query<
+      StoreListResponse,
+      { page?: number; perPage?: number; search?: string } | void
+    >({
+      query: (args) => {
+        const { page = 1, perPage = 10, search = "" } = args ?? {};
+        return { url: "/stores", params: { page, perPage, search } };
+      },
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map((store) => ({
+              ...result.data.map((s) => ({
                 type: "Stores" as const,
-                id: store.id,
+                id: s.id,
               })),
-              { type: "Stores" },
+              { type: "Stores" as const, id: "LIST" },
             ]
-          : [{ type: "Stores" }],
+          : [{ type: "Stores" as const, id: "LIST" }],
     }),
 
     createStore: builder.mutation<Store, CreateStoreDto>({
