@@ -4,20 +4,6 @@ import type { DocumentType, CreateDocumnetDto, UpdateDocumentDto } from "../docu
 
 export const documentsTypeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // getDocumentsType: builder.query<DocumentType[], void>({
-    //   query: () => "/document-type",
-    //   providesTags: (result) =>
-    //     result
-    //       ? [
-    //           ...result.map((doc) => ({
-    //             type: "DocumentsType" as const,
-    //             id: doc.id,
-    //           })),
-    //           { type: "DocumentsType" },
-    //         ]
-    //       : [{ type: "DocumentsType" }],
-    // }),
-
     getDocumentsType: builder.query<
       DocumentTypeListResponse,
       { page?: number; perPage?: number; search?: string } | void
