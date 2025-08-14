@@ -11,11 +11,12 @@ import {
   useGetAllMenuItemsQuery,
   useGetModifierByIdQuery,
   useGetAllModificationTypesQuery,
+  useGetMenuItemsQuery,
 } from "../../services/menuApi";
 import MultiSelect from "../../components/MultiSelect";
 import CheckboxField from "../../components/CheckboxField";
 import AddIcon from "../../assets/styledIcons/AddIcon";
-import { MenuItem, MenuModifier } from "../helper/menu-types";
+import { MenuItem, MenuModifier } from "../menu.types";
 import { TagOption } from "../../components/helper/components.types";
 import TagSelector from "../../components/TagSelector";
 
@@ -68,9 +69,25 @@ const AddModifierModal: React.FC<Props> = ({
 
   const { data: allModTypes = [] } = useGetAllModificationTypesQuery();
 
-  console.log("allModTypes", allModTypes);
-  const { data: allItems = [], isLoading: itemsLoading } =
-    useGetAllMenuItemsQuery(menuId);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState<number>(50);
+  const {
+    data: itemsResp = {
+      data: [],
+      meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
+    },
+    isLoading: itemsLoading,
+    isFetching,
+    refetch,
+  } = useGetMenuItemsQuery({
+    menuId,
+    page,
+    perPage,
+    query,
+  });
+
+  const allItems = itemsResp.data as MenuItem[];
   const { data: modifierData, isLoading: modifierLoading } =
     useGetModifierByIdQuery(modifierId!, {
       skip: !modifierId,
@@ -245,6 +262,7 @@ const AddModifierModal: React.FC<Props> = ({
                   Select items to apply to{" "}
                   <span className="text-red-500">*</span>
                 </label>
+                {console.log("All Items: ", allItems)}
                 <MultiSelect
                   name="items"
                   value={values.items}

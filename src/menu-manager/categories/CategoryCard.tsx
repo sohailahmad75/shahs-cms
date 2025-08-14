@@ -4,7 +4,7 @@ import Button from "../../components/Button";
 import ArrowIcon from "../../assets/styledIcons/ArrowIcon";
 import AddItemModal from "../items/AddItemModal";
 import AddIcon from "../../assets/styledIcons/AddIcon";
-import type { MenuCategory, MenuItem } from "../helper/menu-types";
+import type { MenuCategory, MenuItem } from "../menu.types";
 import { useTheme } from "../../context/themeContext";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import ActionIcon from "../../components/ActionIcon";

@@ -17,8 +17,8 @@ interface DynamicTableProps<T> {
   rowClassName?: string;
   emptyStateMessage?: string;
   emptyStateSubMessage?: string;
-  /** Max height for the scrollable desktop/table container */
   maxHeight?: string;
+  minHeight?: string;
 }
 
 export function DynamicTable<T>({
@@ -31,6 +31,7 @@ export function DynamicTable<T>({
   emptyStateMessage = "No data available",
   emptyStateSubMessage = "There are currently no records to display. Try adding some data or adjusting your filters.",
   maxHeight = "800px",
+  minHeight = "400px",
 }: DynamicTableProps<T>) {
   const { isDarkMode } = useTheme();
 
@@ -54,7 +55,7 @@ export function DynamicTable<T>({
             ? "border-slate-800 bg-slate-900"
             : "border-slate-200 bg-white"
         }`}
-        style={{ maxHeight }}
+        style={{ maxHeight, minHeight }}
       >
         <table className={`min-w-full table-auto ${tableClassName || ""}`}>
           <thead
@@ -108,12 +109,17 @@ export function DynamicTable<T>({
                       }`}
                     >
                       {col.key === "actions"
-                        ? col.render?.(undefined as T[keyof T], row, index) ?? null
+                        ? (col.render?.(undefined as T[keyof T], row, index) ??
+                          null)
                         : col.key === "index"
-                        ? col.render?.(undefined as T[keyof T], row, index) ?? null
-                        : col.render
-                        ? col.render(row[col.key], row, index)
-                        : ((row[col.key] as unknown) as React.ReactNode)}
+                          ? (col.render?.(
+                              undefined as T[keyof T],
+                              row,
+                              index,
+                            ) ?? null)
+                          : col.render
+                            ? col.render(row[col.key], row, index)
+                            : (row[col.key] as unknown as React.ReactNode)}
                     </td>
                   ))}
                 </tr>
@@ -142,12 +148,14 @@ export function DynamicTable<T>({
                   </span>
                   <span className="text-sm text-slate-800 dark:text-slate-100">
                     {col.key === "actions"
-                      ? col.render?.(undefined as T[keyof T], row, index) ?? null
+                      ? (col.render?.(undefined as T[keyof T], row, index) ??
+                        null)
                       : col.key === "index"
-                      ? col.render?.(undefined as T[keyof T], row, index) ?? null
-                      : col.render
-                      ? col.render(row[col.key], row, index)
-                      : ((row[col.key] as unknown) as React.ReactNode)}
+                        ? (col.render?.(undefined as T[keyof T], row, index) ??
+                          null)
+                        : col.render
+                          ? col.render(row[col.key], row, index)
+                          : (row[col.key] as unknown as React.ReactNode)}
                   </span>
                 </div>
               ))}

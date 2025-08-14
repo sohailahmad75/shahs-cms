@@ -1,3 +1,5 @@
+import type { Meta } from "../types";
+
 export type MenuItem = {
   id: string;
   name: string;
@@ -6,6 +8,9 @@ export type MenuItem = {
   s3Key: string;
   deliveryPrice: number;
   signedUrl?: string;
+  tags?: string | null;
+  categoryName?: string | null;
+  category?: { id: string; name: string } | null;
 };
 
 export type MenuCategory = {
@@ -67,4 +72,17 @@ export interface Menu {
   storeMenus: StoreMenu[];
   signedUrl?: string;
   storeCount?: number;
+}
+export interface MenuItemsListResponse {
+  data: MenuItem[];
+  meta: Meta; // { total, page, perPage, totalPages }
+}
+export interface GetMenuItemsArgs {
+  menuId: string;
+  page?: number;
+  perPage?: number;
+  query?: string;
+  categoryId?: string; // optional server-side filter
+  sort?: "order" | "name" | "price" | "createdAt";
+  sortDir?: SortDir;
 }

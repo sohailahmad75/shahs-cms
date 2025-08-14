@@ -23,7 +23,7 @@ import Pagination from "../../components/Pagination";
 const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
 
@@ -35,7 +35,7 @@ const StoreListPage: React.FC = () => {
     isLoading,
     isFetching,
     refetch,
-  } = useGetStoresQuery({ page, perPage, search });
+  } = useGetStoresQuery({ page, perPage, query });
 
   const [createStore, { isLoading: creatingLoading }] =
     useCreateStoreMutation();
@@ -56,14 +56,8 @@ const StoreListPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteStore(id).unwrap();
-      toast.success("Store deleted");
-      // if your mutations invalidate tags, refetch is optional
-      refetch();
-    } catch {
-      toast.error("Failed to delete store");
-    }
+    await deleteStore(id).unwrap();
+    toast.success("Store deleted");
   };
 
   const columns: Column<Store>[] = [
@@ -126,13 +120,13 @@ const StoreListPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <InputField
             className="w-72"
-            value={search}
+            value={query}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setQuery(e.target.value);
               setPage(1);
             }}
             placeholder="Search stores…"
-            name="search"
+            name="query"
           />
         </div>
       </div>
@@ -143,7 +137,7 @@ const StoreListPage: React.FC = () => {
       ) : stores.length === 0 ? (
         <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
           No stores found.
-          {search ? (
+          {query ? (
             <span className="block text-sm text-gray-500 mt-1">
               Try adjusting your search.
             </span>
