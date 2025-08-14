@@ -6,13 +6,13 @@ import Button from "../../../components/Button";
 import type {UpdateDocumentDto } from "../documentTypes.types";
 
 const DocumentSchema = Yup.object().shape({
-  documentName: Yup.string().required("Document Name is required"),
-  documentDescription: Yup.string().nullable(),
+  name: Yup.string().required("Document Name is required"),
+  description: Yup.string().nullable(),
 });
 
 const emptyInitialValues = {
-  documentName: "",
-  documentDescription: "",
+  name: "",
+  description: "",
 };
 
 const DocumentTypeModal = ({
@@ -40,8 +40,8 @@ const DocumentTypeModal = ({
           ...emptyInitialValues,
           ...(editingDocument
             ? {
-                documentName: editingDocument.documentName ?? "",
-                documentDescription: editingDocument.documentDescription ?? "",
+                name: editingDocument.name ?? "",
+                description: editingDocument.description ?? "",
               }
             : {}),
         }}
@@ -65,11 +65,11 @@ const DocumentTypeModal = ({
                   Document Type Name <span className="text-red-500">*</span>
                 </label>
                 <InputField
-                  name="documentName"
+                  name="name"
                   placeholder="Enter Document Name"
-                  value={values.documentName}
+                  value={values.name}
                   onChange={handleChange}
-                  error={touched.documentName ? errors.documentName : ""}
+                  error={touched.name ? errors.name : ""}
                 />
               </div>
 
@@ -78,13 +78,13 @@ const DocumentTypeModal = ({
                   Document Type Description
                 </label>
                 <InputField
-                  name="documentDescription"
+                  name="description"
                   placeholder="Enter Document Description"
-                  value={values.documentDescription}
+                  value={values.description}
                   onChange={handleChange}
                   error={
-                    touched.documentDescription
-                      ? errors.documentDescription
+                    touched.description
+                      ? errors.description
                       : ""
                   }
                 />

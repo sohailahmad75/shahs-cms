@@ -9,26 +9,42 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
 import type { DocumentType } from "./documentTypes.types";
 import { useTheme } from "../../context/themeContext";
+import InputField from "../../components/InputField";
+import Pagination from "../../components/Pagination";
 
 import {
-  useGetDocumentsQuery,
-  useCreateDocumentMutation,
-  useUpdateDocumentMutation,
-  useDeleteDocumentMutation,
-} from "./services/documentsApi";
+  useGetDocumentsTypeQuery,
+  useCreateDocumentsTypeMutation,
+  useUpdateDocumentsTypeMutation,
+  useDeleteDocumentsTypeMutation,
+} from "./services/documentTypeApi";
 
 const DocumentTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery();
-  const [createDocument, { isLoading: creating }] = useCreateDocumentMutation();
-  const [updateDocument, { isLoading: updating }] = useUpdateDocumentMutation();
-  const [deleteDocument] = useDeleteDocumentMutation();
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [search, setSearch] = useState("");
+6
+  // API call with pagination params
+  const {
+    data: resp = { data: [], meta: { total: 0, page: 1, perPage: 10, totalPages: 1 } },
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetDocumentsTypeQuery({ page, perPage, search });
+
+  const documents = resp.data;
+  const meta = resp.meta;
+  const apiPageIndexBase = (meta.page - 1) * meta.perPage;
+
+  const [createDocument, { isLoading: creating }] = useCreateDocumentsTypeMutation();
+  const [updateDocument, { isLoading: updating }] = useUpdateDocumentsTypeMutation();
+  const [deleteDocument] = useDeleteDocumentsTypeMutation();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(
-    null
-  );
+  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(null);
 
   const handleEdit = (doc: DocumentType) => {
     setEditingDocument(doc);
@@ -46,14 +62,18 @@ const DocumentTypeListPage: React.FC = () => {
   };
 
   const columns: Column<DocumentType>[] = [
-    { key: "id", label: "ID" },
-    { key: "documentName", label: "Document Name" },
+    {
+      key: "index",
+      label: "#",
+      render: (_v, _row, index) => <span>{apiPageIndexBase + (index ?? 0) + 1}</span>,
+    },
+    { key: "name", label: "Document Name" },
     { key: "description", label: "Description" },
     {
-      key: "created",
+      key: "createdAt",
       label: "Created At",
       render: (_, row) =>
-        row.created ? new Date(row.created).toLocaleString() : "-",
+        row.createdAt ? new Date(row.createdAt).toLocaleString() : "-",
     },
     {
       key: "actions",
@@ -82,7 +102,7 @@ const DocumentTypeListPage: React.FC = () => {
   return (
     <div className="p-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-2xl font-bold">Documents</h1>
         <Button
           onClick={() => {
@@ -94,18 +114,65 @@ const DocumentTypeListPage: React.FC = () => {
         </Button>
       </div>
 
-      {isLoading ? (
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <InputField
+            className="w-72"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1); // Reset to first page on search
+            }}
+            placeholder="Search documents…"
+            name="search"
+          />
+        </div>
+      </div>
+
+      {/* Table / Loader / Empty */}
+      {isLoading || isFetching ? (
         <Loader />
-      ) 
-       : (
-        <DynamicTable
-          data={documents}
-          columns={columns}
-          rowKey="id"
-          tableClassName="bg-white dark:bg-slate-900"
-        />
+      ) : documents.length === 0 ? (
+        <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
+          No documents found.
+          {search ? (
+            <span className="block text-sm text-gray-500 mt-1">
+              Try adjusting your search.
+            </span>
+          ) : (
+            <span className="block text-sm text-gray-500 mt-1">
+              Click <strong>Add Document Type</strong> to create your first one.
+            </span>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="rounded-lg shadow-sm">
+            <DynamicTable
+              data={documents}
+              columns={columns}
+              rowKey="id"
+              tableClassName="bg-white dark:bg-slate-900"
+            />
+          </div>
+
+          <Pagination
+            className="mt-4"
+            page={page}
+            perPage={perPage}
+            total={meta.total}
+            onPageChange={(p) => setPage(p)}
+            onPerPageChange={(pp) => {
+              setPerPage(pp);
+              setPage(1);
+            }}
+            perPageOptions={[10, 25, 50]}
+          />
+        </>
       )}
 
+      {/* Modal */}
       <DocumentTypeModal
         isOpen={modalOpen}
         onClose={() => {

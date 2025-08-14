@@ -12,6 +12,7 @@ export const baseApi = createApi({
     "Kiosks",
     "Documents",
     "MenuItems",
+    "DocumentsType"
   ],
   endpoints: () => ({}),
 });

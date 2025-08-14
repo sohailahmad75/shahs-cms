@@ -1,12 +1,12 @@
 export interface DocumentType {
   id: string;
-  documentName: string;
+  name: string;
   description: string;
-  created: string;
+  createdAt: string;
 }
 
 export interface CreateDocumnetDto {
-  documentName: string;
-  documentDescription?: string;
+  name: string;
+  description?: string;
 }
 export type UpdateDocumentDto = CreateDocumnetDto;
