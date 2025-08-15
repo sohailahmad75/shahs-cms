@@ -140,20 +140,8 @@ const StoreListPage: React.FC = () => {
       {/* Table / loader / empty state */}
       {isLoading || isFetching ? (
         <Loader />
-      ) : stores.length === 0 ? (
-        <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
-          No stores found.
-          {search ? (
-            <span className="block text-sm text-gray-500 mt-1">
-              Try adjusting your search.
-            </span>
-          ) : (
-            <span className="block text-sm text-gray-500 mt-1">
-              Click <strong>Add Store</strong> to create your first one.
-            </span>
-          )}
-        </div>
-      ) : (
+      ) 
+       : (
         <>
           <div className=" rounded-lg shadow-sm">
             <DynamicTable
