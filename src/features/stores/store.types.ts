@@ -87,9 +87,3 @@ export interface StoreListResponse {
   data: Store[];
   meta: Meta;
 }
-
-
-export interface DocumentTypeListResponse {
-  data: DocumentType[];
-  meta: Meta;
-}
