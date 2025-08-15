@@ -28,7 +28,7 @@ type Props = {
   onSuccess?: () => void;
 };
 
-const schemaCreate = Yup.object().shape({
+const itemSchema = Yup.object().shape({
   name: Yup.string().required("Item name is required"),
   price: Yup.number()
     .typeError("Price must be a number")
@@ -38,19 +38,6 @@ const schemaCreate = Yup.object().shape({
     .required("Delivery Price is required"),
   categoryId: Yup.string().required("Category is required"),
   s3Key: Yup.string().required("Item image is required"),
-});
-
-const schemaEdit = Yup.object().shape({
-  name: Yup.string().required("Item name is required"),
-  price: Yup.number()
-    .typeError("Price must be a number")
-    .required("Price is required"),
-  deliveryPrice: Yup.number()
-    .typeError("Delivery Price must be a number")
-    .required("Delivery Price is required"),
-  categoryId: Yup.string().required("Category is required"),
-  // allow keeping old image on edit
-  s3Key: Yup.string().nullable(),
 });
 
 const ItemModal: React.FC<Props> = ({
@@ -134,7 +121,7 @@ const ItemModal: React.FC<Props> = ({
     >
       <Formik
         initialValues={initialValues}
-        validationSchema={mode === "create" ? schemaCreate : schemaEdit}
+        validationSchema={itemSchema}
         enableReinitialize
         validateOnChange={false}
         validateOnBlur={false}
@@ -215,8 +202,7 @@ const ItemModal: React.FC<Props> = ({
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Item Image{" "}
-                  {mode === "create" && <span className="text-red-500">*</span>}
+                  Item Image <span className="text-red-500">*</span>
                 </label>
                 <FileUploader
                   value={values.s3Key}
@@ -230,11 +216,6 @@ const ItemModal: React.FC<Props> = ({
                   }
                   initialPreview={item ? item.signedUrl : ""}
                 />
-                {mode === "edit" && !values.s3Key && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Keep existing image by leaving this empty.
-                  </p>
-                )}
               </div>
             </div>
 
