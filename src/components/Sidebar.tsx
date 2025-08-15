@@ -18,9 +18,10 @@ interface SidebarProps {
   openInvoicesPanel: () => void;
   openTransactionsPanel: () => void;
   activePanel: "settings" | "invoice" | "transactions" | null;
-  setActivePanel: (value: "settings" | "invoice" | "transactions" | null) => void;
+  setActivePanel: (
+    value: "settings" | "invoice" | "transactions" | null,
+  ) => void;
 }
-
 
 const Sidebar = ({
   isOpen,
@@ -32,12 +33,11 @@ const Sidebar = ({
   openInvoicesPanel,
   openTransactionsPanel,
   setActivePanel,
-  activePanel
+  activePanel,
 }: SidebarProps) => {
   const location = useLocation();
   const { admin: activeAdmin } = useAdmin();
   const role = activeAdmin?.admin?.role as UserRole;
-  console.log("activeUserRole:", role, typeof role);
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
   const isAnyChildActive = (
     children: SidebarSubMenuItem[] | undefined,
@@ -45,7 +45,7 @@ const Sidebar = ({
   ) => children?.some((child) => child.link === pathname);
 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-const { isDarkMode, toggleDarkMode } = useTheme()
+  const { isDarkMode, toggleDarkMode } = useTheme();
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -65,7 +65,7 @@ const { isDarkMode, toggleDarkMode } = useTheme()
   return (
     <div
       ref={sidebarRef}
-      className={`z-40 ${isDarkMode ? 'bg-slate-950' : 'bg-gray-900'}   ${isDarkMode ? 'text-white' : 'text-secondary-100'} h-full transition-all duration-300 
+      className={`z-40 ${isDarkMode ? "bg-slate-950" : "bg-gray-900"}   ${isDarkMode ? "text-white" : "text-secondary-100"} h-full transition-all duration-300 
         ${shouldShow ? "block" : "hidden"} 
         ${isCollapsed && !isMobile ? "w-16" : "w-64"} 
         fixed md:relative top-0 left-0 shadow-xl
@@ -79,14 +79,15 @@ const { isDarkMode, toggleDarkMode } = useTheme()
         )}
 
         <div
-          className={`flex items-center px-3 ${isCollapsed ? "py-3 justify-center" : "py-6 justify-between"
-            }`}
+          className={`flex items-center px-3 ${
+            isCollapsed ? "py-3 justify-center" : "py-6 justify-between"
+          }`}
         >
           {!isCollapsed && <ShahsLogo />}
           {!isMobile && (
             <span
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className={`cursor-pointer ${isDarkMode ? 'bg-slate-900' : 'bg-orange-100'} bg-orange-100  rounded-full p-2 transition-transform duration-300 ease-in-out`}
+              className={`cursor-pointer ${isDarkMode ? "bg-slate-900" : "bg-orange-100"} bg-orange-100  rounded-full p-2 transition-transform duration-300 ease-in-out`}
               title={isCollapsed ? "Expand" : "Collapse"}
             >
               <ArrowIcon
@@ -99,21 +100,27 @@ const { isDarkMode, toggleDarkMode } = useTheme()
         </div>
         <ul className="flex-1 space-y-1 px-2">
           {sidebarMenuList
-            .filter((item) => item.id !== "setting" && item.roles.includes(role))
+            .filter(
+              (item) => item.id !== "setting" && item.roles.includes(role),
+            )
             .map(({ id, name, icon, link, children }) => {
-              const childIsActive = children && isAnyChildActive(children, location.pathname);
-              const isActive = (location.pathname === link || childIsActive) && activePanel === null;
+              const childIsActive =
+                children && isAnyChildActive(children, location.pathname);
+              const isActive =
+                (location.pathname === link || childIsActive) &&
+                activePanel === null;
 
-
-              if (id === 'invoice' || id === 'transactions') {
+              if (id === "invoice" || id === "transactions") {
                 return (
                   <li key={id}>
                     <div
                       onClick={
-                        id === 'invoice' ? openInvoicesPanel : openTransactionsPanel
+                        id === "invoice"
+                          ? openInvoicesPanel
+                          : openTransactionsPanel
                       }
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-                        ${activePanel === id ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-200'} ${isDarkMode ? 'text-slate-500' : 'text-orange-100'} font-semibold shadow-xs` : ` ${isDarkMode ? 'hover:text-slate-600' : 'hover:text-orange-100 '} hover:font-semibold`}`}
+                        ${activePanel === id ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-slate-500" : "text-orange-100"} font-semibold shadow-xs` : ` ${isDarkMode ? "hover:text-slate-600" : "hover:text-orange-100 "} hover:font-semibold`}`}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -127,9 +134,9 @@ const { isDarkMode, toggleDarkMode } = useTheme()
                   {link ? (
                     <Link
                       to={link}
-                      onClick={() => setActivePanel(null)} 
+                      onClick={() => setActivePanel(null)}
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
-                ${isActive ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-200'} ${isDarkMode ? 'text-slate-500' : 'text-orange-100'} font-semibold shadow-xs` : ` ${isDarkMode ? 'hover:text-slate-600' : 'hover:text-orange-100 '} hover:font-semibold`}`}
+                ${isActive ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-slate-500" : "text-orange-100"} font-semibold shadow-xs` : ` ${isDarkMode ? "hover:text-slate-600" : "hover:text-orange-100 "} hover:font-semibold`}`}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -137,7 +144,11 @@ const { isDarkMode, toggleDarkMode } = useTheme()
                   ) : (
                     <div>
                       <div
-                        onClick={() => setOpenSubmenuId(openSubmenuId === id || childIsActive ? null : id)}
+                        onClick={() =>
+                          setOpenSubmenuId(
+                            openSubmenuId === id || childIsActive ? null : id,
+                          )
+                        }
                         className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
                   ${isActive ? "bg-orange-200 text-orange-100 font-semibold shadow-xs" : "hover:text-orange-100 hover:font-semibold"}`}
                       >
@@ -145,35 +156,39 @@ const { isDarkMode, toggleDarkMode } = useTheme()
                         {!isCollapsed && <span>{name}</span>}
                         {!isCollapsed && children && (
                           <span className="ml-auto transition-transform duration-300">
-                            <ArrowIcon 
-                            className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive ? "rotate-180" : ""}`} />
+                            <ArrowIcon
+                              className={`transition-transform duration-300 ${openSubmenuId === id || childIsActive ? "rotate-180" : ""}`}
+                            />
                           </span>
                         )}
                       </div>
 
                       {children && (
                         <ul
-                          className={`transition-all duration-300 overflow-hidden ${isCollapsed && !isMobile
-                            ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
-                            : openSubmenuId === id || isMobile
-                              ? "ml-6 mt-1 space-y-1"
-                              : "hidden"
-                            }`}
+                          className={`transition-all duration-300 overflow-hidden ${
+                            isCollapsed && !isMobile
+                              ? "absolute left-full top-0 z-50 bg-white text-gray-800 shadow-md rounded hidden group-hover:block min-w-[180px] p-1"
+                              : openSubmenuId === id || isMobile
+                                ? "ml-6 mt-1 space-y-1"
+                                : "hidden"
+                          }`}
                         >
                           {children
                             .filter((sub) => sub.roles.includes(role))
-                            .map(({ id: subId, name: subName, link: subLink }) => (
-                              <li key={subId}>
-                                <Link
-                                  to={subLink}
-                                  className={`flex items-center gap-2 p-2 text-sm rounded-md transition-all duration-300
+                            .map(
+                              ({ id: subId, name: subName, link: subLink }) => (
+                                <li key={subId}>
+                                  <Link
+                                    to={subLink}
+                                    className={`flex items-center gap-2 p-2 text-sm rounded-md transition-all duration-300
                             ${location.pathname === subLink ? "bg-orange-200 text-orange-100 font-semibold" : "hover:text-orange-100 hover:font-semibold"}`}
-                                >
-                                  {isCollapsed && <span>•</span>}
-                                  <span>{subName}</span>
-                                </Link>
-                              </li>
-                            ))}
+                                  >
+                                    {isCollapsed && <span>•</span>}
+                                    <span>{subName}</span>
+                                  </Link>
+                                </li>
+                              ),
+                            )}
                         </ul>
                       )}
                     </div>
@@ -187,10 +202,15 @@ const { isDarkMode, toggleDarkMode } = useTheme()
             onClick={openSettingsPanel}
             className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
       py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-      ${activePanel === "settings"
-                ? `${isDarkMode ? 'bg-slate-900' : 'bg-orange-200'} ${isDarkMode ? 'text-slate-500' : 'text-orange-100'} font-semibold shadow-xs` : ` ${isDarkMode ? 'hover:text-slate-600' : 'hover:text-orange-100 '} hover:font-semibold`}`}
+      ${
+        activePanel === "settings"
+          ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-slate-500" : "text-orange-100"} font-semibold shadow-xs`
+          : ` ${isDarkMode ? "hover:text-slate-600" : "hover:text-orange-100 "} hover:font-semibold`
+      }`}
           >
-            <div>{sidebarMenuList.find(item => item.id === "setting")?.icon}</div>
+            <div>
+              {sidebarMenuList.find((item) => item.id === "setting")?.icon}
+            </div>
             {!isCollapsed && <span>Settings</span>}
           </div>
         </div>
@@ -202,7 +222,9 @@ const { isDarkMode, toggleDarkMode } = useTheme()
             className={`flex items-center w-full justify-between px-3 py-2 rounded-md
       ${isDarkMode ? "bg-slate-900 text-white" : "bg-gray-200 text-gray-800"}`}
           >
-            {!isCollapsed && <span>{isDarkMode ? "Dark Mode" : "Light Mode"}</span>}
+            {!isCollapsed && (
+              <span>{isDarkMode ? "Dark Mode" : "Light Mode"}</span>
+            )}
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -222,8 +244,6 @@ const { isDarkMode, toggleDarkMode } = useTheme()
             </label>
           </div>
         </div>
-
-
       </div>
     </div>
   );

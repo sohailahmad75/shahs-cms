@@ -19,6 +19,7 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
+import ConfirmDelete from "../../components/ConfirmDelete";
 
 const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -90,10 +91,17 @@ const StoreListPage: React.FC = () => {
             icon={<EditIcon size={22} />}
             onClick={() => handleEdit(row.id)}
           />
-          <ActionIcon
-            className="text-red-500"
-            icon={<TrashIcon size={22} />}
-            onClick={() => handleDelete(row.id)}
+
+          <ConfirmDelete
+            onConfirm={async () => handleDelete(row.id)}
+            renderTrigger={({ open }) => (
+              <ActionIcon
+                className="text-red-500"
+                icon={<TrashIcon size={22} />}
+                onClick={open}
+                title="Delete"
+              />
+            )}
           />
         </div>
       ),
@@ -104,7 +112,7 @@ const StoreListPage: React.FC = () => {
     <div className="p-4">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <h1 className="text-2xl font-bold">Stores</h1>
+        <h1 className="text-xl font-bold">Stores</h1>
         <Button
           onClick={() => {
             setEditingStoreId(null);

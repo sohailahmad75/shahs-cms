@@ -1,11 +1,12 @@
 import { baseApi } from "./baseApi";
-import type {
+import {
   GetMenuItemsArgs,
   Menu,
   MenuCategory,
   MenuItem,
   MenuItemsListResponse,
   MenuModifier,
+  UpdateMenuItemPayload,
 } from "../menu-manager/menu.types";
 
 export const menuApi = baseApi.injectEndpoints({
@@ -116,6 +117,21 @@ export const menuApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { categoryId }) => [
         { type: "MenuCategory", id: categoryId },
+      ],
+    }),
+
+    updateMenuItem: builder.mutation<
+      MenuItem,
+      { menuId: string; itemId: string; payload: UpdateMenuItemPayload }
+    >({
+      query: ({ menuId, itemId, payload }) => ({
+        url: `/menus/${menuId}/items/${itemId}`,
+        method: "PUT",
+        body: payload,
+      }),
+      invalidatesTags: (_res, _err, { itemId }) => [
+        { type: "MenuItems", id: itemId },
+        { type: "MenuItems", id: "LIST" },
       ],
     }),
     deleteMenuItem: builder.mutation<void, { itemId: string; menuId?: string }>(
@@ -258,7 +274,16 @@ export const menuApi = baseApi.injectEndpoints({
     >({
       query: () => "/menus/modification-types",
     }),
-
+    deleteModifier: builder.mutation<
+      { success: boolean; deletedOptions: number; deletedLinks: number },
+      string
+    >({
+      query: (modifierId: string) => ({
+        url: `/menus/modifiers/${modifierId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Modifiers", id: "LIST" }],
+    }),
     duplicateMenu: builder.mutation<void, { menuId: string }>({
       query: ({ menuId }) => ({
         url: `/menus/${menuId}/duplicate`,
@@ -303,6 +328,7 @@ export const {
   useGetMenuCategoryNamesQuery,
   useCreateCategoryMutation,
   useCreateItemMutation,
+  useUpdateMenuItemMutation,
   useDeleteMenuItemMutation,
   useCreateModifierMutation,
   useGetModifiersQuery,
@@ -313,6 +339,7 @@ export const {
   useSyncMenuToUberMutation,
   useAssignMenuToManyStoresMutation,
   useGetAllModificationTypesQuery,
+  useDeleteModifierMutation,
   useGetPresignedUrlMutation,
   useDuplicateMenuMutation,
   useDeleteMenuMutation,

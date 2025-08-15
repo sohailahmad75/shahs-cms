@@ -1,16 +1,17 @@
 import type { Meta } from "../types";
 
 export type MenuItem = {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   price: string;
   s3Key: string;
-  deliveryPrice: number;
+  deliveryPrice: string;
   signedUrl?: string;
   tags?: string | null;
   categoryName?: string | null;
   category?: { id: string; name: string } | null;
+  categoryId?: string;
 };
 
 export type MenuCategory = {
@@ -20,6 +21,8 @@ export type MenuCategory = {
   s3Key: string;
   signedUrl?: string;
   items?: MenuItem[] | undefined;
+  menuId: string;
+  categoryId: string;
 };
 
 export type MenuModifier = {
@@ -44,14 +47,14 @@ export type ModifierOption = {
 };
 
 export interface StoreBasicInfo {
-  email: any;
+  email: string;
   id: string;
   name: string;
   companyName: string;
 }
 
 export interface StoreMenu {
-  isPublished: any;
+  isPublished: boolean;
   id: number;
   storeId: string;
   menuId: string;
@@ -86,3 +89,16 @@ export interface GetMenuItemsArgs {
   sort?: "order" | "name" | "price" | "createdAt";
   sortDir?: SortDir;
 }
+
+export type UpdateMenuItemPayload = Partial<{
+  name: string;
+  description?: string;
+  price: number;
+  deliveryPrice: number;
+  categoryId: string;
+  s3Key: string; // '' to clear; omit to keep
+  isAvailable: boolean;
+  tags: string[];
+  dietaryTags: string[];
+  taxRate: number;
+}>;

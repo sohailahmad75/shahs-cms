@@ -8,7 +8,6 @@ import { toast } from "react-toastify";
 import {
   useCreateModifierMutation,
   useUpdateModifierMutation,
-  useGetAllMenuItemsQuery,
   useGetModifierByIdQuery,
   useGetAllModificationTypesQuery,
   useGetMenuItemsQuery,
@@ -16,8 +15,8 @@ import {
 import MultiSelect from "../../components/MultiSelect";
 import CheckboxField from "../../components/CheckboxField";
 import AddIcon from "../../assets/styledIcons/AddIcon";
-import { MenuItem, MenuModifier } from "../menu.types";
-import { TagOption } from "../../components/helper/components.types";
+import type { MenuItem, MenuModifier } from "../menu.types";
+import type { TagOption } from "../../components/helper/components.types";
 import TagSelector from "../../components/TagSelector";
 
 const ModifierSchema = Yup.object().shape({
@@ -66,25 +65,16 @@ const AddModifierModal: React.FC<Props> = ({
 }) => {
   const [createModifier, { isLoading: creating }] = useCreateModifierMutation();
   const [updateModifier, { isLoading: updating }] = useUpdateModifierMutation();
-
   const { data: allModTypes = [] } = useGetAllModificationTypesQuery();
-
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState<number>(50);
   const {
     data: itemsResp = {
       data: [],
-      meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
+      meta: { total: 0, page: 1, perPage: 50, totalPages: 1 },
     },
     isLoading: itemsLoading,
-    isFetching,
-    refetch,
   } = useGetMenuItemsQuery({
     menuId,
-    page,
-    perPage,
-    query,
+    perPage: 50,
   });
 
   const allItems = itemsResp.data as MenuItem[];
@@ -96,7 +86,7 @@ const AddModifierModal: React.FC<Props> = ({
   const MODIFIER_OPTIONS: TagOption[] = allModTypes.map((type) => ({
     label: type.name,
     value: type.id,
-    icon: iconMap[type.id] || <AddIcon />, // fallback to AddIcon
+    icon: iconMap[type.id] || <AddIcon />,
   }));
 
   const initialData: MenuModifier = {
@@ -126,8 +116,8 @@ const AddModifierModal: React.FC<Props> = ({
         options:
           modifierData.options?.map((opt) => ({
             name: opt.name,
-            price: opt.price,
-            deliveryPrice: opt.deliveryPrice,
+            price: opt.price ?? 0,
+            deliveryPrice: opt.deliveryPrice ?? 0,
           })) || [],
         modificationTypeId: modifierData.modificationTypeId || "",
       });
@@ -137,19 +127,15 @@ const AddModifierModal: React.FC<Props> = ({
   }, [modifierId, modifierData]);
 
   const handleSubmit = async (values: typeof initialValues) => {
-    try {
-      const payload = { ...values };
-      if (modifierId) {
-        await updateModifier({ id: modifierId, payload }).unwrap();
-        toast.success("Modifier updated");
-      } else {
-        await createModifier({ menuId, payload }).unwrap();
-        toast.success("Modifier created");
-      }
-      onClose();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to save modifier");
+    const payload = { ...values };
+    if (modifierId) {
+      await updateModifier({ id: modifierId, payload }).unwrap();
+      toast.success("Modifier updated");
+    } else {
+      await createModifier({ menuId, payload }).unwrap();
+      toast.success("Modifier created");
     }
+    onClose();
   };
 
   if (itemsLoading || (modifierId && modifierLoading)) {
@@ -262,7 +248,6 @@ const AddModifierModal: React.FC<Props> = ({
                   Select items to apply to{" "}
                   <span className="text-red-500">*</span>
                 </label>
-                {console.log("All Items: ", allItems)}
                 <MultiSelect
                   name="items"
                   value={values.items}
@@ -285,7 +270,7 @@ const AddModifierModal: React.FC<Props> = ({
                     onClick={() =>
                       setFieldValue("options", [
                         ...values.options,
-                        { name: "", price: 0 },
+                        { name: "", price: 0, deliveryPrice: 0 },
                       ])
                     }
                     className="text-sm px-3 py-1.5"
@@ -359,18 +344,20 @@ const AddModifierModal: React.FC<Props> = ({
                             <InputField
                               type="number"
                               name={`options[${index}].deliveryPrice`}
-                              value={String(opt.deliveryPrice)}
-                              onChange={(e) =>
+                              value={String(opt.deliveryPrice ?? 0)} // 👈 safe fallback
+                              onChange={(e) => {
+                                const v = e.target.value;
                                 setFieldValue(
                                   `options[${index}].deliveryPrice`,
-                                  parseFloat(e.target.value),
-                                )
-                              }
+                                  v === "" ? 0 : Number(v), // 👈 keep it numeric
+                                );
+                              }}
                               placeholder="Price"
                               error={
                                 touched.options?.[index]?.deliveryPrice &&
-                                errors.options?.[index]?.deliveryPrice
-                                  ? (errors.options[index] as any).deliveryPrice
+                                (errors.options?.[index] as any)?.deliveryPrice
+                                  ? (errors.options?.[index] as any)
+                                      .deliveryPrice
                                   : ""
                               }
                             />

@@ -23,7 +23,7 @@ const KiosksListPage: React.FC = () => {
   const [createKiosk, { isLoading: creating }] = useCreateKioskMutation();
   const [updateKiosk, { isLoading: updating }] = useUpdateKioskMutation();
   const [deleteKiosk] = useDeleteKioskMutation();
- const { isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingKioskId, setEditingKioskId] = useState<string | null>(null);
   const { data: editingKioskData } = useGetKioskByIdQuery(editingKioskId!, {
@@ -73,13 +73,16 @@ const KiosksListPage: React.FC = () => {
           <ActionIcon
             icon={<EditIcon size={22} />}
             onClick={() => handleEdit(row.id)}
-            className={isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-gray-500 hover:text-gray-700"}
+            className={
+              isDarkMode
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-gray-500 hover:text-gray-700"
+            }
           />
           <ActionIcon
             className="text-red-500"
             icon={<TrashIcon size={22} />}
             onClick={() => handleDelete(row.id)}
-            
           />
         </div>
       ),
@@ -89,7 +92,7 @@ const KiosksListPage: React.FC = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Kiosks</h1>
+        <h1 className="text-xl font-bold">Kiosks</h1>
         <Button
           onClick={() => {
             setEditingKioskId(null);

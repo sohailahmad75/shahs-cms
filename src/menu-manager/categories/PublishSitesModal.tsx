@@ -149,7 +149,7 @@ const PublishSitesModal = ({
         debouncedQuery ? (
           // 🔎 Empty state when a search filter is applied
           <div className="text-center italic text-slate-500 dark:text-slate-400">
-            <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md p-4 mx-auto text-center">
+            <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md p-4 mx-auto text-center justify-center items-center flex flex-col">
               <p className="font-semibold text-slate-600 mb-2">
                 No stores match your search.
               </p>

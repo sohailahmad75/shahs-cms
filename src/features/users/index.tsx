@@ -90,7 +90,7 @@ const UsersTypeListPage: React.FC = () => {
     <div className="p-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Users</h1>
+        <h1 className="text-xl font-bold">Users</h1>
         <Button
           onClick={() => {
             setEditingUser(null);

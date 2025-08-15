@@ -27,7 +27,7 @@ const DocumentTypeListPage: React.FC = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState<DocumentType | null>(
-    null
+    null,
   );
 
   const handleEdit = (doc: DocumentType) => {
@@ -83,7 +83,7 @@ const DocumentTypeListPage: React.FC = () => {
     <div className="p-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Documents</h1>
+        <h1 className="text-xl font-bold">Documents</h1>
         <Button
           onClick={() => {
             setEditingDocument(null);
@@ -96,8 +96,7 @@ const DocumentTypeListPage: React.FC = () => {
 
       {isLoading ? (
         <Loader />
-      ) 
-       : (
+      ) : (
         <DynamicTable
           data={documents}
           columns={columns}
