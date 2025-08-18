@@ -18,19 +18,19 @@ import {
 
 import { useTheme } from "../../context/themeContext";
 
-// Light mode colors (orange shades)
 const LIGHT_COLORS = ["#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffedd5"];
-// Dark mode colors (slate shades with some contrast)
 const DARK_COLORS = ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b"];
 
 function DashboardHeader() {
   const [currency, setCurrency] = useState("USD");
   const [range, setRange] = useState("all");
+  const { isDarkMode } = useTheme();
+
 
   return (
-    <div className={`flex justify-between items-center px-4 py-2  bg-gray-50`}>
+    <div className={`flex justify-between items-center px-4 py-2 ${isDarkMode ? "bg-slate-950" : "bg-gray-900"} bg-gray-50`}>
       <div className="flex items-center space-x-2">
-        <h1 className="font-bold text-2xl text-gray-800">Dashboard</h1>
+        <h1 className={`font-bold text-2xl ${isDarkMode ? "text-white" : "text-gray-800"}`}>Dashboard</h1>
         <span className="text-gray-500">- Company 3_1</span>
       </div>
 
@@ -40,16 +40,19 @@ function DashboardHeader() {
             <button
               key={c}
               onClick={() => setCurrency(c)}
-              className={`${currency === c ? "underline text-gray-900" : "text-gray-500"
+              className={`${currency === c
+                ? isDarkMode
+                  ? "underline text-white"
+                  : "underline text-black"
+                : isDarkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
                 }`}
             >
               {c}
             </button>
           ))}
-        </div>
 
-
-        <div className="flex space-x-2">
           {[
             { label: "All time", value: "all" },
             { label: "1 Y", value: "1y" },
@@ -60,12 +63,19 @@ function DashboardHeader() {
             <button
               key={r.value}
               onClick={() => setRange(r.value)}
-              className={`${range === r.value ? "underline text-gray-900" : "text-gray-500"
+              className={`${range === r.value
+                ? isDarkMode
+                  ? "underline text-white"
+                  : "underline text-black"
+                : isDarkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
                 }`}
             >
               {r.label}
             </button>
           ))}
+
         </div>
 
         <button className="text-gray-500 hover:text-gray-700">Go to...</button>
@@ -90,7 +100,7 @@ const Dashboard = () => {
     { name: "Tod", value: 290 },
   ];
 
-  // Mock Data (Replace with API data)
+
   const globalProgress = [
     { name: "Nov'18", value: -100 },
     { name: "Dec'18", value: -50 },
@@ -132,9 +142,9 @@ const Dashboard = () => {
     { name: "Algo 4", profit: 12 },
   ];
 
-  // Get the appropriate color scheme based on theme
+  
   const COLORS = isDarkMode ? DARK_COLORS : LIGHT_COLORS;
-  // Area chart gradient color based on theme
+
   const areaChartColor = isDarkMode ? "#334155" : "#f97316";
 
   return (
@@ -284,19 +294,19 @@ const Dashboard = () => {
                 }}
                 cursor={{ fill: isDarkMode ? "#1e293b" : "#f3f4f6" }}
               />
-              {/* <Bar dataKey="value" barSize={40} radius={[0, 4, 4, 0]}>
-                {data.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Bar> */}
               <Bar dataKey="value" barSize={40} radius={[0, 4, 4, 0]}>
                 {data.map((entry, index) => (
                   <Cell
                     key={index}
-                    fill={entry.name === "Salute" ? "#020617" : COLORS[index % COLORS.length]}
+                    fill={
+                      entry.name === "Salute"
+                        ? (isDarkMode ? "#020617" : "#f97316") 
+                        : COLORS[index % COLORS.length]
+                    }
                   />
                 ))}
               </Bar>
+
 
             </BarChart>
           </ResponsiveContainer>
