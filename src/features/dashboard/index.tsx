@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   Area,
   AreaChart,
@@ -16,6 +19,60 @@ import {
 import { useTheme } from "../../context/themeContext";
 
 const COLORS = ["#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffedd5"];
+
+
+function DashboardHeader() {
+  const [currency, setCurrency] = useState("USD");
+  const [range, setRange] = useState("all");
+
+  return (
+    <div className="flex justify-between items-center px-4 py-2  bg-gray-50">
+      <div className="flex items-center space-x-2">
+        <h1 className="font-bold text-2xl text-gray-800">Dashboard</h1>
+        <span className="text-gray-500">- Company 3_1</span>
+      </div>
+
+      <div className="flex items-center space-x-6 text-sm font-medium text-gray-600">
+        <div className="flex space-x-2">
+          {["USD", "BTC"].map((c) => (
+            <button
+              key={c}
+              onClick={() => setCurrency(c)}
+              className={`${
+                currency === c ? "underline text-gray-900" : "text-gray-500"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
+
+        <div className="flex space-x-2">
+          {[
+            { label: "All time", value: "all" },
+            { label: "1 Y", value: "1y" },
+            { label: "1 M", value: "1m" },
+            { label: "1 W", value: "1w" },
+            { label: "1 D", value: "1d" },
+          ].map((r) => (
+            <button
+              key={r.value}
+              onClick={() => setRange(r.value)}
+              className={`${
+                range === r.value ? "underline text-gray-900" : "text-gray-500"
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        <button className="text-gray-500 hover:text-gray-700">Go to...</button>
+      </div>
+    </div>
+  );
+}
 
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
@@ -63,80 +120,77 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <h1 className={`title ${isDarkMode ? "text-white" : "text-black"}`}>
-        Dashboard
-      </h1>
+    <div className="flex flex-col gap-y-6">
+      <DashboardHeader />
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {[
-          { label: "Total Value", value: "$123,456.56" },
-          { label: "Daily Profit", value: "$123.56 (13.23%)" },
-          { label: "Bots Working", value: "56 (total 123)" },
-          { label: "Algos Total", value: "6" },
-        ].map(({ label, value }, index) => (
-          <div
-            key={index}
-            className={`border rounded-lg p-4 ${
-              isDarkMode
-                ? "bg-slate-900 border-slate-700 text-white"
-                : "bg-white border-gray-200 text-black"
-            }`}
-          >
-            <p className="text-sm font-medium text-orange-600">{label}</p>
-            <p className="mt-2 text-2xl font-bold">{value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Global Progress */}
-      <div
-        className={`border rounded-lg ${
-          isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-        }`}
-      >
-        <div className="p-4">
-          <p
-            className={`text-lg font-semibold ${
-              isDarkMode ? "text-white" : "text-black"
-            }`}
-          >
-            Global Progress
-          </p>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="flex flex-col gap-4 lg:col-span-1">
+          {[
+            { label: "Total Value", value: "$123,456.56" },
+            { label: "Daily Profit", value: "$123.56 (13.23%)" },
+            { label: "Bots Working", value: "56 (total 123)" },
+            { label: "Algos Total", value: "6" },
+          ].map(({ label, value }, index) => (
+            <div
+              key={index}
+              className={`border rounded-lg p-4 ${
+                isDarkMode
+                  ? "bg-slate-900 border-slate-700 text-white"
+                  : "bg-white border-gray-200 text-black"
+              }`}
+            >
+              <p className="text-sm font-medium text-orange-600">{label}</p>
+              <p className="mt-2 text-2xl font-bold">{value}</p>
+            </div>
+          ))}
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={globalProgress}>
-            <defs>
-              <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="name" stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
-            <YAxis stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
-            <Tooltip
-              cursor={false}
-              contentStyle={{
-                backgroundColor: isDarkMode ? "#020617" : "#ffffff",
-                borderColor: isDarkMode ? "#1e293b" : "#e5e7eb",
-                borderRadius: "0.5rem",
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="#f97316"
-              fillOpacity={1}
-              fill="url(#colorProgress)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+
+        <div
+          className={`border rounded-lg lg:col-span-3 ${
+            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+          }`}
+        >
+          <div className="p-4">
+            <p
+              className={`text-lg font-semibold ${
+                isDarkMode ? "text-white" : "text-black"
+              }`}
+            >
+              Global Progress
+            </p>
+          </div>
+          <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={globalProgress}>
+              <defs>
+                <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="name" stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
+              <YAxis stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
+              <Tooltip
+                cursor={false}
+                contentStyle={{
+                  backgroundColor: isDarkMode ? "#020617" : "#ffffff",
+                  borderColor: isDarkMode ? "#1e293b" : "#e5e7eb",
+                  borderRadius: "0.5rem",
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#f97316"
+                fillOpacity={1}
+                fill="url(#colorProgress)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Allocation Charts */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {/* Allocation by Currency */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
           className={`border rounded-lg ${
             isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
@@ -210,8 +264,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Profit by Bot & Algo */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {/* Profit Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Profit by Bot */}
         <div
           className={`border rounded-lg ${
