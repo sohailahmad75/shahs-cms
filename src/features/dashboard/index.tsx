@@ -38,9 +38,8 @@ function DashboardHeader() {
             <button
               key={c}
               onClick={() => setCurrency(c)}
-              className={`${
-                currency === c ? "underline text-gray-900" : "text-gray-500"
-              }`}
+              className={`${currency === c ? "underline text-gray-900" : "text-gray-500"
+                }`}
             >
               {c}
             </button>
@@ -59,9 +58,8 @@ function DashboardHeader() {
             <button
               key={r.value}
               onClick={() => setRange(r.value)}
-              className={`${
-                range === r.value ? "underline text-gray-900" : "text-gray-500"
-              }`}
+              className={`${range === r.value ? "underline text-gray-900" : "text-gray-500"
+                }`}
             >
               {r.label}
             </button>
@@ -76,6 +74,20 @@ function DashboardHeader() {
 
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
+
+  const salesByLocation = [
+    { name: "Commerce", value: 300 },
+    { name: "Sale", value: 200 },
+    { name: "Tbarlike", value: 150 },
+    { name: "Tod", value: 100 },
+  ];
+
+  const data = [
+    { name: "Salute", value: 580 },
+    { name: "Tbarlike", value: 400 },
+    { name: "Tod", value: 290 },
+    // { name: "Tod", value: 220 },
+  ];
 
   // Mock Data (Replace with API data)
   const globalProgress = [
@@ -133,11 +145,10 @@ const Dashboard = () => {
           ].map(({ label, value }, index) => (
             <div
               key={index}
-              className={`border rounded-lg p-4 ${
-                isDarkMode
-                  ? "bg-slate-900 border-slate-700 text-white"
-                  : "bg-white border-gray-200 text-black"
-              }`}
+              className={`border rounded-lg p-4 ${isDarkMode
+                ? "bg-slate-900 border-slate-700 text-white"
+                : "bg-white border-gray-200 text-black"
+                }`}
             >
               <p className="text-sm font-medium text-orange-600">{label}</p>
               <p className="mt-2 text-2xl font-bold">{value}</p>
@@ -146,15 +157,13 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`border rounded-lg lg:col-span-3 ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border rounded-lg lg:col-span-3 ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="p-4">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Global Progress
             </p>
@@ -192,15 +201,13 @@ const Dashboard = () => {
       {/* Allocation Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
-          className={`border rounded-lg ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border rounded-lg ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="p-4">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Allocation by Currency
             </p>
@@ -226,8 +233,67 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Allocation by Algo */}
         <div
+          className={`rounded-xl p-4 shadow-md ${isDarkMode
+            ? "bg-slate-900 border border-slate-700"
+            : "bg-white border border-gray-200"
+            }`}
+        >
+          {/* Title */}
+          <div className="mb-6">
+            <p className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"}`}>
+              Sales by Location
+            </p>
+            <p className={`text-sm mt-1 ${isDarkMode ? "text-slate-300" : "text-gray-500"}`}>
+              Commrec Immersions
+            </p>
+          </div>
+
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              layout="vertical"
+              data={data}
+              margin={{ top: 0, right: 30, left: 10, bottom: 0 }}
+            >
+              <XAxis
+                type="number"
+                domain={[0, 600]}
+                ticks={[0, 200, 400, 600]}
+                stroke={isDarkMode ? "#94a3b8" : "#64748b"}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                stroke={isDarkMode ? "#94a3b8" : "#64748b"}
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: isDarkMode ? "#0f172a" : "#ffffff",
+                  borderColor: isDarkMode ? "#1e293b" : "#e5e7eb",
+                  borderRadius: "0.5rem",
+                }}
+                cursor={{ fill: isDarkMode ? "#1e293b" : "#f3f4f6" }}
+              />
+              <Bar dataKey="value" barSize={40} radius={[0, 4, 4, 0]}>
+                {data.map((_, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+
+          <div className={`mt-6 text-sm ${isDarkMode ? "text-slate-300" : "text-gray-500"}`}>
+            <p className="font-medium">Revenue Breakdown</p>
+            <p className="mt-1">Orinet Extraction Images</p>
+            <p className="mt-1">360 x daily Commune</p>
+          </div>
+        </div>
+
+        {/* <div
           className={`border rounded-lg ${
             isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
           }`}
@@ -261,22 +327,18 @@ const Dashboard = () => {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
       </div>
 
-      {/* Profit Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Profit by Bot */}
         <div
-          className={`border rounded-lg ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border rounded-lg ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="p-4">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Profit by Bot
             </p>
@@ -292,16 +354,14 @@ const Dashboard = () => {
         </div>
 
         {/* Profit by Algo */}
-        <div
-          className={`border rounded-lg ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
+        {/* <div
+          className={`border rounded-lg ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="p-4">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Profit by Algo
             </p>
@@ -314,7 +374,67 @@ const Dashboard = () => {
               <Bar dataKey="profit" fill="#f97316" />
             </BarChart>
           </ResponsiveContainer>
+        </div> */}
+        {/* Average Order Value */}
+        <div
+          className={`border rounded-lg shadow-md ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
+        >
+          <div className="p-4">
+            <p
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
+            >
+              Average Order Value
+            </p>
+            <p
+              className={`text-sm mt-1 ${isDarkMode ? "text-slate-400" : "text-gray-500"
+                }`}
+            >
+              Sales unit averages amongst long units
+            </p>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart
+              data={[
+                { name: "Jan", value: 120 },
+                { name: "Feb", value: 200 },
+                { name: "Mar", value: 170 },
+                { name: "Apr", value: 300 },
+                { name: "May", value: 250 },
+                { name: "Jun", value: 310 },
+                { name: "Jul", value: 280 },
+              ]}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="colorOrange" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="name" stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
+              <YAxis stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: isDarkMode ? "#0f172a" : "#ffffff",
+                  borderColor: isDarkMode ? "#1e293b" : "#e5e7eb",
+                  borderRadius: "0.5rem",
+                }}
+                cursor={{ stroke: "#f97316", strokeWidth: 1 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#f97316"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#colorOrange)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
+
       </div>
     </div>
   );
