@@ -18,15 +18,17 @@ import {
 
 import { useTheme } from "../../context/themeContext";
 
-const COLORS = ["#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffedd5"];
-
+// Light mode colors (orange shades)
+const LIGHT_COLORS = ["#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffedd5"];
+// Dark mode colors (slate shades with some contrast)
+const DARK_COLORS = ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b"];
 
 function DashboardHeader() {
   const [currency, setCurrency] = useState("USD");
   const [range, setRange] = useState("all");
 
   return (
-    <div className="flex justify-between items-center px-4 py-2  bg-gray-50">
+    <div className={`flex justify-between items-center px-4 py-2  bg-gray-50`}>
       <div className="flex items-center space-x-2">
         <h1 className="font-bold text-2xl text-gray-800">Dashboard</h1>
         <span className="text-gray-500">- Company 3_1</span>
@@ -86,7 +88,6 @@ const Dashboard = () => {
     { name: "Salute", value: 580 },
     { name: "Tbarlike", value: 400 },
     { name: "Tod", value: 290 },
-    // { name: "Tod", value: 220 },
   ];
 
   // Mock Data (Replace with API data)
@@ -131,6 +132,11 @@ const Dashboard = () => {
     { name: "Algo 4", profit: 12 },
   ];
 
+  // Get the appropriate color scheme based on theme
+  const COLORS = isDarkMode ? DARK_COLORS : LIGHT_COLORS;
+  // Area chart gradient color based on theme
+  const areaChartColor = isDarkMode ? "#334155" : "#f97316";
+
   return (
     <div className="flex flex-col gap-y-6">
       <DashboardHeader />
@@ -172,8 +178,8 @@ const Dashboard = () => {
             <AreaChart data={globalProgress}>
               <defs>
                 <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                  <stop offset="5%" stopColor={areaChartColor} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={areaChartColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="name" stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
@@ -189,7 +195,7 @@ const Dashboard = () => {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#f97316"
+                stroke={areaChartColor}
                 fillOpacity={1}
                 fill="url(#colorProgress)"
               />
@@ -221,7 +227,7 @@ const Dashboard = () => {
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                fill="#f97316"
+                fill={areaChartColor}
                 label
               >
                 {allocationByCurrency.map((entry, index) => (
@@ -292,42 +298,6 @@ const Dashboard = () => {
             <p className="mt-1">360 x daily Commune</p>
           </div>
         </div>
-
-        {/* <div
-          className={`border rounded-lg ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="p-4">
-            <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
-            >
-              Allocation by Algo
-            </p>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={allocationByAlgo}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={90}
-                fill="#f97316"
-                label
-              >
-                {allocationByAlgo.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -347,34 +317,17 @@ const Dashboard = () => {
             <BarChart data={profitByBot}>
               <XAxis dataKey="name" stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
               <YAxis stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
-              <Tooltip />
-              <Bar dataKey="profit" fill="#f97316" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: isDarkMode ? "#0f172a" : "#ffffff",
+                  borderColor: isDarkMode ? "#1e293b" : "#e5e7eb",
+                }}
+              />
+              <Bar dataKey="profit" fill={areaChartColor} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Profit by Algo */}
-        {/* <div
-          className={`border rounded-lg ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-            }`}
-        >
-          <div className="p-4">
-            <p
-              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
-                }`}
-            >
-              Profit by Algo
-            </p>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={profitByAlgo}>
-              <XAxis dataKey="name" stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
-              <YAxis stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
-              <Tooltip />
-              <Bar dataKey="profit" fill="#f97316" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div> */}
         {/* Average Order Value */}
         <div
           className={`border rounded-lg shadow-md ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
@@ -409,8 +362,8 @@ const Dashboard = () => {
             >
               <defs>
                 <linearGradient id="colorOrange" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                  <stop offset="5%" stopColor={areaChartColor} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={areaChartColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="name" stroke={isDarkMode ? "#94a3b8" : "#64748b"} />
@@ -421,12 +374,12 @@ const Dashboard = () => {
                   borderColor: isDarkMode ? "#1e293b" : "#e5e7eb",
                   borderRadius: "0.5rem",
                 }}
-                cursor={{ stroke: "#f97316", strokeWidth: 1 }}
+                cursor={{ stroke: areaChartColor, strokeWidth: 1 }}
               />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#f97316"
+                stroke={areaChartColor}
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorOrange)"
@@ -434,7 +387,6 @@ const Dashboard = () => {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-
       </div>
     </div>
   );
