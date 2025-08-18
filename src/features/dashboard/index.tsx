@@ -156,7 +156,7 @@ const Dashboard = () => {
                 : "bg-white border-gray-200 text-black"
                 }`}
             >
-              <p className="text-sm font-medium text-orange-600">{label}</p>
+              <p className={`text-sm font-medium ${isDarkMode ? "text-slate-500" : "text-orange-600"} text-orange-600`}>{label}</p>
               <p className="mt-2 text-2xl font-bold">{value}</p>
             </div>
           ))}
@@ -284,11 +284,20 @@ const Dashboard = () => {
                 }}
                 cursor={{ fill: isDarkMode ? "#1e293b" : "#f3f4f6" }}
               />
-              <Bar dataKey="value" barSize={40} radius={[0, 4, 4, 0]}>
+              {/* <Bar dataKey="value" barSize={40} radius={[0, 4, 4, 0]}>
                 {data.map((_, index) => (
                   <Cell key={index} fill={COLORS[index % COLORS.length]} />
                 ))}
+              </Bar> */}
+              <Bar dataKey="value" barSize={40} radius={[0, 4, 4, 0]}>
+                {data.map((entry, index) => (
+                  <Cell
+                    key={index}
+                    fill={entry.name === "Salute" ? "#020617" : COLORS[index % COLORS.length]}
+                  />
+                ))}
               </Bar>
+
             </BarChart>
           </ResponsiveContainer>
 
