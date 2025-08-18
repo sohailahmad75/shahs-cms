@@ -1,5 +1,5 @@
 import { baseApi } from "../../../services/baseApi";
-import type { UpdateUsersDto, UsersType, CreateUsersDto } from "../Users.types";
+import type { UpdateUsersDto, UsersType, CreateUsersDto } from "../users.types";
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

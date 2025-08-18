@@ -3,11 +3,11 @@ import Button from "../../components/Button";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
 import Loader from "../../components/Loader";
-import UsersTypeModal from "./components/usersModal";
+import UsersTypeModal from "./components/UsersModal";
 import EditIcon from "../../assets/styledIcons/EditIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
-import type { UsersType } from "./Users.types";
+import type { UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
 
 import {

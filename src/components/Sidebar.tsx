@@ -83,7 +83,9 @@ const Sidebar = ({
             isCollapsed ? "py-3 justify-center" : "py-6 justify-between"
           }`}
         >
-          {!isCollapsed && <ShahsLogo />}
+          {!isCollapsed && (
+            <ShahsLogo textColor={`${isDarkMode ? "#ffffff" : "#000000"}`} />
+          )}
           {!isMobile && (
             <span
               onClick={() => setIsCollapsed(!isCollapsed)}
@@ -120,7 +122,7 @@ const Sidebar = ({
                           : openTransactionsPanel
                       }
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
-                        ${activePanel === id ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-slate-500" : "text-orange-100"} font-semibold shadow-xs` : ` ${isDarkMode ? "hover:text-slate-600" : "hover:text-orange-100 "} hover:font-semibold`}`}
+                        ${activePanel === id ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-primary-100" : "text-orange-100"} font-semibold shadow-xs` : ` ${isDarkMode ? "hover:text-primary-200" : "hover:text-orange-100 "} hover:font-semibold`}`}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -136,7 +138,7 @@ const Sidebar = ({
                       to={link}
                       onClick={() => setActivePanel(null)}
                       className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all duration-300 ease-in-out
-                ${isActive ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-slate-500" : "text-orange-100"} font-semibold shadow-xs` : ` ${isDarkMode ? "hover:text-slate-600" : "hover:text-orange-100 "} hover:font-semibold`}`}
+                ${isActive ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-primary-100" : "text-orange-100"} font-semibold shadow-xs` : ` ${isDarkMode ? "hover:text-primary-200" : "hover:text-orange-100 "} hover:font-semibold`}`}
                     >
                       <div>{icon}</div>
                       {!isCollapsed && <span>{name}</span>}
@@ -204,8 +206,8 @@ const Sidebar = ({
       py-2 rounded-md cursor-pointer transition-all duration-300 ease-in-out
       ${
         activePanel === "settings"
-          ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-slate-500" : "text-orange-100"} font-semibold shadow-xs`
-          : ` ${isDarkMode ? "hover:text-slate-600" : "hover:text-orange-100 "} hover:font-semibold`
+          ? `${isDarkMode ? "bg-slate-900" : "bg-orange-200"} ${isDarkMode ? "text-primary-100" : "text-orange-100"} font-semibold shadow-xs`
+          : ` ${isDarkMode ? "hover:text-primary-200" : "hover:text-orange-100 "} hover:font-semibold`
       }`}
           >
             <div>

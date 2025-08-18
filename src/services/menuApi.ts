@@ -245,7 +245,10 @@ export const menuApi = baseApi.injectEndpoints({
     //   }),
     //   invalidatesTags: [{ type: "Menus" }],
     // }),
-    syncMenuToUber: builder.mutation<void, { id: string; storeIds: string[] }>({
+    syncMenuToUber: builder.mutation<
+      { message: string },
+      { id: string; storeIds: string[] }
+    >({
       query: ({ id, storeIds }) => ({
         url: `/uber-eats/sync-menu/${id}`,
         method: "PUT",

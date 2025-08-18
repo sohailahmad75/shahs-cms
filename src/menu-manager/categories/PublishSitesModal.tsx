@@ -88,26 +88,31 @@ const PublishSitesModal = ({
                 </p>
               </div>
             ) : (
-              <div className="grid gap-3">
-                {storeMenus?.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="font-semibold text-sm text-slate-800 dark:text-slate-100">
-                        {item.store.name}
-                      </span>
-                      <span>-</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {item.store.companyName}
-                      </span>
+              <div
+                className="max-h-[180px] overflow-y-auto pr-2 w-full  thin-scrollbar"
+                style={{ scrollbarWidth: "thin" }}
+              >
+                <div className="grid gap-3">
+                  {storeMenus?.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between items-center px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                          {item.store.name}
+                        </span>
+                        <span>-</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {item.store.companyName}
+                        </span>
+                      </div>
+                      <div className="text-slate-400 dark:text-slate-500 text-xs italic">
+                        Active
+                      </div>
                     </div>
-                    <div className="text-slate-400 dark:text-slate-500 text-xs italic">
-                      Active
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -147,7 +152,6 @@ const PublishSitesModal = ({
         <Loader />
       ) : storesResp.data.length < 1 ? (
         debouncedQuery ? (
-          // 🔎 Empty state when a search filter is applied
           <div className="text-center italic text-slate-500 dark:text-slate-400">
             <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md p-4 mx-auto text-center justify-center items-center flex flex-col">
               <p className="font-semibold text-slate-600 mb-2">
@@ -182,7 +186,7 @@ const PublishSitesModal = ({
           </div>
         )
       ) : (
-        <div className="max-h-70 overflow-auto space-y-3">
+        <div className="max-h-[180px] overflow-y-auto pr-2 space-y-3 thin-scrollbar">
           {allSitesUsingThisMenu ? (
             <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-md p-4 text-center">
               <p className="font-semibold text-slate-600 dark:text-slate-400 mb-2">
