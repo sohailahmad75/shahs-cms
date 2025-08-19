@@ -99,7 +99,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         toast.success("File uploaded successfully");
         onChange(presigned.key);
       } catch (err) {
-        toast.error("File upload failed");
+        // toast.error("File upload failed");
         console.error(err);
         setLocalPreviewUrl(null);
         setFileName(null);
@@ -131,8 +131,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   });
 
   const previewSrc = getPreviewSource();
-
-  console.log("FileUploader render", previewSrc, fileName, value);
   return (
     <>
       {value ? (

@@ -8,19 +8,22 @@ import { useParams } from "react-router-dom";
 import Loader from "../../components/Loader";
 import AddIcon from "../../assets/styledIcons/AddIcon";
 import { useTheme } from "../../context/themeContext";
-
 import AddCategoryModal from "./AddCategoryModal";
+import type { MenuCategory } from "../menu.types";
 
 const CategoryList: React.FC = () => {
   const { id: menuId = "" } = useParams();
-  const { data: categories = [], isLoading } =
-    useGetMenuCategoriesQuery(menuId);
+  const {
+    data: categories = [],
+    isLoading,
+    refetch,
+  } = useGetMenuCategoriesQuery(menuId);
 
   const [expandedCategories, setExpandedCategories] = useState<
     Record<string, boolean>
   >({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-   const { isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
 
   const toggleAll = (expand: boolean) => {
     const newState: Record<string, boolean> = {};
@@ -51,14 +54,17 @@ const CategoryList: React.FC = () => {
             </Button>
           </div>
 
-          <div className={`space-y-6 mt-10  ${isDarkMode ? "bg-slate-900" : "bg-white"} p-6 rounded shadow-sm`}>
+          <div
+            className={`space-y-6 mt-10  ${isDarkMode ? "bg-slate-900" : "bg-white"} p-6 rounded shadow-sm`}
+          >
             {categories.length === 0 ? (
               <p className="text-center text-gray-500 text-sm">
                 No categories found
               </p>
             ) : (
-              categories?.map((cat) => (
+              categories?.map((cat: MenuCategory) => (
                 <CategoryCard
+                  refetchData={refetch}
                   key={cat.id}
                   category={cat}
                   isExpanded={expandedCategories[cat.name] ?? true}

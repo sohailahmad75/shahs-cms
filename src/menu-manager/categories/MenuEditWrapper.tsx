@@ -34,16 +34,11 @@ const SyncButtons = ({
     useSyncMenuToUberMutation();
 
   const handleSync = async () => {
-    try {
-      await syncMenuToUber({
-        id: menuId,
-        storeIds: selectedStores,
-      }).unwrap();
-      toast.success("Synced with Uber");
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to sync with Uber");
-    }
+    const { message } = await syncMenuToUber({
+      id: menuId,
+      storeIds: selectedStores,
+    }).unwrap();
+    toast.success(message || "Synced with Uber");
   };
 
   return (

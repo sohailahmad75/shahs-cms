@@ -1,23 +1,34 @@
-import React, { useCallback, useState } from "react";
+// src/pages/menu/ItemModal.tsx
+import React, { useState } from "react";
 import Modal from "../../components/Modal";
 import InputField from "../../components/InputField";
 import SelectField from "../../components/SelectField";
 import Button from "../../components/Button";
-import { useCreateItemMutation } from "../../services/menuApi";
+import {
+  useCreateItemMutation,
+  useUpdateMenuItemMutation,
+} from "../../services/menuApi";
 import { toast } from "react-toastify";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import type { MenuCategory } from "../../types";
 import FileUploader from "../../components/FileUploader";
+import { useParams } from "react-router-dom";
+import type { MenuCategory, MenuItem } from "../menu.types";
+
+type Mode = "create" | "edit";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  mode: Mode;
   categories: { id: string; name: string }[];
-  selectedCategory: MenuCategory;
+  selectedCategory?: MenuCategory;
+  // when editing, pass the item you clicked
+  item?: Partial<MenuItem> & { id: string };
+  onSuccess?: () => void;
 };
 
-const AddItemSchema = Yup.object().shape({
+const itemSchema = Yup.object().shape({
   name: Yup.string().required("Item name is required"),
   price: Yup.number()
     .typeError("Price must be a number")
@@ -29,44 +40,70 @@ const AddItemSchema = Yup.object().shape({
   s3Key: Yup.string().required("Item image is required"),
 });
 
-const AddItemModal: React.FC<Props> = ({
+const ItemModal: React.FC<Props> = ({
   isOpen,
   onClose,
+  mode,
   categories,
   selectedCategory,
+  item,
+  onSuccess,
 }) => {
-  const [createItem, { isLoading }] = useCreateItemMutation();
+  console.log("ItemModal rendered with item:", item);
+  const { id: menuId = "" } = useParams();
+  const [createItem, { isLoading: creating }] = useCreateItemMutation();
+  const [updateItem, { isLoading: updating }] = useUpdateMenuItemMutation();
+
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const initialValues = {
-    name: "",
-    description: "",
-    price: "",
-    deliveryPrice: "",
-    s3Key: "",
-    categoryId: selectedCategory?.id || "",
+  const initialValues: MenuItem = {
+    name: item?.name ?? "",
+    description: item?.description ?? "",
+    price: item?.price ?? "",
+    deliveryPrice: item?.deliveryPrice ?? "",
+    s3Key: item?.s3Key ?? "",
+    categoryId: item?.categoryId ?? selectedCategory?.id ?? "",
   };
 
   const handleSubmit = async (values: typeof initialValues) => {
-    try {
+    if (mode === "create") {
       await createItem({
         categoryId: values.categoryId,
         payload: {
           ...values,
           categoryId: undefined,
-          price: parseFloat(values.price),
-          deliveryPrice: parseFloat(values.deliveryPrice),
+          price: parseFloat(String(values.price)),
+          deliveryPrice: parseFloat(String(values.deliveryPrice)),
         },
       }).unwrap();
-
       toast.success("Item created");
-      onClose();
-      if (previewImage) {
-        URL.revokeObjectURL(previewImage);
-        setPreviewImage(null);
-      }
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to create item");
+    } else {
+      if (!menuId) throw new Error("Missing menu id");
+      if (!item?.id) throw new Error("Missing item id");
+
+      const payload = {
+        name: values.name?.trim(),
+        description: values.description,
+        price: parseFloat(String(values.price)),
+        deliveryPrice: parseFloat(String(values.deliveryPrice)),
+        categoryId: values.categoryId,
+        ...(values.s3Key !== undefined ? { s3Key: values.s3Key } : {}),
+      };
+
+      await updateItem({
+        menuId,
+        itemId: item.id,
+        payload,
+      }).unwrap();
+
+      toast.success("Item updated");
+    }
+
+    onClose();
+    onSuccess?.();
+    if (previewImage) {
+      URL.revokeObjectURL(previewImage);
+      setPreviewImage(null);
     }
   };
 
@@ -80,12 +117,14 @@ const AddItemModal: React.FC<Props> = ({
           setPreviewImage(null);
         }
       }}
-      title="Add New Item"
+      title={mode === "create" ? "Add New Item" : "Edit Item"}
     >
       <Formik
         initialValues={initialValues}
-        validationSchema={AddItemSchema}
+        validationSchema={itemSchema}
         enableReinitialize
+        validateOnChange={false}
+        validateOnBlur={false}
         onSubmit={handleSubmit}
       >
         {({ values, handleChange, errors, touched, setFieldValue }) => (
@@ -160,23 +199,32 @@ const AddItemModal: React.FC<Props> = ({
                   error={touched.categoryId ? errors.categoryId : ""}
                 />
               </div>
+
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Item Image
+                  Item Image <span className="text-red-500">*</span>
                 </label>
-
                 <FileUploader
                   value={values.s3Key}
                   onChange={(key) => setFieldValue("s3Key", key)}
                   path="menu-items"
                   type="image"
-                  error={touched.s3Key && errors.s3Key ? errors.s3Key : ""}
+                  error={
+                    touched.s3Key && errors.s3Key
+                      ? (errors.s3Key as string)
+                      : ""
+                  }
+                  initialPreview={item ? item.signedUrl : ""}
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full" loading={isLoading}>
-              Create Item
+            <Button
+              type="submit"
+              className="w-full"
+              loading={creating || updating}
+            >
+              {mode === "create" ? "Create Item" : "Save Changes"}
             </Button>
           </Form>
         )}
@@ -185,4 +233,4 @@ const AddItemModal: React.FC<Props> = ({
   );
 };
 
-export default AddItemModal;
+export default ItemModal;

@@ -4,7 +4,7 @@ import { ROLES } from "../helper";
 import MenuEditWrapper from "../menu-manager/categories/MenuEditWrapper";
 import CategoryList from "../menu-manager/categories/CategoryList";
 import MenuManager from "../menu-manager";
-import ItemList from "../menu-manager/items/ItemList";
+import ItemList from "../menu-manager/items/ItemsListing";
 import ModifierList from "../menu-manager/modifications";
 
 const menuManagerRoutes = [
