@@ -68,7 +68,7 @@ export const userEmptyInitialValues: UserInfoTypes = {
   cashInRate: "",
   niRate: "",
   type: "",
-
+  shareCode: "",
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
 
   openingHours: [
@@ -101,6 +101,7 @@ export const userStepFieldKeys = {
     "cashInRate",
     "niRate",
     "type",
+    "shareCode",
   ],
   account: ["bankDetails"],
   availability: ["openingHours", "sameAllDays"],

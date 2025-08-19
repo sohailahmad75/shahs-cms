@@ -165,6 +165,7 @@ const BasicInfoForm: React.FC<Props> = ({
         </label>
         <InputField
           name="shareCode"
+          placeholder="Enter share code"
           value={values.shareCode ?? ""}
           onChange={handleChange}
           error={touched.shareCode ? (errors.shareCode as string) : ""}
