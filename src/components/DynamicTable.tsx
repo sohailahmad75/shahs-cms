@@ -123,11 +123,9 @@ export function DynamicTable<T>({
                   </span>
                   <span className="text-sm text-slate-800 dark:text-slate-100">
                     {col.key === "actions"
-                      ? (col.render?.(undefined as T[keyof T], row, index) ??
-                        null)
+                      ? (col.render?.(undefined as T[keyof T], row, index) ?? null)
                       : col.key === "index"
-                        ? (col.render?.(undefined as T[keyof T], row, index) ??
-                          null)
+                        ? (col.render?.(undefined as T[keyof T], row, index) ?? null)
                         : col.render
                           ? col.render(row[col.key], row, index)
                           : (row[col.key] as React.ReactNode)}
