@@ -44,7 +44,9 @@ const DocumentTypeListPage: React.FC = () => {
   const [deleteDocument] = useDeleteDocumentsTypeMutation();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(null);
+  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(
+    null,
+  );
 
   const handleEdit = (doc: DocumentType) => {
     setEditingDocument(doc);
@@ -102,8 +104,8 @@ const DocumentTypeListPage: React.FC = () => {
   return (
     <div className="p-4">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <h1 className="text-2xl font-bold">Documents</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-xl font-bold">Documents</h1>
         <Button
           onClick={() => {
             setEditingDocument(null);
@@ -133,30 +135,13 @@ const DocumentTypeListPage: React.FC = () => {
       {/* Table / Loader / Empty */}
       {isLoading || isFetching ? (
         <Loader />
-      )  : (
-        <>
-          <div className="rounded-lg shadow-sm">
-            <DynamicTable
-              data={documents}
-              columns={columns}
-              rowKey="id"
-              tableClassName="bg-white dark:bg-slate-900"
-            />
-          </div>
-
-          <Pagination
-            className="mt-4"
-            page={page}
-            perPage={perPage}
-            total={meta.total}
-            onPageChange={(p) => setPage(p)}
-            onPerPageChange={(pp) => {
-              setPerPage(pp);
-              setPage(1);
-            }}
-            perPageOptions={[10, 25, 50]}
-          />
-        </>
+      ) : (
+        <DynamicTable
+          data={documents}
+          columns={columns}
+          rowKey="id"
+          tableClassName="bg-white dark:bg-slate-900"
+        />
       )}
 
       {/* Modal */}

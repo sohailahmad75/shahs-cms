@@ -10,11 +10,11 @@ export const storeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getStores: builder.query<
       StoreListResponse,
-      { page?: number; perPage?: number; search?: string } | void
+      { page?: number; perPage?: number; query?: string } | void
     >({
       query: (args) => {
-        const { page = 1, perPage = 10, search = "" } = args ?? {};
-        return { url: "/stores", params: { page, perPage, search } };
+        const { page = 1, perPage = 10, query = "" } = args ?? {};
+        return { url: "/stores", params: { page, perPage, query } };
       },
       providesTags: (result) =>
         result

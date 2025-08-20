@@ -1,4 +1,4 @@
-import { Meta } from "../../types";
+import type { Meta } from "../../types";
 
 export interface BankDetail {
   id: string;
@@ -29,7 +29,6 @@ export interface OpeningHour {
   close: string | null;
   closed: boolean;
 }
-import { BankDetail, FsaRating, OpeningHour } from "../features/stores/types";
 
 export interface Store {
   id: string;

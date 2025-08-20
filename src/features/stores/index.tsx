@@ -19,11 +19,12 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
+import ConfirmDelete from "../../components/ConfirmDelete";
 
 const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
 
@@ -35,7 +36,7 @@ const StoreListPage: React.FC = () => {
     isLoading,
     isFetching,
     refetch,
-  } = useGetStoresQuery({ page, perPage, search });
+  } = useGetStoresQuery({ page, perPage, query });
 
   const [createStore, { isLoading: creatingLoading }] =
     useCreateStoreMutation();
@@ -56,14 +57,8 @@ const StoreListPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteStore(id).unwrap();
-      toast.success("Store deleted");
-      // if your mutations invalidate tags, refetch is optional
-      refetch();
-    } catch {
-      toast.error("Failed to delete store");
-    }
+    await deleteStore(id).unwrap();
+    toast.success("Store deleted");
   };
 
   const columns: Column<Store>[] = [
@@ -96,10 +91,17 @@ const StoreListPage: React.FC = () => {
             icon={<EditIcon size={22} />}
             onClick={() => handleEdit(row.id)}
           />
-          <ActionIcon
-            className="text-red-500"
-            icon={<TrashIcon size={22} />}
-            onClick={() => handleDelete(row.id)}
+
+          <ConfirmDelete
+            onConfirm={async () => handleDelete(row.id)}
+            renderTrigger={({ open }) => (
+              <ActionIcon
+                className="text-red-500"
+                icon={<TrashIcon size={22} />}
+                onClick={open}
+                title="Delete"
+              />
+            )}
           />
         </div>
       ),
@@ -110,7 +112,7 @@ const StoreListPage: React.FC = () => {
     <div className="p-4">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <h1 className="text-2xl font-bold">Stores</h1>
+        <h1 className="text-xl font-bold">Stores</h1>
         <Button
           onClick={() => {
             setEditingStoreId(null);
@@ -126,13 +128,13 @@ const StoreListPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <InputField
             className="w-72"
-            value={search}
+            value={query}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setQuery(e.target.value);
               setPage(1);
             }}
             placeholder="Search stores…"
-            name="search"
+            name="query"
           />
         </div>
       </div>
@@ -140,8 +142,20 @@ const StoreListPage: React.FC = () => {
       {/* Table / loader / empty state */}
       {isLoading || isFetching ? (
         <Loader />
-      ) 
-       : (
+      ) : stores.length === 0 ? (
+        <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
+          No stores found.
+          {query ? (
+            <span className="block text-sm text-gray-500 mt-1">
+              Try adjusting your search.
+            </span>
+          ) : (
+            <span className="block text-sm text-gray-500 mt-1">
+              Click <strong>Add Store</strong> to create your first one.
+            </span>
+          )}
+        </div>
+      ) : (
         <>
           <div className=" rounded-lg shadow-sm">
             <DynamicTable

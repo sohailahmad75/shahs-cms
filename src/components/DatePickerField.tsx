@@ -77,9 +77,7 @@ const DatePickerField: React.FC<Props> = ({
       <input
         readOnly
         name={name}
-        className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${
-          error ? "border-red-500" : "border-gray-300"
-        }`}
+        className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${error ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-orange-400"}`}
         placeholder={placeholder}
         value={displayValue}
         onClick={() => setShow((prev) => !prev)}

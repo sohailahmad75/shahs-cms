@@ -31,7 +31,7 @@ const BankTransactions = () => {
       <div className="border rounded p-4 bg-gray-50">
         <p className="text-xs text-gray-500 font-semibold mb-1">EXAMPLE</p>
         <h3 className="text-lg font-semibold">PROFIT & LOSS</h3>
-        <p className="text-2xl font-bold text-gray-700 mt-2 mb-1">£7,876</p>
+        <p className="text-xl font-bold text-gray-700 mt-2 mb-1">£7,876</p>
         <p className="text-sm text-gray-600 mb-4">Net profit for last month</p>
 
         <div className="space-y-2">

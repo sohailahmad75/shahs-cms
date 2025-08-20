@@ -20,5 +20,11 @@ export interface CreateDocumnetDto {
 }
 export type UpdateDocumentDto = CreateDocumnetDto;
 
-
-
+export type DocumentTypeRole = "owner" | "staff";
+export type DocumentTypeStaffKind =
+  | "full_time"
+  | "student"
+  | "sponsored"
+  | "psw"
+  | "asylum"
+  | "other";

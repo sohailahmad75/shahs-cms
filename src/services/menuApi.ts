@@ -1,10 +1,13 @@
 import { baseApi } from "./baseApi";
-import type {
+import {
+  GetMenuItemsArgs,
   Menu,
   MenuCategory,
   MenuItem,
+  MenuItemsListResponse,
   MenuModifier,
-} from "../menu-manager/helper/menu-types";
+  UpdateMenuItemPayload,
+} from "../menu-manager/menu.types";
 
 export const menuApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -57,12 +60,42 @@ export const menuApi = baseApi.injectEndpoints({
             ]
           : [{ type: "MenuCategory", id: menuId }],
     }),
-    getMenuItems: builder.query<MenuItem[], string>({
-      query: (menuId) => `/menus/${menuId}/items`,
-      providesTags: (_result, _err, menuId) => [
+    getMenuItems: builder.query<
+      {
+        data: MenuItem[];
+        meta: {
+          total: number;
+          page: number;
+          perPage: number;
+          totalPages: number;
+        };
+      },
+      {
+        menuId: string;
+        page?: number;
+        perPage?: number;
+        query?: string;
+        categoryId?: string;
+      }
+    >({
+      query: ({ menuId, ...params }) => ({
+        url: `/menus/${menuId}/items`,
+        params,
+      }),
+      providesTags: (_res, _err, { menuId }) => [
         { type: "MenuItems", id: menuId },
       ],
     }),
+
+    // NEW: just id + name
+    getMenuCategoryNames: builder.query<{ id: string; name: string }[], string>(
+      {
+        query: (menuId) => `/menus/${menuId}/categories-names`,
+        providesTags: (_res, _err, menuId) => [
+          { type: "MenuCategories", id: menuId },
+        ],
+      },
+    ),
     createCategory: builder.mutation<
       void,
       { menuId: string; payload: Partial<MenuCategory> }
@@ -86,6 +119,33 @@ export const menuApi = baseApi.injectEndpoints({
         { type: "MenuCategory", id: categoryId },
       ],
     }),
+
+    updateMenuItem: builder.mutation<
+      MenuItem,
+      { menuId: string; itemId: string; payload: UpdateMenuItemPayload }
+    >({
+      query: ({ menuId, itemId, payload }) => ({
+        url: `/menus/${menuId}/items/${itemId}`,
+        method: "PUT",
+        body: payload,
+      }),
+      invalidatesTags: (_res, _err, { itemId }) => [
+        { type: "MenuItems", id: itemId },
+        { type: "MenuItems", id: "LIST" },
+      ],
+    }),
+    deleteMenuItem: builder.mutation<void, { itemId: string; menuId?: string }>(
+      {
+        query: ({ itemId, menuId }) => ({
+          url: `/menus/${menuId}/items/${itemId}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: (_res, _err, { menuId }) =>
+          menuId
+            ? [{ type: "MenuItems", id: menuId }]
+            : [{ type: "MenuItems" }],
+      },
+    ),
     createModifier: builder.mutation<
       void,
       { menuId: string; payload: Partial<MenuModifier> }
@@ -185,7 +245,10 @@ export const menuApi = baseApi.injectEndpoints({
     //   }),
     //   invalidatesTags: [{ type: "Menus" }],
     // }),
-    syncMenuToUber: builder.mutation<void, { id: string; storeIds: string[] }>({
+    syncMenuToUber: builder.mutation<
+      { message: string },
+      { id: string; storeIds: string[] }
+    >({
       query: ({ id, storeIds }) => ({
         url: `/uber-eats/sync-menu/${id}`,
         method: "PUT",
@@ -214,7 +277,16 @@ export const menuApi = baseApi.injectEndpoints({
     >({
       query: () => "/menus/modification-types",
     }),
-
+    deleteModifier: builder.mutation<
+      { success: boolean; deletedOptions: number; deletedLinks: number },
+      string
+    >({
+      query: (modifierId: string) => ({
+        url: `/menus/modifiers/${modifierId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Modifiers", id: "LIST" }],
+    }),
     duplicateMenu: builder.mutation<void, { menuId: string }>({
       query: ({ menuId }) => ({
         url: `/menus/${menuId}/duplicate`,
@@ -256,8 +328,11 @@ export const {
   useGetMenuByIdQuery,
   useGetMenuCategoriesQuery,
   useGetMenuItemsQuery,
+  useGetMenuCategoryNamesQuery,
   useCreateCategoryMutation,
   useCreateItemMutation,
+  useUpdateMenuItemMutation,
+  useDeleteMenuItemMutation,
   useCreateModifierMutation,
   useGetModifiersQuery,
   useGetAllMenuItemsQuery,
@@ -267,6 +342,7 @@ export const {
   useSyncMenuToUberMutation,
   useAssignMenuToManyStoresMutation,
   useGetAllModificationTypesQuery,
+  useDeleteModifierMutation,
   useGetPresignedUrlMutation,
   useDuplicateMenuMutation,
   useDeleteMenuMutation,

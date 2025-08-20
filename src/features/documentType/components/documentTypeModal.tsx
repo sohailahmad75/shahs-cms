@@ -3,17 +3,63 @@ import * as Yup from "yup";
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
 import Button from "../../../components/Button";
-import type {UpdateDocumentDto } from "../documentTypes.types";
+import SelectField from "../../../components/SelectField";
+import CheckboxField from "../../../components/CheckboxField";
+import type { UpdateDocumentDto } from "../documentTypes.types";
+
+// Local (non-exported) aliases to match your requirement.
+// If you already export these from a shared types file, feel free to import instead.
+type DocumentTypeRole = "owner" | "staff";
+type DocumentTypeStaffKind =
+  | "full_time"
+  | "student"
+  | "sponsored"
+  | "psw"
+  | "asylum"
+  | "other";
+
+const ROLE_OPTIONS = [
+  { label: "Owner", value: "owner" },
+  { label: "Staff", value: "staff" },
+] as const;
+
+const STAFF_KIND_OPTIONS = [
+  { label: "Full-time", value: "full_time" },
+  { label: "Student", value: "student" },
+  { label: "Sponsored", value: "sponsored" },
+  { label: "PSW", value: "psw" },
+  { label: "Asylum", value: "asylum" },
+  { label: "Other", value: "other" },
+] as const;
 
 const DocumentSchema = Yup.object().shape({
-  name: Yup.string().required("Document Name is required"),
-  description: Yup.string().nullable(),
+  documentName: Yup.string().required("Document Name is required"),
+  documentDescription: Yup.string().nullable(),
+  isMandatory: Yup.boolean().default(false),
+  role: Yup.mixed<DocumentTypeRole>()
+    .oneOf(["owner", "staff"], "Please select a role")
+    .required("Role is required"),
+  staffKind: Yup.mixed<DocumentTypeStaffKind>()
+    .oneOf(
+      ["full_time", "student", "sponsored", "psw", "asylum", "other"] as const,
+      "Please select a staff type",
+    )
+    .when("role", (role: DocumentTypeRole, schema) =>
+      role === "staff"
+        ? schema.required("Staff Type is required")
+        : schema.optional().nullable(),
+    ),
 });
 
 const emptyInitialValues = {
-  name: "",
-  description: "",
+  documentName: "",
+  documentDescription: "",
+  isMandatory: false,
+  role: "" as "" | DocumentTypeRole,
+  staffKind: "" as "" | DocumentTypeStaffKind,
 };
+
+type FormValues = typeof emptyInitialValues;
 
 const DocumentTypeModal = ({
   isOpen,
@@ -24,7 +70,7 @@ const DocumentTypeModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: typeof emptyInitialValues) => void;
+  onSubmit: (values: FormValues) => void;
   editingDocument: UpdateDocumentDto | null | undefined;
   isSubmitting: boolean;
 }) => {
@@ -35,21 +81,37 @@ const DocumentTypeModal = ({
       title={editingDocument ? "Edit Document Type" : "Add Document Type"}
       width="max-w-2xl"
     >
-      <Formik
+      <Formik<FormValues>
         initialValues={{
           ...emptyInitialValues,
           ...(editingDocument
             ? {
-                name: editingDocument.name ?? "",
-                description: editingDocument.description ?? "",
+                documentName: editingDocument.documentName ?? "",
+                documentDescription: editingDocument.documentDescription ?? "",
+                isMandatory: (editingDocument as any)?.isMandatory ?? false,
+                role:
+                  ((editingDocument as any)?.role as
+                    | DocumentTypeRole
+                    | undefined) ?? "",
+                staffKind:
+                  ((editingDocument as any)?.staffKind as
+                    | DocumentTypeStaffKind
+                    | undefined) ?? "",
               }
             : {}),
         }}
         validationSchema={DocumentSchema}
         enableReinitialize
-        onSubmit={onSubmit}
+        onSubmit={(vals) => {
+          // Ensure we don't send staffKind if role !== staff
+          const payload: FormValues = {
+            ...vals,
+            staffKind: vals.role === "staff" ? vals.staffKind : "",
+          };
+          onSubmit(payload);
+        }}
       >
-        {({ values, handleChange, touched, errors }) => (
+        {({ values, handleChange, setFieldValue, touched, errors }) => (
           <Form className="space-y-8">
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
@@ -60,34 +122,109 @@ const DocumentTypeModal = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4">
+              {/* Name */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Document Type Name <span className="text-red-500">*</span>
+                  Name <span className="text-red-500">*</span>
                 </label>
                 <InputField
-                  name="name"
-                  placeholder="Enter Document Name"
-                  value={values.name}
+                  name="documentName"
+                  placeholder="Name"
+                  value={values.documentName}
                   onChange={handleChange}
-                  error={touched.name ? errors.name : ""}
+                  error={
+                    touched.documentName ? (errors.documentName as string) : ""
+                  }
                 />
               </div>
 
+              {/* Description */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Document Type Description
+                  Description
                 </label>
                 <InputField
-                  name="description"
-                  placeholder="Enter Document Description"
-                  value={values.description}
+                  type="textarea"
+                  name="documentDescription"
+                  placeholder="Enter Description"
+                  value={values.documentDescription}
                   onChange={handleChange}
                   error={
-                    touched.description
-                      ? errors.description
+                    touched.documentDescription
+                      ? (errors.documentDescription as string)
                       : ""
                   }
                 />
+              </div>
+
+              {/* Role */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Applies To <span className="text-red-500">*</span>
+                </label>
+                <SelectField
+                  name="role"
+                  value={values.role || ""} // SelectField expects string|number
+                  onChange={(e) => {
+                    handleChange(e);
+                    // If switching away from 'staff', clear staffKind
+                    if ((e.target as any).value !== "staff") {
+                      setFieldValue("staffKind", "");
+                    }
+                  }}
+                  options={
+                    ROLE_OPTIONS as unknown as {
+                      label: string;
+                      value: string | number;
+                    }[]
+                  }
+                  placeholder="Select role"
+                  error={touched.role ? (errors.role as string) : ""}
+                />
+              </div>
+
+              {/* Staff Kind (conditional) */}
+              {values.role === "staff" && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Staff Type <span className="text-red-500">*</span>
+                  </label>
+                  <SelectField
+                    name="staffKind"
+                    value={values.staffKind || ""}
+                    onChange={handleChange}
+                    options={
+                      STAFF_KIND_OPTIONS as unknown as {
+                        label: string;
+                        value: string | number;
+                      }[]
+                    }
+                    placeholder="Select staff type"
+                    error={
+                      touched.staffKind ? (errors.staffKind as string) : ""
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Mandatory Checkbox */}
+              <div className="pt-2">
+                <CheckboxField
+                  name="isMandatory"
+                  label="This document is mandatory"
+                  checked={values.isMandatory}
+                  onChange={(e) =>
+                    setFieldValue("isMandatory", e.target.checked)
+                  }
+                  className=""
+                  size="5"
+                  labelClassName="select-none"
+                />
+                {touched.isMandatory && errors.isMandatory ? (
+                  <p className="text-primary-100 text-sm mt-1">
+                    {errors.isMandatory as string}
+                  </p>
+                ) : null}
               </div>
             </div>
 
