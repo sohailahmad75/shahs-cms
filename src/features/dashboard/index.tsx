@@ -8,12 +8,11 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  // PieChart,
-  // Pie,
+
   Cell,
   BarChart,
   Bar,
-  // Legend,
+
 } from "recharts";
 
 import { useTheme } from "../../context/themeContext";
@@ -24,7 +23,6 @@ const LIGHT_COLORS = ["#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb", "#f3f4f6"];
 const DARK_COLORS = ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b"];
 
 function DashboardHeader() {
-  const [currency, setCurrency] = useState("USD");
   const [range, setRange] = useState("all");
   const { isDarkMode } = useTheme();
 
@@ -40,28 +38,10 @@ function DashboardHeader() {
         >
           Dashboard
         </h1>
-        <span className="text-gray-500">- Company 3_1</span>
       </div>
 
       <div className="flex items-center space-x-6 text-sm font-medium text-gray-600">
         <div className="flex space-x-2">
-          {["USD", "BTC"].map((c) => (
-            <button
-              key={c}
-              onClick={() => setCurrency(c)}
-              className={`${currency === c
-                  ? isDarkMode
-                    ? "underline text-white"
-                    : "underline text-black"
-                  : isDarkMode
-                    ? "text-gray-400"
-                    : "text-gray-500"
-                }`}
-            >
-              {c}
-            </button>
-          ))}
-
           {[
             { label: "All time", value: "all" },
             { label: "1 Y", value: "1y" },
@@ -95,13 +75,6 @@ function DashboardHeader() {
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
 
-  // const salesByLocation = [
-  //   { name: "Commerce", value: 300 },
-  //   { name: "Sale", value: 200 },
-  //   { name: "Tbarlike", value: 150 },
-  //   { name: "Tod", value: 100 },
-  // ];
-
   const data = [
     { name: "Salute", value: 580 },
     { name: "Tbarlike", value: 400 },
@@ -130,26 +103,12 @@ const Dashboard = () => {
     { name: "SAV", value: 150 },
   ];
 
-  // const dataByAlgo = [
-  //   { name: "Nick 1.2", value: 300 },
-  //   { name: "Night_trade v1", value: 200 },
-  //   { name: "Zub1", value: 150 },
-  //   { name: "Doug_trade v2", value: 100 },
-  // ];
-
   const profitByBot = [
     { name: "Bot 1", profit: 2000 },
     { name: "Bot 2", profit: 1200 },
     { name: "Bot 3", profit: -500 },
     { name: "Bot 4", profit: 1700 },
   ];
-
-  // const profitByAlgo = [
-  //   { name: "Algo 1", profit: 10 },
-  //   { name: "Algo 2", profit: 17 },
-  //   { name: "Algo 3", profit: -3 },
-  //   { name: "Algo 4", profit: 12 },
-  // ];
 
   const COLORS = isDarkMode ? DARK_COLORS : LIGHT_COLORS;
   const areaChartColor = isDarkMode ? "#334155" : "#6b7280";
@@ -180,7 +139,7 @@ const Dashboard = () => {
               >
                 {label}
               </p>
-              <p className="mt-2 text-2xl font-bold">{value}</p>
+              <p className="mt-2 text-xl font-medium ">{value}</p>
             </div>
           ))}
         </div>
@@ -227,45 +186,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Allocation & Sales */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* <div
-          className={`border rounded-lg ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="p-4">
-            <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
-            >
-              Allocation by Currency
-            </p>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={allocationByCurrency}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill={areaChartColor}
-                label
-              >
-                {allocationByCurrency.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div> */}
         <AllocationByAlgoChart data={allocationByCurrency} />
 
 
@@ -347,7 +268,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Profit by Bot + Avg Order Value */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
           className={`border rounded-lg ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
@@ -375,8 +295,6 @@ const Dashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Average Order Value */}
         <div
           className={`border rounded-lg shadow-md ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
             }`}
