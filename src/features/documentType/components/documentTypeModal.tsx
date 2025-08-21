@@ -9,7 +9,7 @@ import type { UpdateDocumentDto } from "../documentTypes.types";
 
 // Local (non-exported) aliases to match your requirement.
 // If you already export these from a shared types file, feel free to import instead.
-type DocumentTypeRole = "owner" | "staff";
+type DocumentTypeRole = "shop" | "owner" | "staff";
 type DocumentTypeStaffKind =
   | "full_time"
   | "student"
@@ -19,6 +19,7 @@ type DocumentTypeStaffKind =
   | "other";
 
 const ROLE_OPTIONS = [
+  { label: "Shop", value: "shop" },
   { label: "Owner", value: "owner" },
   { label: "Staff", value: "staff" },
 ] as const;

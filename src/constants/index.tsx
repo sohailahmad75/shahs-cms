@@ -7,7 +7,7 @@ import HouseCheckIcon from "../assets/styledIcons/HouseCheckIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 import KioskIcon from "../assets/styledIcons/KioskIcon";
 import SettingIcon from "../assets/styledIcons/SettingIcon";
-import  DocumentIcon  from "../assets/styledIcons/DocumentIcon";
+import DocumentIcon from "../assets/styledIcons/DocumentIcon";
 import UserIcon from "../assets/styledIcons/UserIcon";
 
 export const sidebarMenuList: {
@@ -23,68 +23,68 @@ export const sidebarMenuList: {
   }[];
   roles: UserRole[];
 }[] = [
-    {
-      id: "dashboard",
-      name: "Dashboard",
-      icon: <DashboardIcon />,
-      link: "/dashboard",
-      roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    },
-    {
-      id: "invoice",
-      name: "Invoice",
-      icon: <InvoiceIcon />,
-      roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    },
-    {
-      id: "transactions",
-      name: "Transactions",
-      icon: <TransactionIcon />,
-      roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN]
-    },
-    {
-      id: "menu-manager",
-      name: "Menu Manager",
-      icon: <MenuManagerIcon />,
-      link: "/menus",
-      roles: [ROLES.SUPER_ADMIN],
-    },
-    {
-      id: "stores",
-      name: "Stores",
-      icon: <HouseCheckIcon />,
-      link: "/stores",
-      roles: [ROLES.SUPER_ADMIN],
-    },
-      {
-      id: "users",
-      name: "Users",
-      icon: <UserIcon />,
-      link: "/users",
-      roles: [ROLES.SUPER_ADMIN],
-    },
-    {
-      id: "kiosks",
-      name: "Kiosks",
-      icon: <KioskIcon />,
-      link: "/kiosks",
-      roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    },
+  {
+    id: "dashboard",
+    name: "Dashboard",
+    icon: <DashboardIcon />,
+    link: "/dashboard",
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    id: "invoice",
+    name: "Invoice",
+    icon: <InvoiceIcon />,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    id: "transactions",
+    name: "Transactions",
+    icon: <TransactionIcon />,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    id: "menu-manager",
+    name: "Menu Manager",
+    icon: <MenuManagerIcon />,
+    link: "/menus",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+  {
+    id: "stores",
+    name: "Stores",
+    icon: <HouseCheckIcon />,
+    link: "/stores",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+  {
+    id: "users",
+    name: "Users",
+    icon: <UserIcon />,
+    link: "/users",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+  {
+    id: "kiosks",
+    name: "Kiosks",
+    icon: <KioskIcon />,
+    link: "/kiosks",
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
 
-    {
-      id: "sales",
-      name: "Sales",
-      icon: <DashboardIcon />,
-      link: "/sales",
-      roles: [ROLES.SUPER_ADMIN],
-    },
-    {
-      id: "setting",
-      name: "Settings",
-      icon: <SettingIcon />,
-      roles: [ROLES.SUPER_ADMIN],
-    },
-  ];
+  // {
+  //   id: "sales",
+  //   name: "Sales",
+  //   icon: <DashboardIcon />,
+  //   link: "/sales",
+  //   roles: [ROLES.SUPER_ADMIN],
+  // },
+  {
+    id: "setting",
+    name: "Settings",
+    icon: <SettingIcon />,
+    roles: [ROLES.SUPER_ADMIN],
+  },
+];
 export const settingsidebarMenuList: {
   id: string;
   name: string;
@@ -97,15 +97,15 @@ export const settingsidebarMenuList: {
     roles: UserRole[];
   }[];
   roles: UserRole[];
-}[] = [{
-  id: "document-type",
-  name: "Document Type",
-  icon: <DocumentIcon />,
-  link: "/setting/document-type",
-  roles: [ROLES.SUPER_ADMIN],
-}
-
-  ]
+}[] = [
+  {
+    id: "document-type",
+    name: "Document Type",
+    icon: <DocumentIcon />,
+    link: "/setting/document-type",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+];
 
 export const inviovesidebarMenuList: {
   id: string;
@@ -120,25 +120,23 @@ export const inviovesidebarMenuList: {
   }[];
   roles: UserRole[];
 }[] = [
-    {
-      id: "invoices",
-      name: "Invoices",
-      icon: <InvoiceIcon />,
-      link: "/invoices",
-      roles: [ROLES.SUPER_ADMIN],
-    },
-    {
-      id: "add-product",
-      name: "Add Product",
-      icon: <InvoiceIcon />,
-      link: "/invoice/add",
-      roles: [ROLES.SUPER_ADMIN],
-    },
+  {
+    id: "invoices",
+    name: "Invoices",
+    icon: <InvoiceIcon />,
+    link: "/invoices",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+  {
+    id: "add-product",
+    name: "Add Product",
+    icon: <InvoiceIcon />,
+    link: "/invoice/add",
+    roles: [ROLES.SUPER_ADMIN],
+  },
+];
 
-  ]
-
-
-  export const transcationsidebarMenuList: {
+export const transcationsidebarMenuList: {
   id: string;
   name: string;
   icon: JSX.Element;
@@ -152,21 +150,20 @@ export const inviovesidebarMenuList: {
   roles: UserRole[];
 }[] = [
   {
-          id: "bank-transactions",
-          name: "Bank Transactions",
-          icon:<TransactionIcon/>,
-          link: "/transactions/bank-transactions",
-          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-        },
-        {
-          id: "app-transactions",
-          name: "App Transactions",
-          icon:<TransactionIcon />,
-          link: "/transactions/app-transactions",
-          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-        },
-
-  ]
+    id: "bank-transactions",
+    name: "Bank Transactions",
+    icon: <TransactionIcon />,
+    link: "/transactions/bank-transactions",
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    id: "app-transactions",
+    name: "App Transactions",
+    icon: <TransactionIcon />,
+    link: "/transactions/app-transactions",
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+];
 export const ProfileImage: string =
   "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250";
 

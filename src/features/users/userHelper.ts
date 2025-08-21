@@ -17,6 +17,7 @@ export const userSchema = Yup.object({
     .min(0, "Cannot be negative")
     .required("Cash-in rate is required"),
   shareCode: Yup.string().required("Share Code is required"),
+  niNumber: Yup.string().required("NI number is required"),
   niRate: Yup.number()
     .typeError("NI rate must be a number")
     .min(0, "Cannot be negative")
@@ -69,6 +70,7 @@ export const userEmptyInitialValues: UserInfoTypes = {
   niRate: "",
   type: "",
   shareCode: "",
+  niNumber: "",
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
 
   openingHours: [
@@ -102,6 +104,7 @@ export const userStepFieldKeys = {
     "niRate",
     "type",
     "shareCode",
+    "niNumber",
   ],
   account: ["bankDetails"],
   availability: ["openingHours", "sameAllDays"],

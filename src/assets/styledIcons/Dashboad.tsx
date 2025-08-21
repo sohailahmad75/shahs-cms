@@ -6,7 +6,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const DashboardIcon: React.FC<IconProps> = ({
-  size = 24,
+  size = 26,
   color = "currentColor",
   ...props
 }) => (

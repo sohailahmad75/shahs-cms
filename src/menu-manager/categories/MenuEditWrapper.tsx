@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 import PublishBanner from "./PublishBanner";
 import Loader from "../../components/Loader";
 import { useTheme } from "../../context/themeContext";
-import UberEatsLogo from "../../assets/styledIcons/UberEatsLogo";
+import UberIcon from "../../assets/styledIcons/UberIcon";
 import BrandButton from "../components/BrandButton";
 
 const tabs = [
