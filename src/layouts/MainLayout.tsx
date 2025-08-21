@@ -8,6 +8,7 @@ import SettingIcon from "../assets/styledIcons/SettingIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 import TransactionIcon from "../assets/styledIcons/TransactionIcon"; 
 import { useTheme } from "../context/themeContext";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   children: ReactNode;
@@ -21,6 +22,7 @@ export default function MainLayout({ children }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelType>(null);
    const { isDarkMode } = useTheme();
+   const navigate = useNavigate();
 
   const openSettingsPanel = () => {
     setActivePanel(prev => (prev === "settings" ? null : "settings"));
@@ -52,6 +54,24 @@ export default function MainLayout({ children }: Props) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+   useEffect(() => {
+    if (isSidebarOpen && activePanel) {
+      let menu: typeof settingsidebarMenuList | null = null;
+
+      if (activePanel === "settings") menu = settingsidebarMenuList;
+      if (activePanel === "invoice") menu = inviovesidebarMenuList;
+      if (activePanel === "transactions") menu = transcationsidebarMenuList;
+
+      if (menu && menu.length > 0) {
+        const firstItem = menu[0];
+        const defaultLink = firstItem.link ?? firstItem.children?.[0]?.link;
+        if (defaultLink) {
+          navigate(defaultLink);
+        }
+      }
+    }
+  }, [activePanel, isSidebarOpen, navigate]);
 
   return (
     <div className="flex h-screen">
