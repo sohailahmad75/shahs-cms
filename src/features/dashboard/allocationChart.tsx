@@ -14,6 +14,7 @@ const DARK_COLORS = ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b"];
 const AllocationByAlgoChart = ({ data }) => {
   const { isDarkMode } = useTheme();
   const COLORS = isDarkMode ? DARK_COLORS : LIGHT_COLORS;
+  const borderColor = isDarkMode ? "#1e293b" : "#ffffff";
 
   const total = data.reduce((sum, entry) => sum + entry.value, 0);
 
@@ -70,7 +71,12 @@ const AllocationByAlgoChart = ({ data }) => {
               labelLine={false}
             >
               {data.map((_entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]} 
+                  stroke={borderColor}
+                  strokeWidth={2}
+                />
               ))}
             </Pie>
             <Tooltip content={renderCustomTooltip} />
@@ -88,7 +94,6 @@ const AllocationByAlgoChart = ({ data }) => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };
