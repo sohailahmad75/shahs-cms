@@ -15,6 +15,9 @@ export interface DocumentTypeListResponse {
 
 
 export interface CreateDocumnetDto {
+  staffKind: DocumentTypeStaffKind;
+  role: DocumentTypeRole;
+  isMandatory: boolean;
   name: string;
   description?: string;
 }
