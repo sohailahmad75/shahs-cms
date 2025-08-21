@@ -29,7 +29,8 @@ const AllocationByAlgoChart = ({ data }) => {
           }}
         >
           <p className="font-semibold">{payload[0].name}</p>
-          <p>{payload[0].value}</p>
+          <p>${payload[0].value.toLocaleString()}</p>
+          <p>{((payload[0].value / total) * 100).toFixed(1)}%</p>
         </div>
       );
     }
@@ -38,7 +39,7 @@ const AllocationByAlgoChart = ({ data }) => {
 
   return (
     <div
-      className={`border rounded-lg ${
+      className={`border rounded-lg h-full flex flex-col ${
         isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
       }`}
     >
@@ -51,30 +52,43 @@ const AllocationByAlgoChart = ({ data }) => {
           Allocation by Algo
         </p>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={70}
-            outerRadius={100}
-            dataKey="value"
-            nameKey="name"
-          >
-            {data.map((_entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip content={renderCustomTooltip} cursor={false} />
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="text-center -mt-24">
-        <p className={`text-2xl font-semibold ${isDarkMode ? "text-white" : "text-black"}`}>
-          $ {total.toLocaleString()}
-        </p>
-        <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}>Total</p>
+      
+      <div className="flex-grow relative">
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={70}
+              outerRadius={100}
+              dataKey="value"
+              nameKey="name"
+              label={({ name, percent }) => 
+                `${name} (${(percent * 100).toFixed(0)}%)`
+              }
+              labelLine={false}
+            >
+              {data.map((_entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={renderCustomTooltip} />
+          </PieChart>
+        </ResponsiveContainer>
+        
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <p className={`text-2xl font-semibold ${isDarkMode ? "text-white" : "text-black"}`}>
+              ${total.toLocaleString()}
+            </p>
+            <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}>
+              Total
+            </p>
+          </div>
+        </div>
       </div>
+
     </div>
   );
 };
