@@ -4,7 +4,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
 
-const UberEatsLogo: React.FC<IconProps> = ({ size = 24, ...props }) => (
+const UberIcon: React.FC<IconProps> = ({ size = 18, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -24,4 +24,4 @@ const UberEatsLogo: React.FC<IconProps> = ({ size = 24, ...props }) => (
   </svg>
 );
 
-export default UberEatsLogo;
+export default UberIcon;

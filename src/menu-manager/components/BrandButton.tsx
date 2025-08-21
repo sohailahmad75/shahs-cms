@@ -1,29 +1,8 @@
 import React from "react";
 import { useTheme } from "../../context/themeContext";
-import UberEatsLogo from "../../assets/styledIcons/UberEatsLogo";
-import JustEatLogo from "../../assets/styledIcons/JusteatLogo";
-
-export const DeliverooLogo: React.FC<React.SVGProps<SVGSVGElement>> = ({
-  width = 18,
-  height = 18,
-  ...props
-}) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 64 64"
-    width={width}
-    height={height}
-    aria-hidden
-    {...props}
-  >
-    <path
-      fill="#00CCBC"
-      d="M10 8l10 2-3 14 8 2 3-14 10 2-6 28c-1 5-5 8-10 8-7 0-12-6-11-13z"
-    />
-    <circle cx="28" cy="28" r="2.5" fill="#fff" />
-    <circle cx="38" cy="30" r="2.5" fill="#fff" />
-  </svg>
-);
+import UberIcon from "../../assets/styledIcons/UberIcon";
+import DeliverooIcon from "../../assets/styledIcons/DeliverooLogo";
+import JustEatIcon from "../../assets/styledIcons/JustEatIcon";
 
 type Brand = "uber" | "deliveroo" | "justeat";
 type Variant = "solid" | "outlined";
@@ -61,7 +40,7 @@ const BRAND_STYLES: Record<
       hover: "hover:bg-[#142328] hover:text-white",
       bg: "bg-transparent",
     },
-    iconDefault: <UberEatsLogo />,
+    iconDefault: <UberIcon />,
   },
   deliveroo: {
     solid: {
@@ -76,7 +55,7 @@ const BRAND_STYLES: Record<
       hover: "hover:bg-[#018f83] hover:text-white",
       bg: "bg-transparent",
     },
-    iconDefault: <DeliverooLogo />,
+    iconDefault: <DeliverooIcon />,
   },
   justeat: {
     solid: {
@@ -91,7 +70,7 @@ const BRAND_STYLES: Record<
       hover: "hover:bg-[#FF8000] hover:text-white",
       bg: "bg-transparent",
     },
-    iconDefault: <JustEatLogo />,
+    iconDefault: <JustEatIcon />,
   },
 };
 

@@ -38,6 +38,7 @@ export type UserInfoTypes = {
   niRate: number | string;
   shareCode: string;
   type: "staff" | "owner" | "";
+  niNumber: string;
   bankDetails: Array<{
     bankName: string;
     accountNumber: string;

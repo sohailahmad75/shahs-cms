@@ -6,7 +6,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const TransactionIcon: React.FC<IconProps> = ({
-  size = 24,
+  size = 18,
   color = "currentColor",
   ...props
 }) => (
