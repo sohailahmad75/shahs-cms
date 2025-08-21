@@ -8,15 +8,16 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  PieChart,
-  Pie,
+  // PieChart,
+  // Pie,
   Cell,
   BarChart,
   Bar,
-  Legend,
+  // Legend,
 } from "recharts";
 
 import { useTheme } from "../../context/themeContext";
+import AllocationByAlgoChart from "./allocationChart";
 
 const LIGHT_COLORS = ["#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb", "#f3f4f6"];
 
@@ -29,15 +30,13 @@ function DashboardHeader() {
 
   return (
     <div
-      className={`flex justify-between items-center px-4 py-2 ${
-        isDarkMode ? "bg-slate-950" : "bg-gray-50"
-      }`}
+      className={`flex justify-between items-center px-4 py-2 ${isDarkMode ? "bg-slate-950" : "bg-gray-50"
+        }`}
     >
       <div className="flex items-center space-x-2">
         <h1
-          className={`font-bold text-2xl ${
-            isDarkMode ? "text-white" : "text-gray-800"
-          }`}
+          className={`font-bold text-2xl ${isDarkMode ? "text-white" : "text-gray-800"
+            }`}
         >
           Dashboard
         </h1>
@@ -50,15 +49,14 @@ function DashboardHeader() {
             <button
               key={c}
               onClick={() => setCurrency(c)}
-              className={`${
-                currency === c
+              className={`${currency === c
                   ? isDarkMode
                     ? "underline text-white"
                     : "underline text-black"
                   : isDarkMode
-                  ? "text-gray-400"
-                  : "text-gray-500"
-              }`}
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
             >
               {c}
             </button>
@@ -74,15 +72,14 @@ function DashboardHeader() {
             <button
               key={r.value}
               onClick={() => setRange(r.value)}
-              className={`${
-                range === r.value
+              className={`${range === r.value
                   ? isDarkMode
                     ? "underline text-white"
                     : "underline text-black"
                   : isDarkMode
-                  ? "text-gray-400"
-                  : "text-gray-500"
-              }`}
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                }`}
             >
               {r.label}
             </button>
@@ -98,12 +95,12 @@ function DashboardHeader() {
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
 
-  const salesByLocation = [
-    { name: "Commerce", value: 300 },
-    { name: "Sale", value: 200 },
-    { name: "Tbarlike", value: 150 },
-    { name: "Tod", value: 100 },
-  ];
+  // const salesByLocation = [
+  //   { name: "Commerce", value: 300 },
+  //   { name: "Sale", value: 200 },
+  //   { name: "Tbarlike", value: 150 },
+  //   { name: "Tod", value: 100 },
+  // ];
 
   const data = [
     { name: "Salute", value: 580 },
@@ -129,14 +126,16 @@ const Dashboard = () => {
     { name: "ETH", value: 300 },
     { name: "SAVR", value: 300 },
     { name: "FVD", value: 200 },
+    { name: "SAV", value: 100 },
+    { name: "SAV", value: 150 },
   ];
 
-  const dataByAlgo = [
-    { name: "Nick 1.2", value: 300 },
-    { name: "Night_trade v1", value: 200 },
-    { name: "Zub1", value: 150 },
-    { name: "Doug_trade v2", value: 100 },
-  ];
+  // const dataByAlgo = [
+  //   { name: "Nick 1.2", value: 300 },
+  //   { name: "Night_trade v1", value: 200 },
+  //   { name: "Zub1", value: 150 },
+  //   { name: "Doug_trade v2", value: 100 },
+  // ];
 
   const profitByBot = [
     { name: "Bot 1", profit: 2000 },
@@ -145,21 +144,21 @@ const Dashboard = () => {
     { name: "Bot 4", profit: 1700 },
   ];
 
-  const profitByAlgo = [
-    { name: "Algo 1", profit: 10 },
-    { name: "Algo 2", profit: 17 },
-    { name: "Algo 3", profit: -3 },
-    { name: "Algo 4", profit: 12 },
-  ];
+  // const profitByAlgo = [
+  //   { name: "Algo 1", profit: 10 },
+  //   { name: "Algo 2", profit: 17 },
+  //   { name: "Algo 3", profit: -3 },
+  //   { name: "Algo 4", profit: 12 },
+  // ];
 
   const COLORS = isDarkMode ? DARK_COLORS : LIGHT_COLORS;
-  const areaChartColor = isDarkMode ? "#334155" : "#6b7280"; 
+  const areaChartColor = isDarkMode ? "#334155" : "#6b7280";
 
   return (
     <div className="flex flex-col gap-y-6">
       <DashboardHeader />
 
-  
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="flex flex-col gap-4 lg:col-span-1">
           {[
@@ -170,16 +169,14 @@ const Dashboard = () => {
           ].map(({ label, value }, index) => (
             <div
               key={index}
-              className={`border rounded-lg p-4 ${
-                isDarkMode
+              className={`border rounded-lg p-4 ${isDarkMode
                   ? "bg-slate-900 border-slate-700 text-white"
                   : "bg-white border-gray-200 text-black"
-              }`}
+                }`}
             >
               <p
-                className={`text-sm font-medium ${
-                  isDarkMode ? "text-slate-500" : "text-gray-600"
-                }`}
+                className={`text-sm font-medium ${isDarkMode ? "text-slate-500" : "text-gray-600"
+                  }`}
               >
                 {label}
               </p>
@@ -189,15 +186,13 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`border rounded-lg lg:col-span-3 ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border rounded-lg lg:col-span-3 ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="p-4">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Global Progress
             </p>
@@ -234,7 +229,7 @@ const Dashboard = () => {
 
       {/* Allocation & Sales */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div
+        {/* <div
           className={`border rounded-lg ${
             isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
           }`}
@@ -270,28 +265,26 @@ const Dashboard = () => {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
+        <AllocationByAlgoChart data={allocationByCurrency} />
 
-        {/* Sales by Location */}
+
         <div
-          className={`rounded-xl p-4 shadow-md ${
-            isDarkMode
+          className={`rounded-xl p-4 shadow-md ${isDarkMode
               ? "bg-slate-900 border border-slate-700"
               : "bg-white border border-gray-200"
-          }`}
+            }`}
         >
           <div className="mb-6">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Sales by Location
             </p>
             <p
-              className={`text-sm mt-1 ${
-                isDarkMode ? "text-slate-300" : "text-gray-500"
-              }`}
+              className={`text-sm mt-1 ${isDarkMode ? "text-slate-300" : "text-gray-500"
+                }`}
             >
               Commrec Immersions
             </p>
@@ -344,9 +337,8 @@ const Dashboard = () => {
           </ResponsiveContainer>
 
           <div
-            className={`mt-6 text-sm ${
-              isDarkMode ? "text-slate-300" : "text-gray-500"
-            }`}
+            className={`mt-6 text-sm ${isDarkMode ? "text-slate-300" : "text-gray-500"
+              }`}
           >
             <p className="font-medium">Revenue Breakdown</p>
             <p className="mt-1">Orinet Extraction Images</p>
@@ -358,15 +350,13 @@ const Dashboard = () => {
       {/* Profit by Bot + Avg Order Value */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
-          className={`border rounded-lg ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border rounded-lg ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="p-4">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Profit by Bot
             </p>
@@ -388,22 +378,19 @@ const Dashboard = () => {
 
         {/* Average Order Value */}
         <div
-          className={`border rounded-lg shadow-md ${
-            isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border rounded-lg shadow-md ${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="p-4">
             <p
-              className={`text-lg font-semibold ${
-                isDarkMode ? "text-white" : "text-black"
-              }`}
+              className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-black"
+                }`}
             >
               Average Order Value
             </p>
             <p
-              className={`text-sm mt-1 ${
-                isDarkMode ? "text-slate-400" : "text-gray-500"
-              }`}
+              className={`text-sm mt-1 ${isDarkMode ? "text-slate-400" : "text-gray-500"
+                }`}
             >
               Sales unit averages amongst long units
             </p>
