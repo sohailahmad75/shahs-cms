@@ -77,7 +77,7 @@ const AllocationByAlgoChart = ({ data }) => {
           </PieChart>
         </ResponsiveContainer>
         
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 -mt-10 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className={`text-2xl font-semibold ${isDarkMode ? "text-white" : "text-black"}`}>
               ${total.toLocaleString()}
