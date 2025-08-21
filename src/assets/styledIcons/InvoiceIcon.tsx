@@ -6,7 +6,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const InvoiceIcon: React.FC<IconProps> = ({
-  size = 24,
+  size = 22,
   color = "currentColor",
   ...props
 }) => (

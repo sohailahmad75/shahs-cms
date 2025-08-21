@@ -161,6 +161,19 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
+          NI Number <span className="text-red-500">*</span>
+        </label>
+        <InputField
+          name="niNumber"
+          placeholder="Enter NI number"
+          value={String(values.niNumber ?? "")}
+          onChange={handleChange}
+          error={touched.niNumber ? (errors.niNumber as string) : ""}
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-gray-700 mb-1 block">
           Share Code <span className="text-red-500">*</span>
         </label>
         <InputField
