@@ -42,6 +42,8 @@ export type ModifierOption = {
   id?: string;
   name: string;
   price: number;
+  s3Key: string;
+  signedUrl?: string;
   modifierId?: string;
   deliveryPrice: number;
 };
