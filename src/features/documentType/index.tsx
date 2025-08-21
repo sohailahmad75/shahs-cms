@@ -166,7 +166,7 @@ const DocumentTypeListPage: React.FC = () => {
           setModalOpen(false);
           setEditingDocument(null);
         }}
-        editingDocument={editingDocument}
+        editingDocument={editingDocument as any}
         isSubmitting={creating || updating}
       />
     </div>

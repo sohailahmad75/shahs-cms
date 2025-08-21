@@ -33,6 +33,23 @@ const STAFF_KIND_OPTIONS = [
 ] as const;
 
 
+//   documentName: Yup.string().required("Document Name is required"),
+//   documentDescription: Yup.string().nullable(),
+//   isMandatory: Yup.boolean().default(false),
+//   role: Yup.mixed<DocumentTypeRole>()
+//     .oneOf(["shop", "owner", "staff"], "Please select a role")
+//     .required("Role is required"),
+//   staffKind: Yup.mixed<DocumentTypeStaffKind>()
+//     .oneOf(
+//       ["full_time", "student", "sponsored", "psw", "asylum", "other"] as const,
+//       "Please select a staff type",
+//     )
+//     .when("role", (role: DocumentTypeRole, schema) =>
+//       role === "staff"
+//         ? schema.required("Staff Type is required")
+//         : schema.optional().nullable(),
+//     ),
+// });
 const DocumentSchema = Yup.object().shape({
   documentName: Yup.string().required("Document Name is required"),
   documentDescription: Yup.string().nullable(),
@@ -45,13 +62,12 @@ const DocumentSchema = Yup.object().shape({
       ["full_time", "student", "sponsored", "psw", "asylum", "other"] as const,
       "Please select a staff type",
     )
-    .when("role", (role: DocumentTypeRole, schema) =>
-      role === "staff"
-        ? schema.required("Staff Type is required")
-        : schema.optional().nullable(),
-    ),
+    .when("role", {
+      is: "staff",
+      then: (schema) => schema.required("Staff Type is required"),
+      otherwise: (schema) => schema.optional().nullable(),
+    }),
 });
-
 const emptyInitialValues = {
   documentName: "",
   documentDescription: "",
@@ -88,8 +104,8 @@ const DocumentTypeModal = ({
           ...emptyInitialValues,
           ...(editingDocument
             ? {
-              documentName: editingDocument.name ?? "",          // ✅ FIX
-              documentDescription: editingDocument.description ?? "", // ✅ FIX
+              documentName: editingDocument.name ?? "",   
+              documentDescription: editingDocument.description ?? "", 
               isMandatory: editingDocument.isMandatory ?? false,
               role: (editingDocument.role as DocumentTypeRole) ?? "",
               staffKind:
@@ -124,7 +140,7 @@ const DocumentTypeModal = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {/* Name */}
+           
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Name <span className="text-red-500">*</span>
@@ -138,7 +154,7 @@ const DocumentTypeModal = ({
                 />
               </div>
 
-              {/* Description */}
+         
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Description
@@ -153,7 +169,7 @@ const DocumentTypeModal = ({
                 />
               </div>
 
-              {/* Role */}
+          
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Applies To <span className="text-red-500">*</span>
@@ -178,7 +194,7 @@ const DocumentTypeModal = ({
                 />
               </div>
 
-              {/* Staff Kind (conditional) */}
+             
               {values.role === "staff" && (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -202,7 +218,7 @@ const DocumentTypeModal = ({
                 </div>
               )}
 
-              {/* Mandatory Checkbox */}
+             
               <div className="pt-2">
                 <CheckboxField
                   name="isMandatory"
