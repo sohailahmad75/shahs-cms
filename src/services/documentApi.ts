@@ -6,22 +6,32 @@ import type {
 
 export const documentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // getDocuments: builder.query<Document[], any>({
+    //   query: (params) => ({
+    //     url: `/documents/store/${params.storeId}`,
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["Documents"],
+    // }),
+
     getDocuments: builder.query<Document[], any>({
       query: (params) => ({
-        url: `/documents/store-documents/${params.storeId}`,
+        url: `/documents/store/${params.storeId}`,
         method: "GET",
       }),
+      transformResponse: (response: { data: Document[]; meta: any }) => response.data,
       providesTags: ["Documents"],
     }),
+
 
     getDocumentById: builder.query<Document, string>({
       query: (id) => `/documents/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Documents", id }],
     }),
 
-    createDocument: builder.mutation<Document, CreateDocumentDto>({
+    postDocument: builder.mutation<Document, CreateDocumentDto>({
       query: (body) => ({
-        url: "/documents/store-documents",
+        url: "/documents/store",
         method: "POST",
         body,
       }),
@@ -71,7 +81,7 @@ export const documentApi = baseApi.injectEndpoints({
 export const {
   useGetDocumentsQuery,
   useGetDocumentByIdQuery,
-  useCreateDocumentMutation,
+  usePostDocumentMutation,
   useUpdateDocumentMutation,
   useDeleteDocumentMutation,
   useGetPresignedStoreDocUrlMutation,

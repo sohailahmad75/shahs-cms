@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   useGetDocumentsQuery,
-  useCreateDocumentMutation,
+  usePostDocumentMutation,
   useUpdateDocumentMutation,
   useDeleteDocumentMutation,
   useGetDocumentByIdQuery,
@@ -30,7 +30,7 @@ const StoreDocuments: React.FC = () => {
     storeId: id,
   });
 
-  const [createDocument, { isLoading: creating }] = useCreateDocumentMutation();
+  const [createDocument, { isLoading: creating }] = usePostDocumentMutation();
   const [updateDocument, { isLoading: updating }] = useUpdateDocumentMutation();
   const [deleteDocument] = useDeleteDocumentMutation();
 
