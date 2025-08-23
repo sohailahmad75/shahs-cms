@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import type { UserInfoTypes } from "./users.types";
+import { UserRole, type UserInfoTypes } from "./users.types";
 
 export const userSchema = Yup.object({
   firstName: Yup.string().required("First name is required"),
@@ -17,7 +17,7 @@ export const userSchema = Yup.object({
     .min(0, "Cannot be negative")
     .required("Cash-in rate is required"),
   shareCode: Yup.string().required("Share Code is required"),
-  niNumber: Yup.string().required("NI number is required"),
+  // niNumber: Yup.string().required("NI number is required"),
   niRate: Yup.number()
     .typeError("NI rate must be a number")
     .min(0, "Cannot be negative")
@@ -61,16 +61,16 @@ export const userEmptyInitialValues: UserInfoTypes = {
   firstName: "",
   surName: "",
   email: "",
-  phone: "",
+  phone: null,
   street: "",
   city: "",
   postcode: "",
   dob: "",
-  cashInRate: "",
-  niRate: "",
-  type: "",
+  cashInRate: null,
+  niRate: null,
+  type: null,
   shareCode: "",
-  niNumber: "",
+  // niNumber: "",
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
 
   openingHours: [
@@ -88,6 +88,8 @@ export const userEmptyInitialValues: UserInfoTypes = {
   fileType: "",
   expiresAt: "",
   remindBeforeDays: 7,
+  role: UserRole.OWNER,
+  dateOfBirth: ""
 };
 
 export const userStepFieldKeys = {

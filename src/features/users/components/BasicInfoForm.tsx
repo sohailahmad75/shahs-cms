@@ -159,7 +159,7 @@ const BasicInfoForm: React.FC<Props> = ({
         />
       </div>
 
-      <div>
+      {/* <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
           NI Number <span className="text-red-500">*</span>
         </label>
@@ -170,7 +170,7 @@ const BasicInfoForm: React.FC<Props> = ({
           onChange={handleChange}
           error={touched.niNumber ? (errors.niNumber as string) : ""}
         />
-      </div>
+      </div> */}
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">

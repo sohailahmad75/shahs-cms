@@ -11,19 +11,21 @@ import type { UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
 
 import {
-  useGetDocumentsQuery,
-  useCreateDocumentMutation,
-  useUpdateDocumentMutation,
-  useDeleteDocumentMutation,
+  useGetUsersQuery,
+  useCreateUsersMutation,
+  useUpdateUsersMutation,
+  useDeleteUsersMutation,
 } from "./services/UsersApi";
-
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  const { data: users = [], isLoading, refetch } = useGetDocumentsQuery();
-  const [createUser, { isLoading: creating }] = useCreateDocumentMutation();
-  const [updateUser, { isLoading: updating }] = useUpdateDocumentMutation();
-  const [deleteUser] = useDeleteDocumentMutation();
+  // Extract data from the response object
+  const { data: usersResponse, isLoading, refetch } = useGetUsersQuery();
+  const users = usersResponse?.data || []; // Extract the actual users array
+
+  const [createUser, { isLoading: creating }] = useCreateUsersMutation();
+  const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
+  const [deleteUser] = useDeleteUsersMutation();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UsersType | null>(null);
@@ -43,48 +45,48 @@ const UsersTypeListPage: React.FC = () => {
     }
   };
 
-  const getUserTypeLabel = (userType: string) => {
-    switch (userType) {
-      case "staff":
-        return "Staff";
-      case "store_owner":
-        return "Store Owner";
-      default:
-        return userType;
-    }
-  };
-
   const columns: Column<UsersType>[] = [
-    { key: "id", label: "ID" },
-    { key: "name", label: "Name" },
-    {
-      key: "userType",
-      label: "User Type",
-      render: (_, row) => getUserTypeLabel(row.userType),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (_, row) => (
-        <div className="flex gap-2">
-          <ActionIcon
-            icon={<EditIcon size={22} />}
-            onClick={() => handleEdit(row)}
-            className={
-              isDarkMode
-                ? "text-slate-400 hover:text-slate-200"
-                : "text-gray-500 hover:text-gray-700"
-            }
-          />
-          <ActionIcon
-            className="text-red-500"
-            icon={<TrashIcon size={22} />}
-            onClick={() => handleDelete(row.id)}
-          />
-        </div>
-      ),
-    },
-  ];
+  { 
+    key: "firstName", 
+    label: "Name",
+    render: (_, row) => `${row.firstName} ${row.surName || ''}`.trim(),
+  },
+  { 
+    key: "email",
+    label: "Email",
+  },
+  { 
+    key: "phone",
+    label: "Phone",
+  },
+  { 
+    key: "city",
+    label: "City",
+  },
+  {
+    key: "actions",
+    label: "Actions",
+    render: (_, row) => (
+      <div className="flex gap-2">
+        <ActionIcon
+          icon={<EditIcon size={22} />}
+          onClick={() => handleEdit(row)}
+          className={
+            isDarkMode
+              ? "text-slate-400 hover:text-slate-200"
+              : "text-gray-500 hover:text-gray-700"
+          }
+        />
+        <ActionIcon
+          className="text-red-500"
+          icon={<TrashIcon size={22} />}
+          onClick={() => row.id && handleDelete(row.id)}
+        />
+      </div>
+    ),
+  },
+];
+
 
   return (
     <div className="p-4">
@@ -105,7 +107,7 @@ const UsersTypeListPage: React.FC = () => {
         <Loader />
       ) : (
         <DynamicTable
-          data={users}
+          data={users} // Now passing the actual array, not the response object
           columns={columns}
           rowKey="id"
           tableClassName="bg-white dark:bg-slate-900"

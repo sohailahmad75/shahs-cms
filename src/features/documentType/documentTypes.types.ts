@@ -8,6 +8,9 @@ export interface DocumentType {
 }
 
 
+
+
+
 export interface DocumentTypeListResponse {
   data: DocumentType[];
   meta: Meta;

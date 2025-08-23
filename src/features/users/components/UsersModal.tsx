@@ -1,5 +1,403 @@
-import { useMemo, useState } from "react";
+// import { useMemo, useState } from "react";
+// import { Formik, Form, getIn } from "formik";
+
+// import Modal from "../../../components/Modal";
+// import InputField from "../../../components/InputField";
+// import SelectField from "../../../components/SelectField";
+// import DatePickerField from "../../../components/DatePickerField";
+// import Button from "../../../components/Button";
+// import FileUploader from "../../../components/FileUploader";
+// import { useParams } from "react-router-dom";
+// import BankDetailsFields from "../../stores/components/BankDetailsFields";
+// import OpeningHoursFormSection from "../../stores/components/OpeningHoursFormSection";
+// import type { UserInfoTypes } from "../users.types";
+// import {
+//   userEmptyInitialValues,
+//   userSchema,
+//   userStepFieldKeys,
+// } from "../userHelper";
+// import BasicInfoForm from "./BasicInfoForm";
+
+// const UsersTypeModal = ({
+//   isOpen,
+//   onClose,
+//   onSubmit,
+//   editingUsers,
+//   isSubmitting,
+// }: {
+//   isOpen: boolean;
+//   onClose: () => void;
+//   onSubmit: (values: UserInfoTypes) => void;
+//   editingUsers?: Partial<UserInfoTypes>;
+//   isSubmitting?: boolean;
+// }) => {
+//   const { id } = useParams();
+//   const [activeStep, setActiveStep] = useState(0);
+
+//   const baseSteps = useMemo(
+//     () => [
+//       { key: "basic", label: "Basic Info" },
+//       { key: "account", label: "Account Information" },
+//       { key: "availability", label: "Availability" },
+//       { key: "documents", label: "Documents" },
+//     ],
+//     [],
+//   );
+
+//   // Visible steps depend on selected type (availability not for owner)
+//   const getVisibleSteps = (type: UserInfoTypes["type"]) =>
+//     type === "owner"
+//       ? baseSteps.filter((s) => s.key !== "availability")
+//       : baseSteps;
+
+//   return (
+//     <Modal
+//       isOpen={isOpen}
+//       onClose={onClose}
+//       title={editingUsers ? "Edit User" : "Add User"}
+//       width="max-w-5xl"
+//     >
+//       <Formik<UserInfoTypes>
+//         initialValues={{
+//           ...userEmptyInitialValues,
+//           ...(editingUsers || {}),
+//         }}
+//         validationSchema={userSchema}
+//         enableReinitialize
+//         onSubmit={onSubmit}
+//       >
+//         {({
+//           values,
+//           handleChange,
+//           setFieldValue,
+//           errors,
+//           touched,
+//           setFieldTouched,
+//           validateForm,
+//           submitForm,
+//         }) => {
+//           const steps = getVisibleSteps(values.type);
+//           if (activeStep >= steps.length) setActiveStep(steps.length - 1);
+//           const current = steps[activeStep];
+//           const stepKeysOf = (stepIdx: number) =>
+//             userStepFieldKeys[
+//               steps[stepIdx].key as keyof typeof userStepFieldKeys
+//             ];
+
+//           // does a given step have errors?
+//           const stepHasErrors = (
+//             allErrors: Record<string, any>,
+//             stepIdx: number,
+//           ) => {
+//             const keys = stepKeysOf(stepIdx);
+//             return keys.some((k) => getIn(allErrors, k) !== undefined);
+//           };
+
+//           // touch fields for a set of steps (so errors render)
+//           const touchSteps = async (from: number, to: number) => {
+//             const toTouch = new Set<string>();
+//             for (let i = from; i <= to; i++) {
+//               stepKeysOf(i).forEach((k) => toTouch.add(k));
+//             }
+//             await Promise.all(
+//               [...toTouch].map((k) => setFieldTouched(k, true, false)),
+//             );
+//           };
+
+//           // focus first invalid field among steps [from..to]
+//           const focusFirstInvalidInSteps = (
+//             allErrors: Record<string, any>,
+//             from: number,
+//             to: number,
+//           ) => {
+//             for (let i = from; i <= to; i++) {
+//               for (const k of stepKeysOf(i)) {
+//                 if (getIn(allErrors, k) !== undefined) {
+//                   const safe = k.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
+//                   const el = document.querySelector(
+//                     `[name="${safe}"], [name="${safe}[]"]`,
+//                   ) as HTMLElement | null;
+//                   if (el && "focus" in el) (el as any).focus();
+//                   return;
+//                 }
+//               }
+//             }
+//           };
+//           const goNext = async () => {
+//             const stepKeys =
+//               userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
+
+//             // Mark current step fields as touched so errors render
+//             await Promise.all(
+//               stepKeys.map((k) => setFieldTouched(k, true, false)),
+//             );
+
+//             // Validate whole form, then filter to current step's errors
+//             const allErrors = await validateForm();
+//             const stepErrors = stepKeys.filter(
+//               (k) => getIn(allErrors, k) !== undefined,
+//             );
+
+//             if (stepErrors.length) {
+//               // Focus the first field with an error
+//               const first = stepErrors[0];
+
+//               // CSS attribute selector needs brackets escaped for nested names
+//               const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
+//               const el = document.querySelector(
+//                 `[name="${safe}"], [name="${safe}[]"]`,
+//               ) as HTMLElement | null;
+
+//               if (el && "focus" in el) (el as any).focus();
+//               return; // stop; don't advance
+//             }
+
+//             // No errors for this step -> advance or submit
+//             if (activeStep < steps.length - 1) {
+//               setActiveStep((s) => s + 1);
+//             } else {
+//               await submitForm();
+//             }
+//           };
+
+//           const goBack = () => setActiveStep((s) => Math.max(0, s - 1));
+
+//           return (
+//             <Form className="space-y-6">
+//               {/* Stepper Header */}
+//               <div className="flex items-center justify-between">
+//                 {steps.map((s, idx) => {
+//                   const isActive = idx === activeStep;
+//                   const isDone = idx < activeStep;
+//                   const isError = stepHasErrors(errors, idx);
+
+//                   const pillBase =
+//                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
+//                   const pillState = isActive
+//                     ? "border-orange-400 text-orange-600"
+//                     : isError
+//                       ? "border-red-400 text-red-600"
+//                       : isDone
+//                         ? "border-green-400 text-green-600"
+//                         : "border-gray-300 text-gray-600";
+
+//                   const dotBase =
+//                     "w-6 h-6 flex items-center justify-center rounded-full";
+//                   const dotState = isActive
+//                     ? "bg-orange-500 text-white"
+//                     : isError
+//                       ? "bg-red-500 text-white"
+//                       : isDone
+//                         ? "bg-green-500 text-white"
+//                         : "bg-gray-200 text-gray-700";
+
+//                   const handleStepClick = async () => {
+//                     if (idx <= activeStep) {
+//                       setActiveStep(idx);
+//                       return;
+//                     }
+//                     await touchSteps(0, idx - 1);
+//                     const allErrors = await validateForm();
+//                     let firstInvalid = -1;
+//                     for (let i = 0; i <= idx - 1; i++) {
+//                       if (stepHasErrors(allErrors, i)) {
+//                         firstInvalid = i;
+//                         break;
+//                       }
+//                     }
+//                     if (firstInvalid !== -1) {
+//                       setActiveStep(firstInvalid);
+//                       focusFirstInvalidInSteps(
+//                         allErrors,
+//                         firstInvalid,
+//                         firstInvalid,
+//                       );
+//                       return;
+//                     }
+//                     setActiveStep(idx);
+//                   };
+
+//                   return (
+//                     <div
+//                       key={s.key}
+//                       className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}
+//                     >
+//                       <div
+//                         role="button"
+//                         tabIndex={0}
+//                         onClick={handleStepClick}
+//                         onKeyDown={(e) =>
+//                           (e.key === "Enter" || e.key === " ") &&
+//                           handleStepClick()
+//                         }
+//                         className={`${pillBase} ${pillState}`}
+//                       >
+//                         <span className={`${dotBase} ${dotState}`}>
+//                           {idx + 1}
+//                         </span>
+//                         <span className="font-medium whitespace-nowrap">
+//                           {s.label}
+//                         </span>
+//                       </div>
+
+//                       {idx < steps.length - 1 && (
+//                         <div className="h-px flex-1 bg-gray-200 mx-2" />
+//                       )}
+//                     </div>
+//                   );
+//                 })}
+//               </div>
+
+//               {/* Step Content */}
+//               {current.key === "basic" && (
+//                 <BasicInfoForm
+//                   onTypeChange={(nextType) => {
+//                     const visible = getVisibleSteps(nextType);
+//                     if (activeStep >= visible.length)
+//                       setActiveStep(visible.length - 1);
+//                   }}
+//                 />
+//               )}
+
+//               {current.key === "account" && (
+//                 <BankDetailsFields
+//                   values={values}
+//                   setFieldValue={setFieldValue}
+//                   errors={errors}
+//                   touched={touched}
+//                 />
+//               )}
+
+//               {current.key === "availability" && values.type === "staff" && (
+//                 <OpeningHoursFormSection
+//                   openingHours={values.openingHours}
+//                   setOpeningHours={(hrs) => setFieldValue("openingHours", hrs)}
+//                   sameAllDays={values.sameAllDays}
+//                   setSameAllDays={(v: boolean) =>
+//                     setFieldValue("sameAllDays", v)
+//                   }
+//                 />
+//               )}
+
+//               {current.key === "documents" && (
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                   <div className="md:col-span-2">
+//                     <label className="text-sm font-medium text-gray-700 mb-1 block">
+//                       Upload Document{" "}
+//                       {values.type === "staff" && (
+//                         <span className="text-red-500">*</span>
+//                       )}
+//                     </label>
+//                     <FileUploader
+//                       value={values.fileS3Key}
+//                       onChange={(key) => setFieldValue("fileS3Key", key)}
+//                       path="user-documents"
+//                       type="all"
+//                       pathId={id}
+//                       error={
+//                         touched.fileS3Key && errors.fileS3Key
+//                           ? (errors.fileS3Key as string)
+//                           : ""
+//                       }
+//                     />
+//                   </div>
+
+//                   {values.fileS3Key && (
+//                     <div>
+//                       <label className="text-sm font-medium text-gray-700 mb-1 block">
+//                         File Type <span className="text-red-500">*</span>
+//                       </label>
+//                       <SelectField
+//                         name="fileType"
+//                         value={values.fileType}
+//                         onChange={handleChange}
+//                         options={[
+//                           { label: "Passport", value: "passport" },
+//                           { label: "FSA Cert", value: "fsa_cert" },
+//                           { label: "License", value: "license" },
+//                         ]}
+//                         error={
+//                           touched.fileType ? (errors.fileType as string) : ""
+//                         }
+//                       />
+//                     </div>
+//                   )}
+
+//                   <div>
+//                     <label className="text-sm font-medium text-gray-700 mb-1 block">
+//                       Expiry Date
+//                     </label>
+//                     <DatePickerField
+//                       name="expiresAt"
+//                       value={values.expiresAt}
+//                       onChange={(v: any) => setFieldValue("expiresAt", v)}
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="text-sm font-medium text-gray-700 mb-1 block">
+//                       Remind Before (days)
+//                     </label>
+//                     <InputField
+//                       placeholder="Remind Before (days)"
+//                       name="remindBeforeDays"
+//                       type="number"
+//                       value={String(values.remindBeforeDays ?? "")}
+//                       onChange={handleChange}
+//                       error={
+//                         touched.remindBeforeDays
+//                           ? (errors.remindBeforeDays as string)
+//                           : ""
+//                       }
+//                     />
+//                   </div>
+//                 </div>
+//               )}
+
+//               {/* Footer Buttons */}
+//               <div className="flex justify-between pt-2">
+//                 <Button type="button" variant="outlined" onClick={onClose}>
+//                   Cancel
+//                 </Button>
+
+//                 <div className="flex gap-2">
+//                   <Button
+//                     type="button"
+//                     variant="outlined"
+//                     onClick={goBack}
+//                     disabled={activeStep === 0}
+//                   >
+//                     Back
+//                   </Button>
+//                   <Button
+//                     type="button"
+//                     onClick={goNext}
+//                     disabled={isSubmitting}
+//                   >
+//                     {activeStep < steps.length - 1
+//                       ? "Next"
+//                       : isSubmitting
+//                         ? "Saving..."
+//                         : "Save"}
+//                   </Button>
+//                 </div>
+//               </div>
+//             </Form>
+//           );
+//         }}
+//       </Formik>
+//     </Modal>
+//   );
+// };
+
+// export default UsersTypeModal;
+
+
+
+
+import { useMemo, useState, useEffect } from "react";
 import { Formik, Form, getIn } from "formik";
+import { useParams } from "react-router-dom";
 
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
@@ -7,16 +405,36 @@ import SelectField from "../../../components/SelectField";
 import DatePickerField from "../../../components/DatePickerField";
 import Button from "../../../components/Button";
 import FileUploader from "../../../components/FileUploader";
-import { useParams } from "react-router-dom";
+
 import BankDetailsFields from "../../stores/components/BankDetailsFields";
 import OpeningHoursFormSection from "../../stores/components/OpeningHoursFormSection";
-import type { UserInfoTypes } from "../users.types";
+
+import BasicInfoForm from "./BasicInfoForm";
 import {
   userEmptyInitialValues,
   userSchema,
   userStepFieldKeys,
 } from "../userHelper";
-import BasicInfoForm from "./BasicInfoForm";
+import {
+  type UserInfoTypes,
+  type CreateUsersDto,
+  type UpdateUsersDto,
+  UserRole,
+} from "../users.types";
+
+import {
+  useCreateUsersMutation,
+  useUpdateUsersMutation,
+} from "../services/UsersApi";
+
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (values: UserInfoTypes) => void;
+  editingUsers?: Partial<UserInfoTypes>;
+  isSubmitting?: boolean;
+};
 
 const UsersTypeModal = ({
   isOpen,
@@ -24,15 +442,68 @@ const UsersTypeModal = ({
   onSubmit,
   editingUsers,
   isSubmitting,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (values: UserInfoTypes) => void;
-  editingUsers?: Partial<UserInfoTypes>;
-  isSubmitting?: boolean;
-}) => {
-  const { id } = useParams();
+}: Props) => {
+  const { id: routeId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
+  const [userId, setUserId] = useState<string | null>(editingUsers?.id || null);
+
+  const [createUser, createStatus] = useCreateUsersMutation();
+  const [updateUser, updateStatus] = useUpdateUsersMutation();
+
+
+
+  const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
+    return {
+      basicInfo: {
+        firstName: v.firstName,
+        surName: v.surName,
+        email: v.email,
+        phone: Number(v.phone),
+        street: v.street,
+        city: v.city,
+        postCode: v.postcode,
+        dateOfBirth: v.dob,
+        cashInRate: v.cashInRate ?? null,
+        NiRate: v.niRate ?? null,
+        shareCode: v.shareCode ?? null,
+        password: v.password,
+        role: v.type === "owner" ? UserRole.OWNER : UserRole.STAFF,
+      },
+    };
+  };
+
+
+  const mapUpdateDto = (v: UserInfoTypes, userId: string): UpdateUsersDto => {
+    return {
+      userBankDetails:
+        (v.bankDetails || []).map((b) => ({
+          userId,
+          accountNumber: b.accountNumber || "",
+          sortCode: b.sortCode || "",
+          bankName: b.bankName || "",
+          accountHolderName: b.accountHolderName || "",
+          iban: b.iban || "",
+          swiftCode: b.swiftCode || "",
+        })) || [],
+      userAvailability: (v.openingHours || []).map((o) => ({
+        day: o.day,
+        open: o.closed ? null : (o.open || null),
+        close: o.closed ? null : (o.close || null),
+        closed: !!o.closed,
+      })),
+      documents: {
+        fileS3Key: v.fileS3Key ?? null,
+        fileType: v.fileType || "",
+        expiresAt: v.expiresAt ?? null,
+        remindBeforeDays: v.remindBeforeDays ?? null,
+      },
+    };
+  };
+
+
+  useEffect(() => {
+
+  }, [activeStep]);
 
   const baseSteps = useMemo(
     () => [
@@ -44,7 +515,6 @@ const UsersTypeModal = ({
     [],
   );
 
-  // Visible steps depend on selected type (availability not for owner)
   const getVisibleSteps = (type: UserInfoTypes["type"]) =>
     type === "owner"
       ? baseSteps.filter((s) => s.key !== "availability")
@@ -77,14 +547,17 @@ const UsersTypeModal = ({
           submitForm,
         }) => {
           const steps = getVisibleSteps(values.type);
-          if (activeStep >= steps.length) setActiveStep(steps.length - 1);
-          const current = steps[activeStep];
+          const totalSteps = steps.length;
+
+          const currentIndex =
+            activeStep >= totalSteps ? totalSteps - 1 : activeStep;
+          const current = steps[currentIndex];
+
           const stepKeysOf = (stepIdx: number) =>
             userStepFieldKeys[
-              steps[stepIdx].key as keyof typeof userStepFieldKeys
+            steps[stepIdx].key as keyof typeof userStepFieldKeys
             ];
 
-          // does a given step have errors?
           const stepHasErrors = (
             allErrors: Record<string, any>,
             stepIdx: number,
@@ -93,7 +566,6 @@ const UsersTypeModal = ({
             return keys.some((k) => getIn(allErrors, k) !== undefined);
           };
 
-          // touch fields for a set of steps (so errors render)
           const touchSteps = async (from: number, to: number) => {
             const toTouch = new Set<string>();
             for (let i = from; i <= to; i++) {
@@ -104,7 +576,6 @@ const UsersTypeModal = ({
             );
           };
 
-          // focus first invalid field among steps [from..to]
           const focusFirstInvalidInSteps = (
             allErrors: Record<string, any>,
             from: number,
@@ -123,52 +594,83 @@ const UsersTypeModal = ({
               }
             }
           };
+
           const goNext = async () => {
             const stepKeys =
               userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
-            // Mark current step fields as touched so errors render
             await Promise.all(
               stepKeys.map((k) => setFieldTouched(k, true, false)),
             );
 
-            // Validate whole form, then filter to current step's errors
             const allErrors = await validateForm();
             const stepErrors = stepKeys.filter(
               (k) => getIn(allErrors, k) !== undefined,
             );
 
             if (stepErrors.length) {
-              // Focus the first field with an error
               const first = stepErrors[0];
-
-              // CSS attribute selector needs brackets escaped for nested names
               const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
               const el = document.querySelector(
                 `[name="${safe}"], [name="${safe}[]"]`,
               ) as HTMLElement | null;
-
               if (el && "focus" in el) (el as any).focus();
-              return; // stop; don't advance
+              return;
             }
 
-            // No errors for this step -> advance or submit
-            if (activeStep < steps.length - 1) {
+
+            if (current.key === "basic" && !userId) {
+              try {
+                const payload = mapCreateDto(values);
+                const res = await createUser(payload).unwrap();
+                const newId = (res as any)?.id || (res as any)?._id;
+                if (!newId) {
+                  console.warn("Create user response did not include id:", res);
+                }
+                setUserId(newId ?? null);
+                if (newId) setFieldValue("id", newId);
+              } catch (err) {
+                console.error("Create user failed:", err);
+                return;
+              }
+            }
+
+
+            if (currentIndex < totalSteps - 1) {
               setActiveStep((s) => s + 1);
             } else {
-              await submitForm();
+
+              try {
+                const idForPut = userId || values.id;
+                if (!idForPut) {
+                  console.error("No userId to update.");
+                  return;
+                }
+                const payload = mapUpdateDto(values, idForPut);
+                await updateUser({ id: idForPut, data: payload }).unwrap();
+
+                await submitForm();
+
+
+                onClose?.();
+              } catch (err) {
+                console.error("Update user failed:", err);
+              }
             }
           };
 
           const goBack = () => setActiveStep((s) => Math.max(0, s - 1));
+
+          const isSaving =
+            isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 
           return (
             <Form className="space-y-6">
               {/* Stepper Header */}
               <div className="flex items-center justify-between">
                 {steps.map((s, idx) => {
-                  const isActive = idx === activeStep;
-                  const isDone = idx < activeStep;
+                  const isActive = idx === currentIndex;
+                  const isDone = idx < currentIndex;
                   const isError = stepHasErrors(errors, idx);
 
                   const pillBase =
@@ -192,7 +694,7 @@ const UsersTypeModal = ({
                         : "bg-gray-200 text-gray-700";
 
                   const handleStepClick = async () => {
-                    if (idx <= activeStep) {
+                    if (idx <= currentIndex) {
                       setActiveStep(idx);
                       return;
                     }
@@ -248,12 +750,12 @@ const UsersTypeModal = ({
                 })}
               </div>
 
-              {/* Step Content */}
+
               {current.key === "basic" && (
                 <BasicInfoForm
                   onTypeChange={(nextType) => {
                     const visible = getVisibleSteps(nextType);
-                    if (activeStep >= visible.length)
+                    if (currentIndex >= visible.length)
                       setActiveStep(visible.length - 1);
                   }}
                 />
@@ -293,7 +795,7 @@ const UsersTypeModal = ({
                       onChange={(key) => setFieldValue("fileS3Key", key)}
                       path="user-documents"
                       type="all"
-                      pathId={id}
+                      pathId={routeId}
                       error={
                         touched.fileS3Key && errors.fileS3Key
                           ? (errors.fileS3Key as string)
@@ -365,18 +867,14 @@ const UsersTypeModal = ({
                     type="button"
                     variant="outlined"
                     onClick={goBack}
-                    disabled={activeStep === 0}
+                    disabled={currentIndex === 0 || isSaving}
                   >
                     Back
                   </Button>
-                  <Button
-                    type="button"
-                    onClick={goNext}
-                    disabled={isSubmitting}
-                  >
-                    {activeStep < steps.length - 1
+                  <Button type="button" onClick={goNext} disabled={isSaving}>
+                    {currentIndex < steps.length - 1
                       ? "Next"
-                      : isSubmitting
+                      : isSaving
                         ? "Saving..."
                         : "Save"}
                   </Button>

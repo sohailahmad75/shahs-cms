@@ -1,68 +1,76 @@
 import { baseApi } from "../../../services/baseApi";
-import type { UpdateUsersDto, UsersType, CreateUsersDto } from "../users.types";
+import type { UpdateUsersDto, UsersTypeListResponse, CreateUsersDto } from "../users.types";
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getDocuments: builder.query<UsersType[], void>({
-      query: () => "/documents",
+    getUsers: builder.query<
+      UsersTypeListResponse,
+      { page?: number; perPage?: number; search?: string } | void
+    >({
+      query: (args) => {
+        const params = (args || {}) as { page?: number; perPage?: number; search?: string };
+        const { page = 1, perPage = 10, search = "" } = params;
+        return { url: "/users", params: { page, perPage, search } };
+      },
       providesTags: (result) =>
         result
           ? [
-              ...result.map((doc) => ({
-                type: "Documents" as const,
-                id: doc.id,
-              })),
-              { type: "Documents" },
-            ]
-          : [{ type: "Documents" }],
+            ...result.data.map((doc) => ({
+              type: "Users" as const,
+              id: doc.id!,
+            })),
+            { type: "Users" as const, id: "LIST" },
+          ]
+          : [{ type: "Users" as const, id: "LIST" }],
     }),
 
-    createDocument: builder.mutation<DocumentType, CreateUsersDto>({
+
+    createUsers: builder.mutation<DocumentType, CreateUsersDto>({
       query: (body) => ({
-        url: "/documents",
+        url: "/users",
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "Documents" }],
+      invalidatesTags: [{ type: "Users" }],
     }),
 
-    updateDocument: builder.mutation<
+    updateUsers: builder.mutation<
       DocumentType,
       { id: string; data: UpdateUsersDto }
     >({
       query: ({ id, data }) => ({
-        url: `/documents/${id}`,
+        url: `/users/${id}`,
         method: "PUT",
         body: data,
       }),
       invalidatesTags: (_result, _error, { id }) => [
-        { type: "Documents", id },
-        { type: "Documents" },
+        { type: "Users", id },
+        { type: "Users" },
       ],
     }),
-    deleteDocument: builder.mutation<{ success: boolean }, string>({
+    deleteUsers: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
-        url: `/documents/${id}`,
+        url: `/users/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, id) => [
-        { type: "Documents", id },
-        { type: "Documents" },
+        { type: "Users", id },
+        { type: "Users" },
       ],
     }),
 
-    // Get Document by ID
-    getDocumentById: builder.query<DocumentType, string>({
-      query: (id) => `/documents/${id}`,
-      providesTags: (_result, _error, id) => [{ type: "Documents", id }],
+
+    getUsersById: builder.query<DocumentType, string>({
+      query: (id) => `/users/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Users", id }],
     }),
   }),
 });
 
 export const {
-  useGetDocumentsQuery,
-  useCreateDocumentMutation,
-  useUpdateDocumentMutation,
-  useDeleteDocumentMutation,
-  useGetDocumentByIdQuery,
+  useGetUsersQuery,
+  useCreateUsersMutation,
+  useUpdateUsersMutation,
+  useDeleteUsersMutation,
+  useGetUsersByIdQuery,
 } = usersApi;
