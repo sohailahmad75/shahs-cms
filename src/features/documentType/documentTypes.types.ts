@@ -1,6 +1,7 @@
 import type { Meta } from "../../types";
 
 export interface DocumentType {
+  isMandatory: any;
   id: string;
   name: string;
   description: string;

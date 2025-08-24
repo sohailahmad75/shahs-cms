@@ -40,21 +40,48 @@ export const userSchema = Yup.object({
   sameAllDays: Yup.boolean().optional(),
 
   // Step 4
-  fileS3Key: Yup.string().when("type", {
-    is: "staff",
-    then: (s) => s.required("Document is required for staff"),
-    otherwise: (s) => s.notRequired(),
-  }),
-  fileType: Yup.string().when("fileS3Key", {
-    is: (v: string) => !!v,
-    then: (s) => s.required("Select file type"),
-    otherwise: (s) => s.notRequired(),
-  }),
-  expiresAt: Yup.mixed().nullable().optional(),
-  remindBeforeDays: Yup.number()
-    .typeError("Must be a number")
-    .min(0, "Cannot be negative")
-    .optional(),
+  // fileS3Key: Yup.string().when("type", {
+  //   is: "staff",
+  //   then: (s) => s.required("Document is required for staff"),
+  //   otherwise: (s) => s.notRequired(),
+  // }),
+  // fileType: Yup.string().when("fileS3Key", {
+  //   is: (v: string) => !!v,
+  //   then: (s) => s.required("Select file type"),
+  //   otherwise: (s) => s.notRequired(),
+  // }),
+  // expiresAt: Yup.mixed().nullable().optional(),
+  // remindBeforeDays: Yup.number()
+  //   .typeError("Must be a number")
+  //   .min(0, "Cannot be negative")
+  //   .optional(),
+
+  documents: Yup.object({
+    cnic: Yup.object({
+      fileS3Key: Yup.string().required("CNIC document is required"),
+      fileType: Yup.string()
+        .required("File type is required"),
+      expiresAt: Yup.mixed().nullable().optional(),
+      remindBeforeDays: Yup.number()
+        .typeError("Must be a number")
+        .min(0, "Cannot be negative")
+        .optional(),
+    }),
+    license: Yup.object({
+      fileS3Key: Yup.string().nullable(), // optional
+      fileType: Yup.string().when("fileS3Key", {
+        is: (v: string) => !!v,
+        then: (s) => s.required("File type is required"),
+        otherwise: (s) => s.notRequired(),
+      }),
+      expiresAt: Yup.mixed().nullable().optional(),
+      remindBeforeDays: Yup.number()
+        .typeError("Must be a number")
+        .min(0, "Cannot be negative")
+        .optional(),
+    }),
+  })
+
 });
 
 export const userEmptyInitialValues: UserInfoTypes = {
@@ -89,7 +116,8 @@ export const userEmptyInitialValues: UserInfoTypes = {
   expiresAt: "",
   remindBeforeDays: 7,
   role: UserRole.OWNER,
-  dateOfBirth: ""
+  dateOfBirth: "",
+  documents: undefined
 };
 
 export const userStepFieldKeys = {

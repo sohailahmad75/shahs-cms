@@ -32,6 +32,7 @@ export type DocumentInfo = {
 };
 
 export type UserInfoTypes = {
+  documents: any;
   role: UserRole;
   dateOfBirth: string;
   id?: string;

@@ -30,6 +30,7 @@ import {
   useUpdateUsersMutation,
 } from "../services/UsersApi";
 import isEqual from "lodash.isequal";
+import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 
 type Props = {
   isOpen: boolean;
@@ -71,6 +72,16 @@ const UsersTypeModal = ({
       },
     };
   };
+
+  const { data } = useGetDocumentsTypeQuery();
+  const savedType = localStorage.getItem("userType");
+  const documentsList = useMemo(() => {
+    if (!data?.data) return [];
+    return data.data.filter((doc: any) => doc.role === savedType);
+  }, [data, savedType]);
+
+
+
 
   const mapUpdateDto = (v: UserInfoTypes, userId: string): UpdateUsersDto => {
     return {
@@ -149,7 +160,7 @@ const UsersTypeModal = ({
 
           const stepKeysOf = (stepIdx: number) =>
             userStepFieldKeys[
-              steps[stepIdx].key as keyof typeof userStepFieldKeys
+            steps[stepIdx].key as keyof typeof userStepFieldKeys
             ];
 
           const stepHasErrors = (
@@ -319,9 +330,8 @@ const UsersTypeModal = ({
                   return (
                     <div
                       key={s.key}
-                      className={`flex items-center ${
-                        idx < steps.length - 1 ? "flex-1" : ""
-                      }`}
+                      className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""
+                        }`}
                     >
                       <div
                         className={`${pillBase} ${pillState}`}
@@ -347,6 +357,7 @@ const UsersTypeModal = ({
               {current.key === "basic" && (
                 <BasicInfoForm
                   onTypeChange={(nextType) => {
+                    localStorage.setItem("userType", nextType);
                     const visible = getVisibleSteps(nextType);
                     if (currentIndex >= visible.length)
                       setActiveStep(visible.length - 1);
@@ -372,7 +383,7 @@ const UsersTypeModal = ({
                 />
               )}
 
-              {current.key === "documents" && (
+              {/* {current.key === "documents" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -445,7 +456,99 @@ const UsersTypeModal = ({
                     />
                   </div>
                 </div>
+              )} */}
+
+              {current.key === "documents" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {documentsList.map((doc) => (
+                    <div key={doc.id} className="md:col-span-2 pb-4">
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        {doc.name}{" "}
+                        {doc.isMandatory && <span className="text-red-500">*</span>}
+                      </label>
+
+                      {/* File Upload */}
+                      <FileUploader
+                        value={values.documents?.[doc.id]?.fileS3Key || ""}
+                        onChange={(key) =>
+                          setFieldValue(`documents.${doc.id}.fileS3Key`, key)
+                        }
+                        path="user-documents"
+                        type="all"
+                        pathId={routeId}
+                        error={
+                          touched.documents?.[doc.id]?.fileS3Key &&
+                            errors.documents?.[doc.id]?.fileS3Key
+                            ? (errors.documents?.[doc.id]?.fileS3Key as string)
+                            : ""
+                        }
+                      />
+
+                  
+                      {values.documents?.[doc.id]?.fileS3Key && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 mb-1 block">
+                              File Type <span className="text-red-500">*</span>
+                            </label>
+                            <SelectField
+                              name={`documents.${doc.id}.fileType`}
+                              value={values.documents?.[doc.id]?.fileType || ""}
+                              onChange={handleChange}
+                              options={[
+                                { label: "Passport", value: "passport" },
+                                { label: "FSA Cert", value: "fsa_cert" },
+                                { label: "License", value: "license" },
+                              ]}
+                              error={
+                                touched.documents?.[doc.id]?.fileType &&
+                                  errors.documents?.[doc.id]?.fileType
+                                  ? (errors.documents?.[doc.id]?.fileType as string)
+                                  : ""
+                              }
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 mb-1 block">
+                              Expiry Date
+                            </label>
+                            <DatePickerField
+                              name={`documents.${doc.id}.expiresAt`}
+                              value={values.documents?.[doc.id]?.expiresAt || ""}
+                              onChange={(v: any) =>
+                                setFieldValue(`documents.${doc.id}.expiresAt`, v)
+                              }
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 mb-1 block">
+                              Remind Before (days)
+                            </label>
+                            <InputField
+                              placeholder="Remind Before (days)"
+                              name={`documents.${doc.id}.remindBeforeDays`}
+                              type="number"
+                              value={
+                                String(values.documents?.[doc.id]?.remindBeforeDays ?? "")
+                              }
+                              onChange={handleChange}
+                              error={
+                                touched.documents?.[doc.id]?.remindBeforeDays &&
+                                  errors.documents?.[doc.id]?.remindBeforeDays
+                                  ? (errors.documents?.[doc.id]?.remindBeforeDays as string)
+                                  : ""
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
+
 
               {/* Footer */}
               <div className="flex justify-between pt-2">
