@@ -7,7 +7,7 @@ import UsersTypeModal from "./components/UsersModal";
 import EditIcon from "../../assets/styledIcons/EditIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
-import type { UsersType } from "./users.types";
+import { UserRole, type UserInfoTypes, type UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
 
 import {
@@ -19,21 +19,29 @@ import {
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  // Extract data from the response object
   const { data: usersResponse, isLoading, refetch } = useGetUsersQuery();
-  const users = usersResponse?.data || []; // Extract the actual users array
+  const users = usersResponse?.data || []; 
 
   const [createUser, { isLoading: creating }] = useCreateUsersMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
   const [deleteUser] = useDeleteUsersMutation();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<UsersType | null>(null);
-
+  const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
   const handleEdit = (user: UsersType) => {
-    setEditingUser(user);
-    setModalOpen(true);
+  const mappedUser: Partial<UserInfoTypes> = {
+    ...user,
+    dob: user.dateOfBirth || user.dob || "",
+    dateOfBirth: undefined, 
+    postcode: (user as any).postCode || user.postcode || "",
+    niRate: (user as any).NiRate ?? user.niRate ?? null,
+    type: user.role === UserRole.OWNER ? "owner" : "staff",
   };
+
+  setEditingUser(mappedUser);
+  setModalOpen(true);
+};
+
 
   const handleDelete = async (id: string) => {
     try {
@@ -90,7 +98,6 @@ const UsersTypeListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl font-bold">Users</h1>
         <Button
@@ -107,7 +114,7 @@ const UsersTypeListPage: React.FC = () => {
         <Loader />
       ) : (
         <DynamicTable
-          data={users} // Now passing the actual array, not the response object
+          data={users} 
           columns={columns}
           rowKey="id"
           tableClassName="bg-white dark:bg-slate-900"

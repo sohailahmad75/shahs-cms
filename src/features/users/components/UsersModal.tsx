@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Formik, Form, getIn } from "formik";
 import { useParams } from "react-router-dom";
 
@@ -29,7 +29,7 @@ import {
   useCreateUsersMutation,
   useUpdateUsersMutation,
 } from "../services/UsersApi";
-
+import isEqual from "lodash.isequal";
 
 type Props = {
   isOpen: boolean;
@@ -53,9 +53,7 @@ const UsersTypeModal = ({
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
 
-
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
-
     return {
       basicInfo: {
         firstName: v.firstName,
@@ -73,7 +71,6 @@ const UsersTypeModal = ({
       },
     };
   };
-
 
   const mapUpdateDto = (v: UserInfoTypes, userId: string): UpdateUsersDto => {
     return {
@@ -101,11 +98,6 @@ const UsersTypeModal = ({
       },
     };
   };
-
-
-  useEffect(() => {
-
-  }, [activeStep]);
 
   const baseSteps = useMemo(
     () => [
@@ -157,7 +149,7 @@ const UsersTypeModal = ({
 
           const stepKeysOf = (stepIdx: number) =>
             userStepFieldKeys[
-            steps[stepIdx].key as keyof typeof userStepFieldKeys
+              steps[stepIdx].key as keyof typeof userStepFieldKeys
             ];
 
           const stepHasErrors = (
@@ -168,39 +160,9 @@ const UsersTypeModal = ({
             return keys.some((k) => getIn(allErrors, k) !== undefined);
           };
 
-          const touchSteps = async (from: number, to: number) => {
-            const toTouch = new Set<string>();
-            for (let i = from; i <= to; i++) {
-              stepKeysOf(i).forEach((k) => toTouch.add(k));
-            }
-            await Promise.all(
-              [...toTouch].map((k) => setFieldTouched(k, true, false)),
-            );
-          };
-
-          const focusFirstInvalidInSteps = (
-            allErrors: Record<string, any>,
-            from: number,
-            to: number,
-          ) => {
-            for (let i = from; i <= to; i++) {
-              for (const k of stepKeysOf(i)) {
-                if (getIn(allErrors, k) !== undefined) {
-                  const safe = k.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
-                  const el = document.querySelector(
-                    `[name="${safe}"], [name="${safe}[]"]`,
-                  ) as HTMLElement | null;
-                  if (el && "focus" in el) (el as any).focus();
-                  return;
-                }
-              }
-            }
-          };
-
           const goNext = async () => {
             const stepKeys =
               userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
-
             await Promise.all(
               stepKeys.map((k) => setFieldTouched(k, true, false)),
             );
@@ -220,48 +182,107 @@ const UsersTypeModal = ({
               return;
             }
 
-
-            if (current.key === "basic" && !userId) {
-              try {
-                const payload = mapCreateDto(values);
-                const res = await createUser(payload).unwrap();
-                const newId = (res as any)?.id || (res as any)?._id;
-                if (!newId) {
-                  console.warn("Create user response did not include id:", res);
-                }
-                setUserId(newId ?? null);
-                if (newId) setFieldValue("id", newId);
-              } catch (err) {
-                console.error("Create user failed:", err);
-                return;
-              }
+            // Create case
+            if (current.key === "basic" && !editingUsers && !userId) {
+              const payload = mapCreateDto(values);
+              const res = await createUser(payload).unwrap();
+              const newId = (res as any)?.id || (res as any)?._id;
+              setUserId(newId ?? null);
+              if (newId) setFieldValue("id", newId);
             }
 
-
-            if (currentIndex < totalSteps - 1) {
-              setActiveStep((s) => s + 1);
-            } else {
-
+            // Edit case (only call PUT if data changed)
+            if (editingUsers || userId) {
               try {
                 const idForPut = userId || values.id;
                 if (!idForPut) {
                   console.error("No userId to update.");
                   return;
                 }
-                const payload = mapUpdateDto(values, idForPut);
-                await updateUser({ id: idForPut, data: payload }).unwrap();
 
-                await submitForm();
+                if (current.key === "basic") {
+                  const newBasic = mapCreateDto(values).basicInfo;
+                  const oldBasic = {
+                    firstName: editingUsers?.firstName,
+                    surName: editingUsers?.surName,
+                    email: editingUsers?.email,
+                    phone: editingUsers?.phone,
+                    street: editingUsers?.street,
+                    city: editingUsers?.city,
+                    postCode: editingUsers?.postcode,
+                    dateOfBirth: editingUsers?.dob,
+                    cashInRate: editingUsers?.cashInRate ?? null,
+                    NiRate: editingUsers?.niRate ?? null,
+                    shareCode: editingUsers?.shareCode ?? null,
+                    role:
+                      editingUsers?.type === "owner"
+                        ? UserRole.OWNER
+                        : UserRole.STAFF,
+                  };
 
+                  if (!isEqual(newBasic, oldBasic)) {
+                    await updateUser({
+                      id: idForPut,
+                      data: { basicInfo: newBasic } as any,
+                    }).unwrap();
+                  }
+                }
 
-                onClose?.();
+                if (current.key === "account") {
+                  const newBank = mapUpdateDto(values, idForPut).userBankDetails;
+                  const oldBank = editingUsers?.bankDetails || [];
+
+                  if (!isEqual(newBank, oldBank)) {
+                    await updateUser({
+                      id: idForPut,
+                      data: { userBankDetails: newBank },
+                    }).unwrap();
+                  }
+                }
+
+                if (current.key === "availability") {
+                  const newAvail =
+                    mapUpdateDto(values, idForPut).userAvailability;
+                  const oldAvail = editingUsers?.openingHours || [];
+
+                  if (!isEqual(newAvail, oldAvail)) {
+                    await updateUser({
+                      id: idForPut,
+                      data: { userAvailability: newAvail },
+                    }).unwrap();
+                  }
+                }
+
+                if (current.key === "documents") {
+                  const newDocs = mapUpdateDto(values, idForPut).documents;
+                  const oldDocs = {
+                    fileS3Key: editingUsers?.fileS3Key ?? null,
+                    fileType: editingUsers?.fileType || "",
+                    expiresAt: editingUsers?.expiresAt ?? null,
+                    remindBeforeDays: editingUsers?.remindBeforeDays ?? null,
+                  };
+
+                  if (!isEqual(newDocs, oldDocs)) {
+                    await updateUser({
+                      id: idForPut,
+                      data: { documents: newDocs },
+                    }).unwrap();
+                  }
+                }
               } catch (err) {
                 console.error("Update user failed:", err);
               }
             }
+
+            if (currentIndex < totalSteps - 1) {
+              setActiveStep((s) => s + 1);
+            } else {
+              await submitForm();
+              onClose?.();
+            }
           };
 
-          const goBack = () => setActiveStep((s) => Math.max(0, s - 1));
+          // const goBack = () => setActiveStep((s) => Math.max(0, s - 1));
 
           const isSaving =
             isSubmitting || createStatus.isLoading || updateStatus.isLoading;
@@ -295,46 +316,18 @@ const UsersTypeModal = ({
                         ? "bg-green-500 text-white"
                         : "bg-gray-200 text-gray-700";
 
-                  const handleStepClick = async () => {
-                    if (idx <= currentIndex) {
-                      setActiveStep(idx);
-                      return;
-                    }
-                    await touchSteps(0, idx - 1);
-                    const allErrors = await validateForm();
-                    let firstInvalid = -1;
-                    for (let i = 0; i <= idx - 1; i++) {
-                      if (stepHasErrors(allErrors, i)) {
-                        firstInvalid = i;
-                        break;
-                      }
-                    }
-                    if (firstInvalid !== -1) {
-                      setActiveStep(firstInvalid);
-                      focusFirstInvalidInSteps(
-                        allErrors,
-                        firstInvalid,
-                        firstInvalid,
-                      );
-                      return;
-                    }
-                    setActiveStep(idx);
-                  };
-
                   return (
                     <div
                       key={s.key}
-                      className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}
+                      className={`flex items-center ${
+                        idx < steps.length - 1 ? "flex-1" : ""
+                      }`}
                     >
                       <div
+                        className={`${pillBase} ${pillState}`}
                         role="button"
                         tabIndex={0}
-                        onClick={handleStepClick}
-                        onKeyDown={(e) =>
-                          (e.key === "Enter" || e.key === " ") &&
-                          handleStepClick()
-                        }
-                        className={`${pillBase} ${pillState}`}
+                        onClick={() => setActiveStep(idx)}
                       >
                         <span className={`${dotBase} ${dotState}`}>
                           {idx + 1}
@@ -343,7 +336,6 @@ const UsersTypeModal = ({
                           {s.label}
                         </span>
                       </div>
-
                       {idx < steps.length - 1 && (
                         <div className="h-px flex-1 bg-gray-200 mx-2" />
                       )}
@@ -351,7 +343,6 @@ const UsersTypeModal = ({
                   );
                 })}
               </div>
-
 
               {current.key === "basic" && (
                 <BasicInfoForm
@@ -377,9 +368,7 @@ const UsersTypeModal = ({
                   openingHours={values.openingHours}
                   setOpeningHours={(hrs) => setFieldValue("openingHours", hrs)}
                   sameAllDays={values.sameAllDays}
-                  setSameAllDays={(v: boolean) =>
-                    setFieldValue("sameAllDays", v)
-                  }
+                  setSameAllDays={(v: boolean) => setFieldValue("sameAllDays", v)}
                 />
               )}
 
@@ -458,17 +447,16 @@ const UsersTypeModal = ({
                 </div>
               )}
 
-              {/* Footer Buttons */}
+              {/* Footer */}
               <div className="flex justify-between pt-2">
                 <Button type="button" variant="outlined" onClick={onClose}>
                   Cancel
                 </Button>
-
                 <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outlined"
-                    onClick={goBack}
+                    onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
                     disabled={currentIndex === 0 || isSaving}
                   >
                     Back

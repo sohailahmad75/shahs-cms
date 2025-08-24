@@ -11,7 +11,7 @@ export type OpeningHour = {
   day: string;
   open: string; 
   close: string;
-  closed?: boolean;
+  closed: boolean;
 };
 
 export type BankDetail = {
@@ -83,7 +83,38 @@ export type CreateUsersDto = {
 };
 
 
+// export type UpdateUsersDto = {
+//   userBankDetails?: Array<Required<BankDetail>>;
+//   userAvailability?: Array<{
+//     day: string;
+//     open?: string | null;
+//     close?: string | null;
+//     closed?: boolean;
+//   }>;
+//   documents?: {
+//     fileS3Key?: string | null;
+//     fileType?: "passport" | "fsa_cert" | "license" | "";
+//     expiresAt?: string | Date | null;
+//     remindBeforeDays?: number | null;
+//   };
+// };
+
+
 export type UpdateUsersDto = {
+  basicInfo?: {
+    firstName?: string;
+    surName?: string;
+    email?: string;
+    phone?: number;
+    street?: string;
+    city?: string;
+    postCode?: string;
+    dateOfBirth?: string;
+    cashInRate?: number | null;
+    NiRate?: number | null;
+    shareCode?: string | null;
+    role?: UserRole;
+  };
   userBankDetails?: Array<Required<BankDetail>>;
   userAvailability?: Array<{
     day: string;
@@ -98,6 +129,7 @@ export type UpdateUsersDto = {
     remindBeforeDays?: number | null;
   };
 };
+
 
 export const userStepFieldKeys = {
   basic: [
