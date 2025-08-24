@@ -137,7 +137,8 @@ const UsersTypeModal = ({
           ...userEmptyInitialValues,
           ...(editingUsers || {}),
         }}
-        validationSchema={userSchema}
+        // validationSchema={userSchema}
+        validationSchema={userSchema(documentsList)}
         enableReinitialize
         onSubmit={onSubmit}
       >
@@ -193,7 +194,7 @@ const UsersTypeModal = ({
               return;
             }
 
-            // Create case
+   
             if (current.key === "basic" && !editingUsers && !userId) {
               const payload = mapCreateDto(values);
               const res = await createUser(payload).unwrap();
@@ -202,7 +203,7 @@ const UsersTypeModal = ({
               if (newId) setFieldValue("id", newId);
             }
 
-            // Edit case (only call PUT if data changed)
+           
             if (editingUsers || userId) {
               try {
                 const idForPut = userId || values.id;
