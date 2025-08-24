@@ -48,8 +48,6 @@ export type UserInfoTypes = {
   niRate?: number | null;
   niNumber?: string | null;
   shareCode?: string | null;
-  password?: string;
-
 
   bankDetails?: BankDetail[];
 
@@ -80,7 +78,6 @@ export type CreateUsersDto = {
     cashInRate?: number | null;
     NiRate?: number | null;
     shareCode?: string | null;
-    password?: string;
     role: UserRole;
   };
 };
