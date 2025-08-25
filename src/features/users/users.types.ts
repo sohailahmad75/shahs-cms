@@ -123,12 +123,7 @@ export type UpdateUsersDto = {
     close?: string | null;
     closed?: boolean;
   }>;
-  documents?: {
-    fileS3Key?: string | null;
-    fileType?: "passport" | "fsa_cert" | "license" | "";
-    expiresAt?: string | Date | null;
-    remindBeforeDays?: number | null;
-  };
+  userDocuments?: UserDocument[];
 };
 
 
@@ -170,3 +165,12 @@ export interface UsersTypeListResponse {
   data: UsersType[];
   meta: Meta;
 }
+
+
+export type UserDocument = {
+  documentTypeId: string;
+  fileS3Key: string | null;
+  name?: string | null;
+  expiresAt?: string | null;
+  remindBeforeDays?: number | null;
+};

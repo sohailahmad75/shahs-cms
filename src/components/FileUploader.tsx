@@ -10,13 +10,16 @@ import { toast } from "react-toastify";
 import Loader from "./Loader";
 import { uploadToS3 } from "../helper";
 import { useGetPresignedStoreDocUrlMutation } from "../services/documentApi";
+import { useGetNewPresignedUrlMutation } from "../features/users/services/UsersApi";
 
 interface FileUploaderProps {
   value: string; // The s3 key
-  onChange: (key: string) => void;
+  // onChange: (key: string) => void;
+  onChange: (key: string, fileName: string) => void;
   type?: "image" | "file" | "all"; // Type of file to upload
   path: string;
   initialPreview?: string;
+
   error?: string | null;
   pathId?: string; // Optional, used for a store path, user path, etc. stores/${storeId}/documents
 }
@@ -35,6 +38,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [getPresignedUrl] = useGetPresignedUrlMutation();
   const [getPresignedStoreDocUrl] = useGetPresignedStoreDocUrlMutation();
+    const [getPresignedDocUrl] = useGetNewPresignedUrlMutation()
 
   const isImageType = (fileType: string) => fileType.startsWith("image/");
 
@@ -90,6 +94,21 @@ const FileUploader: React.FC<FileUploaderProps> = ({
             }).unwrap();
             break;
 
+             case "documents":
+            if (!pathId) {
+              const errorMessage =
+                "Document ID is required for document uploads.";
+              toast.error(errorMessage);
+              throw new Error(errorMessage);
+            }
+
+            presigned = await getPresignedDocUrl({
+              fileName: file.name,
+              fileType: file.type,
+              documentId: pathId,
+            }).unwrap();
+            break;
+
           default:
             throw new Error(`Unsupported path: ${path}`);
         }
@@ -97,13 +116,15 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         await uploadToS3(presigned.url, file);
 
         toast.success("File uploaded successfully");
-        onChange(presigned.key);
+        // onChange(presigned.key);
+        onChange(presigned.key, file.name);
       } catch (err) {
         // toast.error("File upload failed");
         console.error(err);
         setLocalPreviewUrl(null);
         setFileName(null);
-        onChange("");
+        // onChange("");
+        onChange("", "");
       } finally {
         setIsUploading(false);
       }
@@ -115,7 +136,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
     setLocalPreviewUrl(null);
     setFileName(null);
-    onChange("");
+    // onChange("");
+     onChange("", "");
   };
 
   const acceptedTypes: Accept =
@@ -162,13 +184,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       ) : (
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-            error
-              ? "border-red-500 bg-red-50"
-              : isDragActive
-                ? "border-orange-100 bg-orange-05"
-                : "border-gray-300 hover:border-orange-100"
-          }`}
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${error
+            ? "border-red-500 bg-red-50"
+            : isDragActive
+              ? "border-orange-100 bg-orange-05"
+              : "border-gray-300 hover:border-orange-100"
+            }`}
         >
           <input {...getInputProps()} />
           {isUploading ? (

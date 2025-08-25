@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
-import SelectField from "../../../components/SelectField";
 import DatePickerField from "../../../components/DatePickerField";
 import Button from "../../../components/Button";
 import FileUploader from "../../../components/FileUploader";
@@ -23,6 +22,7 @@ import {
   type CreateUsersDto,
   type UpdateUsersDto,
   UserRole,
+  type UserDocument,
 } from "../users.types";
 
 import {
@@ -54,7 +54,6 @@ const UsersTypeModal = ({
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
 
-  // 🔹 Helper for clean comparison
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
 
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
@@ -94,12 +93,13 @@ const UsersTypeModal = ({
         close: o.closed ? null : o.close || null,
         closed: !!o.closed,
       })),
-      documents: {
-        fileS3Key: v.fileS3Key ?? null,
-        fileType: v.fileType || "",
-        expiresAt: v.expiresAt ?? null,
-        remindBeforeDays: v.remindBeforeDays ?? null,
-      },
+      userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
+        documentTypeId: docTypeId,
+        fileS3Key: doc.fileS3Key || null,
+        name: doc.name || null,
+        expiresAt: doc.expiresAt || null,
+        remindBeforeDays: doc.remindBeforeDays ? Number(doc.remindBeforeDays) : null,
+      })),
     };
   };
 
@@ -141,7 +141,7 @@ const UsersTypeModal = ({
           ...userEmptyInitialValues,
           ...(editingUsers || {}),
         }}
-        validationSchema={userSchema([])} // default
+        validationSchema={userSchema([])}
         enableReinitialize
         onSubmit={onSubmit}
       >
@@ -155,7 +155,6 @@ const UsersTypeModal = ({
           validateForm,
           submitForm,
         }) => {
-          // Fetch document types dynamically
           const { data: documentTypes } = useGetDocumentsTypeQuery(
             { role: values.type },
             { skip: !values.type }
@@ -209,7 +208,6 @@ const UsersTypeModal = ({
 
             let idForPut = userId || values.id;
 
-            // create user if first step
             if (current.key === "basic" && !editingUsers && !idForPut) {
               try {
                 const payload = mapCreateDto(values);
@@ -235,9 +233,6 @@ const UsersTypeModal = ({
               return;
             }
 
-            // ---------------------------
-            // UPDATE ONLY IF CHANGED
-            // ---------------------------
             try {
               if (current.key === "basic") {
                 const newBasic = mapCreateDto(values).basicInfo;
@@ -285,16 +280,16 @@ const UsersTypeModal = ({
               }
 
               if (current.key === "documents") {
-                const newDocs = mapUpdateDto(values, idForPut).documents;
+                const newDocs = mapUpdateDto(values, idForPut).userDocuments;
                 const oldDocs = editingUsers
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-                    .documents
+                    .userDocuments
                   : null;
 
                 if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
                   await updateUser({
                     id: idForPut,
-                    data: { documents: newDocs },
+                    data: { userDocuments: newDocs },
                   }).unwrap();
                 }
               }
@@ -303,7 +298,6 @@ const UsersTypeModal = ({
               return;
             }
 
-            // Move to next step or finish
             if (currentIndex < totalSteps - 1) {
               setActiveStep((s) => s + 1);
             } else {
@@ -312,12 +306,14 @@ const UsersTypeModal = ({
             }
           };
 
+
+
           const isSaving =
             isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 
           return (
             <Form className="space-y-6">
-              {/* Stepper Header */}
+              {/* Stepper */}
               <div className="flex items-center justify-between">
                 {steps.map((s, idx) => {
                   const isActive = idx === currentIndex;
@@ -334,38 +330,20 @@ const UsersTypeModal = ({
                         ? "border-green-400 text-green-600"
                         : "border-gray-300 text-gray-600";
 
-                  const dotBase =
-                    "w-6 h-6 flex items-center justify-center rounded-full";
-                  const dotState = isActive
-                    ? "bg-orange-500 text-white"
-                    : isError
-                      ? "bg-red-500 text-white"
-                      : isDone
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-200 text-gray-700";
-
                   return (
-                    <div
-                      key={s.key}
-                      className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""
-                        }`}
-                    >
+                    <div key={s.key} className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}>
                       <div
                         className={`${pillBase} ${pillState}`}
                         role="button"
                         tabIndex={0}
                         onClick={() => setActiveStep(idx)}
                       >
-                        <span className={`${dotBase} ${dotState}`}>
-                          {idx + 1}
-                        </span>
+                        <span>{idx + 1}</span>
                         <span className="font-medium whitespace-nowrap">
                           {s.label}
                         </span>
                       </div>
-                      {idx < steps.length - 1 && (
-                        <div className="h-px flex-1 bg-gray-200 mx-2" />
-                      )}
+                      {idx < steps.length - 1 && <div className="h-px flex-1 bg-gray-200 mx-2" />}
                     </div>
                   );
                 })}
@@ -404,72 +382,39 @@ const UsersTypeModal = ({
                   {documentsList.map((doc) => (
                     <div key={doc.id} className="md:col-span-2 pb-4">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {doc.name}{" "}
-                        {doc.isMandatory && (
-                          <span className="text-red-500">*</span>
-                        )}
+                        {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
                       </label>
-
-                      {/* File Upload */}
                       <FileUploader
                         value={values.documents?.[doc.id]?.fileS3Key || ""}
-                        onChange={(key) =>
-                          setFieldValue(`documents.${doc.id}.fileS3Key`, key)
-                        }
-                        path="user-documents"
+                        onChange={(fileS3Key) => {
+                          const prevDocs = values.documents || {};
+                          setFieldValue("documents", {
+                            ...prevDocs,
+                            [doc.id]: {
+                              ...(prevDocs[doc.id] || {}),
+                              documentTypeId: doc.id,
+                              fileS3Key,
+                              name: doc.name,
+                            },
+                          });
+                        }}
+                        path="documents"
                         type="all"
-                        pathId={routeId}
-                        error={
-                          touched.documents?.[doc.id]?.fileS3Key &&
-                            errors.documents?.[doc.id]?.fileS3Key
-                            ? (errors.documents?.[doc.id]
-                              ?.fileS3Key as string)
-                            : ""
-                        }
+                        pathId={doc.id}
                       />
+
+
 
                       {values.documents?.[doc.id]?.fileS3Key && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                          <div>
-                            <label className="text-sm font-medium text-gray-700 mb-1 block">
-                              File Type <span className="text-red-500">*</span>
-                            </label>
-                            <SelectField
-                              name={`documents.${doc.id}.fileType`}
-                              value={
-                                values.documents?.[doc.id]?.fileType || ""
-                              }
-                              onChange={handleChange}
-                              options={[
-                                { label: "Passport", value: "passport" },
-                                { label: "FSA Cert", value: "fsa_cert" },
-                                { label: "License", value: "license" },
-                              ]}
-                              error={
-                                touched.documents?.[doc.id]?.fileType &&
-                                  errors.documents?.[doc.id]?.fileType
-                                  ? (errors.documents?.[doc.id]
-                                    ?.fileType as string)
-                                  : ""
-                              }
-                            />
-                          </div>
-
                           <div>
                             <label className="text-sm font-medium text-gray-700 mb-1 block">
                               Expiry Date
                             </label>
                             <DatePickerField
                               name={`documents.${doc.id}.expiresAt`}
-                              value={
-                                values.documents?.[doc.id]?.expiresAt || ""
-                              }
-                              onChange={(v: any) =>
-                                setFieldValue(
-                                  `documents.${doc.id}.expiresAt`,
-                                  v
-                                )
-                              }
+                              value={values.documents?.[doc.id]?.expiresAt || ""}
+                              onChange={(v: any) => setFieldValue(`documents.${doc.id}.expiresAt`, v)}
                             />
                           </div>
 
@@ -481,18 +426,8 @@ const UsersTypeModal = ({
                               placeholder="Remind Before (days)"
                               name={`documents.${doc.id}.remindBeforeDays`}
                               type="number"
-                              value={String(
-                                values.documents?.[doc.id]?.remindBeforeDays ??
-                                ""
-                              )}
+                              value={String(values.documents?.[doc.id]?.remindBeforeDays ?? "")}
                               onChange={handleChange}
-                              error={
-                                touched.documents?.[doc.id]?.remindBeforeDays &&
-                                  errors.documents?.[doc.id]?.remindBeforeDays
-                                  ? (errors.documents?.[doc.id]
-                                    ?.remindBeforeDays as string)
-                                  : ""
-                              }
                             />
                           </div>
                         </div>
@@ -502,7 +437,6 @@ const UsersTypeModal = ({
                 </div>
               )}
 
-              {/* Footer */}
               <div className="flex justify-between pt-2">
                 <Button type="button" variant="outlined" onClick={onClose}>
                   Cancel
@@ -517,11 +451,7 @@ const UsersTypeModal = ({
                     Back
                   </Button>
                   <Button type="button" onClick={goNext} disabled={isSaving}>
-                    {currentIndex < steps.length - 1
-                      ? "Next"
-                      : isSaving
-                        ? "Saving..."
-                        : "Save"}
+                    {currentIndex < steps.length - 1 ? "Next" : isSaving ? "Saving..." : "Save"}
                   </Button>
                 </div>
               </div>
