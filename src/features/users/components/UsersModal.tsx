@@ -73,16 +73,6 @@ const UsersTypeModal = ({
     };
   };
 
-  const { data } = useGetDocumentsTypeQuery();
-  const savedType = localStorage.getItem("userType");
-  const documentsList = useMemo(() => {
-    if (!data?.data) return [];
-    return data.data.filter((doc: any) => doc.role === savedType);
-  }, [data, savedType]);
-
-
-
-
   const mapUpdateDto = (v: UserInfoTypes, userId: string): UpdateUsersDto => {
     return {
       userBankDetails:
@@ -97,8 +87,8 @@ const UsersTypeModal = ({
         })) || [],
       userAvailability: (v.openingHours || []).map((o) => ({
         day: o.day,
-        open: o.closed ? null : (o.open || null),
-        close: o.closed ? null : (o.close || null),
+        open: o.closed ? null : o.open || null,
+        close: o.closed ? null : o.close || null,
         closed: !!o.closed,
       })),
       documents: {
@@ -137,8 +127,7 @@ const UsersTypeModal = ({
           ...userEmptyInitialValues,
           ...(editingUsers || {}),
         }}
-        // validationSchema={userSchema}
-        validationSchema={userSchema(documentsList)}
+        validationSchema={userSchema([])} // default, update below
         enableReinitialize
         onSubmit={onSubmit}
       >
@@ -152,9 +141,19 @@ const UsersTypeModal = ({
           validateForm,
           submitForm,
         }) => {
+          // Fetch document types dynamically
+          const { data: documentTypes } = useGetDocumentsTypeQuery(
+            { role: values.type },
+            { skip: !values.type }
+          );
+
+          const documentsList = useMemo(() => {
+            if (!documentTypes?.data) return [];
+            return documentTypes.data;
+          }, [documentTypes]);
+
           const steps = getVisibleSteps(values.type);
           const totalSteps = steps.length;
-
           const currentIndex =
             activeStep >= totalSteps ? totalSteps - 1 : activeStep;
           const current = steps[currentIndex];
@@ -194,7 +193,6 @@ const UsersTypeModal = ({
               return;
             }
 
-   
             if (current.key === "basic" && !editingUsers && !userId) {
               const payload = mapCreateDto(values);
               const res = await createUser(payload).unwrap();
@@ -203,7 +201,6 @@ const UsersTypeModal = ({
               if (newId) setFieldValue("id", newId);
             }
 
-           
             if (editingUsers || userId) {
               try {
                 const idForPut = userId || values.id;
@@ -294,8 +291,6 @@ const UsersTypeModal = ({
             }
           };
 
-          // const goBack = () => setActiveStep((s) => Math.max(0, s - 1));
-
           const isSaving =
             isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 
@@ -358,7 +353,6 @@ const UsersTypeModal = ({
               {current.key === "basic" && (
                 <BasicInfoForm
                   onTypeChange={(nextType) => {
-                    localStorage.setItem("userType", nextType);
                     const visible = getVisibleSteps(nextType);
                     if (currentIndex >= visible.length)
                       setActiveStep(visible.length - 1);
@@ -384,88 +378,15 @@ const UsersTypeModal = ({
                 />
               )}
 
-              {/* {current.key === "documents" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Upload Document{" "}
-                      {values.type === "staff" && (
-                        <span className="text-red-500">*</span>
-                      )}
-                    </label>
-                    <FileUploader
-                      value={values.fileS3Key}
-                      onChange={(key) => setFieldValue("fileS3Key", key)}
-                      path="user-documents"
-                      type="all"
-                      pathId={routeId}
-                      error={
-                        touched.fileS3Key && errors.fileS3Key
-                          ? (errors.fileS3Key as string)
-                          : ""
-                      }
-                    />
-                  </div>
-
-                  {values.fileS3Key && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        File Type <span className="text-red-500">*</span>
-                      </label>
-                      <SelectField
-                        name="fileType"
-                        value={values.fileType}
-                        onChange={handleChange}
-                        options={[
-                          { label: "Passport", value: "passport" },
-                          { label: "FSA Cert", value: "fsa_cert" },
-                          { label: "License", value: "license" },
-                        ]}
-                        error={
-                          touched.fileType ? (errors.fileType as string) : ""
-                        }
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Expiry Date
-                    </label>
-                    <DatePickerField
-                      name="expiresAt"
-                      value={values.expiresAt}
-                      onChange={(v: any) => setFieldValue("expiresAt", v)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Remind Before (days)
-                    </label>
-                    <InputField
-                      placeholder="Remind Before (days)"
-                      name="remindBeforeDays"
-                      type="number"
-                      value={String(values.remindBeforeDays ?? "")}
-                      onChange={handleChange}
-                      error={
-                        touched.remindBeforeDays
-                          ? (errors.remindBeforeDays as string)
-                          : ""
-                      }
-                    />
-                  </div>
-                </div>
-              )} */}
-
               {current.key === "documents" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {documentsList.map((doc) => (
                     <div key={doc.id} className="md:col-span-2 pb-4">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         {doc.name}{" "}
-                        {doc.isMandatory && <span className="text-red-500">*</span>}
+                        {doc.isMandatory && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </label>
 
                       {/* File Upload */}
@@ -480,12 +401,12 @@ const UsersTypeModal = ({
                         error={
                           touched.documents?.[doc.id]?.fileS3Key &&
                             errors.documents?.[doc.id]?.fileS3Key
-                            ? (errors.documents?.[doc.id]?.fileS3Key as string)
+                            ? (errors.documents?.[doc.id]
+                              ?.fileS3Key as string)
                             : ""
                         }
                       />
 
-                  
                       {values.documents?.[doc.id]?.fileS3Key && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                           <div>
@@ -504,7 +425,8 @@ const UsersTypeModal = ({
                               error={
                                 touched.documents?.[doc.id]?.fileType &&
                                   errors.documents?.[doc.id]?.fileType
-                                  ? (errors.documents?.[doc.id]?.fileType as string)
+                                  ? (errors.documents?.[doc.id]
+                                    ?.fileType as string)
                                   : ""
                               }
                             />
@@ -516,9 +438,14 @@ const UsersTypeModal = ({
                             </label>
                             <DatePickerField
                               name={`documents.${doc.id}.expiresAt`}
-                              value={values.documents?.[doc.id]?.expiresAt || ""}
+                              value={
+                                values.documents?.[doc.id]?.expiresAt || ""
+                              }
                               onChange={(v: any) =>
-                                setFieldValue(`documents.${doc.id}.expiresAt`, v)
+                                setFieldValue(
+                                  `documents.${doc.id}.expiresAt`,
+                                  v,
+                                )
                               }
                             />
                           </div>
@@ -531,14 +458,16 @@ const UsersTypeModal = ({
                               placeholder="Remind Before (days)"
                               name={`documents.${doc.id}.remindBeforeDays`}
                               type="number"
-                              value={
-                                String(values.documents?.[doc.id]?.remindBeforeDays ?? "")
-                              }
+                              value={String(
+                                values.documents?.[doc.id]?.remindBeforeDays ??
+                                "",
+                              )}
                               onChange={handleChange}
                               error={
                                 touched.documents?.[doc.id]?.remindBeforeDays &&
                                   errors.documents?.[doc.id]?.remindBeforeDays
-                                  ? (errors.documents?.[doc.id]?.remindBeforeDays as string)
+                                  ? (errors.documents?.[doc.id]
+                                    ?.remindBeforeDays as string)
                                   : ""
                               }
                             />
@@ -549,7 +478,6 @@ const UsersTypeModal = ({
                   ))}
                 </div>
               )}
-
 
               {/* Footer */}
               <div className="flex justify-between pt-2">

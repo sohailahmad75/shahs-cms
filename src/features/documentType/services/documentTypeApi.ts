@@ -3,18 +3,41 @@ import type { DocumentType, CreateDocumnetDto, UpdateDocumentDto,DocumentTypeLis
 
 export const documentsTypeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getDocumentsType: builder.query<
+    // getDocumentsType: builder.query<
+    //   DocumentTypeListResponse,
+    //   { page?: number; perPage?: number; search?: string } | void
+    // >({
+    //   query: (args) => {
+    //     const { page = 1, perPage = 10, search = "" } = args ?? {};
+    //     return { url: "/document-type", params: { page, perPage, search } };
+    //   },
+    //   providesTags: (result) =>
+    //     result
+    //       ? [
+    //         ...result.data.map((doc: { id: any; }) => ({
+    //           type: "DocumentsType" as const,
+    //           id: doc.id,
+    //         })),
+    //         { type: "DocumentsType" as const, id: "LIST" },
+    //       ]
+    //       : [{ type: "DocumentsType" as const, id: "LIST" }],
+    // }),
+
+        getDocumentsType: builder.query<
       DocumentTypeListResponse,
-      { page?: number; perPage?: number; search?: string } | void
+      { page?: number; perPage?: number; search?: string; role?: string } | void
     >({
       query: (args) => {
-        const { page = 1, perPage = 10, search = "" } = args ?? {};
-        return { url: "/document-type", params: { page, perPage, search } };
+        const { page = 1, perPage = 10, search = "", role } = args ?? {};
+        return {
+          url: "/document-type",
+          params: { page, perPage, search, role }
+        };
       },
       providesTags: (result) =>
         result
           ? [
-            ...result.data.map((doc: { id: any; }) => ({
+            ...result.data.map((doc: { id: any }) => ({
               type: "DocumentsType" as const,
               id: doc.id,
             })),
