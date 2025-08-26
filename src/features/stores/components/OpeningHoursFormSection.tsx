@@ -62,11 +62,11 @@ const OpeningHoursFormSection: React.FC<Props> = ({
               idx === 0
                 ? item
                 : {
-                    ...item,
-                    open: sunday.open,
-                    close: sunday.close,
-                    closed: sunday.closed,
-                  },
+                  ...item,
+                  open: sunday.open,
+                  close: sunday.close,
+                  closed: sunday.closed,
+                },
             );
             setOpeningHours(updated);
           }}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Formik, Form, getIn } from "formik";
-import { useParams } from "react-router-dom";
+// import { useParams } from "react-router-dom";
 
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
@@ -305,6 +305,28 @@ const UsersTypeModal = ({
             }
           };
 
+          const goToStep = async (targetIdx: number) => {
+            if (targetIdx <= currentIndex) {
+          
+              setActiveStep(targetIdx);
+              return;
+            }
+
+         
+            const stepKeys = stepKeysOf(currentIndex);
+            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
+
+            const allErrors = await validateForm();
+            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+            if (stepErrors.length === 0) {
+              setActiveStep(targetIdx);
+            } else {
+              console.log("Validation failed, cannot move to next step");
+            }
+          };
+
+
 
 
           const isSaving =
@@ -335,7 +357,7 @@ const UsersTypeModal = ({
                         className={`${pillBase} ${pillState}`}
                         role="button"
                         tabIndex={0}
-                        onClick={() => setActiveStep(idx)}
+                        onClick={() => goToStep(idx)}
                       >
                         <span>{idx + 1}</span>
                         <span className="font-medium whitespace-nowrap">
