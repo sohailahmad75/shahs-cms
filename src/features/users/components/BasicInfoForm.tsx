@@ -26,6 +26,16 @@ const BasicInfoForm: React.FC<Props> = ({
     onTypeChange?.(nextType);
   };
 
+  const formatDateOnly = (dateString?: string | null) => {
+    if (!dateString) return "";
+    try {
+      return new Date(dateString).toISOString().split("T")[0]; // yyyy-MM-dd
+    } catch {
+      return "";
+    }
+  };
+
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
@@ -123,12 +133,18 @@ const BasicInfoForm: React.FC<Props> = ({
         <label className="text-sm font-medium text-gray-700 mb-1 block">
           Date of Birth <span className="text-red-500">*</span>
         </label>
-        <DatePickerField
+        {/* <DatePickerField
           name="dob"
           value={values.dob as any}
           onChange={(v: any) => setFieldValue("dob", v)}
           error={touched.dob ? (errors.dob as string) : ""}
+        /> */}
+        <DatePickerField
+          name="dob"
+          value={formatDateOnly(values.dob)}
+          onChange={(v: any) => setFieldValue("dob", v)}
         />
+
       </div>
 
       <div>

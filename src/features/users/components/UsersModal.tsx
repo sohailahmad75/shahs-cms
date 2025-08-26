@@ -81,6 +81,12 @@ const UsersTypeModal = ({
     }
   }, [editingUsers]);
 
+  const formatDateOnly = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Date(dateString).toISOString().split("T")[0]; // sirf yyyy-mm-dd
+  };
+
+
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
     return {
       basicInfo: {
@@ -185,10 +191,28 @@ const UsersTypeModal = ({
             { skip: !values.type }
           );
 
+          // const documentsList = useMemo(() => {
+          //   if (!documentTypes?.data) return [];
+          //   return documentTypes.data;
+          // }, [documentTypes]);
+
           const documentsList = useMemo(() => {
             if (!documentTypes?.data) return [];
-            return documentTypes.data;
-          }, [documentTypes]);
+
+
+            const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+              acc[doc.documentTypeId] = doc;
+              return acc;
+            }, {});
+
+            return documentTypes.data.map((docType: any) => {
+              return {
+                ...docType,
+                userDoc: userDocsMap[docType.id] || null,
+              };
+            });
+          }, [documentTypes, editingUsers]);
+
 
           const steps = getVisibleSteps(values.type);
           const totalSteps = steps.length;
@@ -442,8 +466,13 @@ const UsersTypeModal = ({
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
                       </label>
+
                       <FileUploader
-                        value={values.documents?.[doc.id]?.fileS3Key || ""}
+                        value={
+                          values.documents?.[doc.id]?.fileS3Key ||
+                          doc.userDoc?.fileS3Key || // <-- prefill from userDoc
+                          ""
+                        }
                         onChange={(fileS3Key) => {
                           const prevDocs = values.documents || {};
                           setFieldValue("documents", {
@@ -461,20 +490,34 @@ const UsersTypeModal = ({
                         pathId={doc.id}
                       />
 
-
-
-
-                      {values.documents?.[doc.id]?.fileS3Key && (
+                      {(values.documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key) && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                           <div>
                             <label className="text-sm font-medium text-gray-700 mb-1 block">
                               Expiry Date
                             </label>
+                            {/* <DatePickerField
+                              name={`documents.${doc.id}.expiresAt`}
+                              value={
+                                values.documents?.[doc.id]?.expiresAt ||
+                                doc.userDoc?.expiresAt ||
+                                ""
+                              }
+                              onChange={(v: any) =>
+                                setFieldValue(`documents.${doc.id}.expiresAt`, v)
+                              }
+                            /> */}
                             <DatePickerField
                               name={`documents.${doc.id}.expiresAt`}
-                              value={values.documents?.[doc.id]?.expiresAt || ""}
+                              value={
+                                formatDateOnly(
+                                  values.documents?.[doc.id]?.expiresAt ||
+                                  doc.userDoc?.expiresAt
+                                )
+                              }
                               onChange={(v: any) => setFieldValue(`documents.${doc.id}.expiresAt`, v)}
                             />
+
                           </div>
 
                           <div>
@@ -485,7 +528,13 @@ const UsersTypeModal = ({
                               placeholder="Remind Before (days)"
                               name={`documents.${doc.id}.remindBeforeDays`}
                               type="number"
-                              value={String(values.documents?.[doc.id]?.remindBeforeDays ?? "")}
+                              value={
+                                String(
+                                  values.documents?.[doc.id]?.remindBeforeDays ??
+                                  doc.userDoc?.remindBeforeDays ??
+                                  ""
+                                )
+                              }
                               onChange={handleChange}
                             />
                           </div>

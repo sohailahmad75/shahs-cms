@@ -52,7 +52,7 @@ const STAFF_KIND_OPTIONS = [
 // });
 const DocumentSchema = Yup.object().shape({
   documentName: Yup.string().required("Document Name is required"),
-  documentDescription: Yup.string().nullable(),
+  documentDescription: Yup.string().required("Document Description is required"),
   isMandatory: Yup.boolean().default(false),
   role: Yup.mixed<DocumentTypeRole>()
     .oneOf(["shop", "owner", "staff"], "Please select a role")
