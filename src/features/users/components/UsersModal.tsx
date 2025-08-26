@@ -30,6 +30,7 @@ import {
 } from "../services/UsersApi";
 import isEqual from "lodash.isequal";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
+import { defaultDays } from "../../stores/helper/store-helper";
 
 type Props = {
   isOpen: boolean;
@@ -46,7 +47,6 @@ const UsersTypeModal = ({
   editingUsers,
   isSubmitting,
 }: Props) => {
-  // const { id: routeId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
   const [userId, setUserId] = useState<string | null>(editingUsers?.id || null);
 
@@ -54,6 +54,32 @@ const UsersTypeModal = ({
   const [updateUser, updateStatus] = useUpdateUsersMutation();
 
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
+
+  const [openingHours, setOpeningHours] = useState(
+    defaultDays.map((day) => ({
+      day,
+      open: "11:00 am",
+      close: "11:00 pm",
+      closed: false,
+    })),
+  );
+  const [sameAllDays, setSameAllDays] = useState(false);
+  useEffect(() => {
+    if (editingUsers?.openingHours?.length) {
+      const dayMap = Object.fromEntries(
+        editingUsers.openingHours.map((h) => [h.day, h]),
+      );
+
+      const mapped = defaultDays.map((day) => ({
+        day,
+        open: dayMap[day]?.open || "11:00 am",
+        close: dayMap[day]?.close || "11:00 pm",
+        closed: dayMap[day]?.closed ?? false,
+      }));
+
+      setOpeningHours(mapped);
+    }
+  }, [editingUsers]);
 
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
     return {
@@ -307,12 +333,12 @@ const UsersTypeModal = ({
 
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
-          
+
               setActiveStep(targetIdx);
               return;
             }
 
-         
+
             const stepKeys = stepKeysOf(currentIndex);
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
 
@@ -389,12 +415,23 @@ const UsersTypeModal = ({
                 />
               )}
 
-              {current.key === "availability" && values.type === "staff" && (
+              {/* {current.key === "availability" && values.type === "staff" && (
                 <OpeningHoursFormSection
                   openingHours={values.openingHours}
                   setOpeningHours={(hrs) => setFieldValue("openingHours", hrs)}
                   sameAllDays={values.sameAllDays}
                   setSameAllDays={(v: boolean) => setFieldValue("sameAllDays", v)}
+                />
+              )} */}
+
+
+              {current.key === "availability" && values.type === "staff" && (
+
+                <OpeningHoursFormSection
+                  openingHours={openingHours}
+                  setOpeningHours={setOpeningHours}
+                  sameAllDays={sameAllDays}
+                  setSameAllDays={setSameAllDays}
                 />
               )}
 
