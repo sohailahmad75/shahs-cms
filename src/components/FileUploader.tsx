@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 import Loader from "./Loader";
 import { uploadToS3 } from "../helper";
 import { useGetPresignedStoreDocUrlMutation } from "../services/documentApi";
-import { useGetNewPresignedUrlMutation } from "../features/users/services/UsersApi";
+import { useGetAllMutation } from "../features/users/services/UsersApi";
 
 interface FileUploaderProps {
   value: string; // The s3 key
@@ -38,7 +38,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [getPresignedUrl] = useGetPresignedUrlMutation();
   const [getPresignedStoreDocUrl] = useGetPresignedStoreDocUrlMutation();
-    const [getPresignedDocUrl] = useGetNewPresignedUrlMutation()
+    const [getPresignedAll] = useGetAllMutation()
 
   const isImageType = (fileType: string) => fileType.startsWith("image/");
 
@@ -94,18 +94,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
             }).unwrap();
             break;
 
-             case "documents":
-            if (!pathId) {
-              const errorMessage =
-                "Document ID is required for document uploads.";
-              toast.error(errorMessage);
-              throw new Error(errorMessage);
-            }
-
-            presigned = await getPresignedDocUrl({
+             case "users-documents":
+            presigned = await getPresignedAll({
               fileName: file.name,
-              fileType: file.type,
-              documentId: pathId,
+              fileType: file.type
             }).unwrap();
             break;
 

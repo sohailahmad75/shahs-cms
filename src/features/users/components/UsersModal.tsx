@@ -22,7 +22,6 @@ import {
   type CreateUsersDto,
   type UpdateUsersDto,
   UserRole,
-  type UserDocument,
 } from "../users.types";
 
 import {
@@ -47,7 +46,7 @@ const UsersTypeModal = ({
   editingUsers,
   isSubmitting,
 }: Props) => {
-  const { id: routeId } = useParams();
+  // const { id: routeId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
   const [userId, setUserId] = useState<string | null>(editingUsers?.id || null);
 
@@ -94,7 +93,7 @@ const UsersTypeModal = ({
         closed: !!o.closed,
       })),
       userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
-        documentTypeId: docTypeId,
+        documentType: docTypeId,
         fileS3Key: doc.fileS3Key || null,
         name: doc.name || null,
         expiresAt: doc.expiresAt || null,
@@ -392,16 +391,17 @@ const UsersTypeModal = ({
                             ...prevDocs,
                             [doc.id]: {
                               ...(prevDocs[doc.id] || {}),
-                              documentTypeId: doc.id,
+                              documentType: doc.id,
                               fileS3Key,
                               name: doc.name,
                             },
                           });
                         }}
-                        path="documents"
+                        path="users-documents"
                         type="all"
                         pathId={doc.id}
                       />
+
 
 
 

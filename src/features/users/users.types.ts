@@ -168,7 +168,7 @@ export interface UsersTypeListResponse {
 
 
 export type UserDocument = {
-  documentTypeId: string;
+  documentType: string;
   fileS3Key: string | null;
   name?: string | null;
   expiresAt?: string | null;

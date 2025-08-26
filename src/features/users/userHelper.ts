@@ -86,6 +86,8 @@ export const userEmptyInitialValues: UserInfoTypes = {
   documents: undefined
 };
 
+
+
 export const userStepFieldKeys = {
   basic: [
     "firstName",

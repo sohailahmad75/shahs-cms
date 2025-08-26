@@ -65,16 +65,17 @@ export const usersApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "Users", id }],
     }),
 
-    getNewPresignedUrl: builder.mutation<
-  { url: string; key: string; method: string },
-  { fileName: string; fileType: string; documentId: string }
->({
-  query: (body) => ({
-    url: "/documents",
-    method: "POST",
-    body,
-  }),
-}),
+    getAll: builder.mutation<
+      { url: string; key: string; method: string },
+      { fileName: string; fileType: string }
+    >({
+      query: (body) => ({
+        url: "/users/presigned-url",
+        method: "POST",
+        body,
+      }),
+      
+    }),
 
   }),
 });
@@ -85,5 +86,5 @@ export const {
   useUpdateUsersMutation,
   useDeleteUsersMutation,
   useGetUsersByIdQuery,
-  useGetNewPresignedUrlMutation
+  useGetAllMutation
 } = usersApi;
