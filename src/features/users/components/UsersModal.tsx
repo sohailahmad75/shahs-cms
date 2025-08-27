@@ -31,6 +31,7 @@ import {
 import isEqual from "lodash.isequal";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 import { defaultDays } from "../../stores/helper/store-helper";
+import { useTheme } from "../../../context/themeContext";
 
 type Props = {
   isOpen: boolean;
@@ -52,6 +53,7 @@ const UsersTypeModal = ({
 
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
+  
 
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
 
@@ -85,6 +87,7 @@ const UsersTypeModal = ({
     if (!dateString) return "";
     return new Date(dateString).toISOString().split("T")[0]; // sirf yyyy-mm-dd
   };
+    const { isDarkMode } = useTheme();
 
 
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
@@ -402,7 +405,7 @@ const UsersTypeModal = ({
                   const pillBase =
                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
                   const pillState = isActive
-                    ? "border-orange-400 text-orange-600"
+                    ? `border-orange-400 ${isDarkMode ? "border-slate-500 text-white" : "border-orange-400 text-orange-600"} text-orange-600`
                     : isError
                       ? "border-red-400 text-red-600"
                       : isDone

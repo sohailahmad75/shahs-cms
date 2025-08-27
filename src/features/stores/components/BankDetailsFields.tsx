@@ -4,6 +4,7 @@ import InputField from "../../../components/InputField";
 import Button from "../../../components/Button";
 import CloseIcon from "../../../assets/styledIcons/CloseIcon";
 import AddIcon from "../../../assets/styledIcons/AddIcon";
+import { useTheme } from "../../../context/themeContext";
 
 interface BankDetailsFieldsProps {
   values: any;
@@ -18,11 +19,12 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
   errors,
   touched,
 }) => {
+  const { isDarkMode } = useTheme();
   return (
     <div>
       <div className="col-span-2 flex items-center gap-6 mb-6">
         <div className="flex-grow h-px bg-gray-200" />
-        <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+        <span className={`${isDarkMode ? "text-slate-100": "text-orange-100" } text-md font-medium whitespace-nowrap`}>
           Bank Accounts
         </span>
         <div className="flex-grow h-px bg-gray-200" />
@@ -30,7 +32,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
 
       <FieldArray name="bankDetails">
         {({ push, remove }) => (
-          <div className="space-y-4">
+          <div className="space-y-4 ">
             {values.bankDetails?.map((bank: any, index: number) => {
               const prefix = `bankDetails[${index}]`;
 
@@ -41,7 +43,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
               return (
                 <div
                   key={index}
-                  className="relative grid grid-cols-1 md:grid-cols-3 gap-4 border-gray-300 border p-5 pb-7 rounded-md bg-gray-50"
+                  className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 ${isDarkMode ? "border-slate-800": "border-gray-30" } border-gray-300 border p-5 pb-7 rounded-md ${isDarkMode ? "bg-slate-950": "bg-white" }`}
                 >
                   {values.bankDetails.length > 1 && (
                     <span

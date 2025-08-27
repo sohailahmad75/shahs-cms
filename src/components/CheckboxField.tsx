@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckIcon } from "lucide-react";
+import { useTheme } from "../context/themeContext";
 
 type CheckboxFieldProps = {
   name: string;
@@ -20,6 +21,7 @@ const CheckboxField: React.FC<CheckboxFieldProps> = ({
   size = "6",
   labelClassName = "",
 }) => {
+  const { isDarkMode } = useTheme();
   return (
     <label className={`flex items-center gap-2 text-sm ${className}`}>
       <div className={`relative w-${size} h-${size}`}>
@@ -31,9 +33,16 @@ const CheckboxField: React.FC<CheckboxFieldProps> = ({
           className="opacity-0 absolute inset-0 w-full h-full z-10 cursor-pointer"
         />
         <div
-          className={`w-${size} h-${size} rounded border border-gray-300 flex items-center justify-center transition-all duration-200 ${
-            checked ? "bg-orange-500 border-orange-500" : "bg-white"
-          }`}
+          className={`w-${size} h-${size} rounded border border-gray-300 flex items-center justify-center transition-all duration-200 
+        
+            ${checked
+              ? isDarkMode
+                ? "bg-slate-950 border-slate-700"
+                : "bg-orange-500 border-orange-500"
+              : "bg-white"
+            }
+          
+          `}
         >
           {checked && (
             <CheckIcon
