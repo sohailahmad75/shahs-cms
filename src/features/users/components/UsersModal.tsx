@@ -130,6 +130,7 @@ const UsersTypeModal = ({
       userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
         documentType: docTypeId,
         fileS3Key: doc.fileS3Key || null,
+        fileType: doc.fileType || null,
         name: doc.name || null,
         expiresAt: doc.expiresAt || null,
         remindBeforeDays: doc.remindBeforeDays ? Number(doc.remindBeforeDays) : null,
@@ -353,19 +354,19 @@ const UsersTypeModal = ({
               //     }).unwrap();
               //   }
               // }
-               if (current.key === "documents") {
-    const newDocs = mapUpdateDto(values, idForPut).userDocuments;
-    const oldDocs = editingUsers
-      ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
-      : null;
+              if (current.key === "documents") {
+                const newDocs = mapUpdateDto(values, idForPut).userDocuments;
+                const oldDocs = editingUsers
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
+                  : null;
 
-    if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-      await updateUser({
-        id: idForPut,
-        data: { userDocuments: newDocs },
-      }).unwrap();
-    }
-  }
+                if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
+                  await updateUser({
+                    id: idForPut,
+                    data: { userDocuments: newDocs },
+                  }).unwrap();
+                }
+              }
 
 
             } catch (err) {
@@ -507,6 +508,7 @@ const UsersTypeModal = ({
                               ...(prevDocs[doc.id] || {}),
                               documentType: doc.id,
                               fileS3Key,
+                              fileType: prevDocs[doc.id]?.fileType || "all",
                               name: doc.name,
                             },
                           });

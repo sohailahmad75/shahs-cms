@@ -106,5 +106,5 @@ export const userStepFieldKeys = {
   ],
   account: ["bankDetails"],
   availability: ["openingHours", "sameAllDays"],
-  documents: ["fileS3Key", "fileType", "expiresAt", "remindBeforeDays"],
+  documents: ["documents"],
 } as const;

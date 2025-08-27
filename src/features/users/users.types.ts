@@ -9,7 +9,7 @@ export enum UserRole {
 
 export type OpeningHour = {
   day: string;
-  open: string; 
+  open: string;
   close: string;
   closed: boolean;
 };
@@ -24,9 +24,11 @@ export type BankDetail = {
   swiftCode?: string;
 };
 
+export type FileType = "passport" | "fsa_cert" | "license" | "all" | "";
+
 export type DocumentInfo = {
   fileS3Key?: string | null;
-  fileType?: "passport" | "fsa_cert" | "license" | "";
+  fileType?: FileType;
   expiresAt?: any;
   remindBeforeDays?: number | null;
 };
@@ -71,7 +73,7 @@ export type CreateUsersDto = {
     firstName: string;
     surName: string;
     email: string;
-    phone:  number;
+    phone: number;
     street: string;
     city: string;
     postCode: string;
@@ -82,24 +84,6 @@ export type CreateUsersDto = {
     role: UserRole;
   };
 };
-
-
-// export type UpdateUsersDto = {
-//   userBankDetails?: Array<Required<BankDetail>>;
-//   userAvailability?: Array<{
-//     day: string;
-//     open?: string | null;
-//     close?: string | null;
-//     closed?: boolean;
-//   }>;
-//   documents?: {
-//     fileS3Key?: string | null;
-//     fileType?: "passport" | "fsa_cert" | "license" | "";
-//     expiresAt?: string | Date | null;
-//     remindBeforeDays?: number | null;
-//   };
-// };
-
 
 export type UpdateUsersDto = {
   basicInfo?: {
@@ -169,6 +153,7 @@ export interface UsersTypeListResponse {
 
 export type UserDocument = {
   documentType: string;
+  fileType: string;
   fileS3Key: string | null;
   name?: string | null;
   expiresAt?: string | null;

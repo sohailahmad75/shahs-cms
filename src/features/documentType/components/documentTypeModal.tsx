@@ -159,7 +159,7 @@ const DocumentTypeModal = ({
          
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Description
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <InputField
                   type="textarea"
