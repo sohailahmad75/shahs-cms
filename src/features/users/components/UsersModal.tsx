@@ -53,7 +53,7 @@ const UsersTypeModal = ({
 
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
-  
+
 
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
 
@@ -87,7 +87,7 @@ const UsersTypeModal = ({
     if (!dateString) return "";
     return new Date(dateString).toISOString().split("T")[0]; // sirf yyyy-mm-dd
   };
-    const { isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
 
 
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
@@ -187,7 +187,7 @@ const UsersTypeModal = ({
           touched,
           setFieldTouched,
           validateForm,
-          submitForm,
+          // submitForm,
         }) => {
           const { data: documentTypes } = useGetDocumentsTypeQuery(
             { role: values.type },
@@ -339,20 +339,35 @@ const UsersTypeModal = ({
                 }
               }
 
-              if (current.key === "documents") {
-                const newDocs = mapUpdateDto(values, idForPut).userDocuments;
-                const oldDocs = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-                    .userDocuments
-                  : null;
+              // if (current.key === "documents") {
+              //   const newDocs = mapUpdateDto(values, idForPut).userDocuments;
+              //   const oldDocs = editingUsers
+              //     ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
+              //       .userDocuments
+              //     : null;
 
-                if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-                  await updateUser({
-                    id: idForPut,
-                    data: { userDocuments: newDocs },
-                  }).unwrap();
-                }
-              }
+              //   if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
+              //     await updateUser({
+              //       id: idForPut,
+              //       data: { userDocuments: newDocs },
+              //     }).unwrap();
+              //   }
+              // }
+               if (current.key === "documents") {
+    const newDocs = mapUpdateDto(values, idForPut).userDocuments;
+    const oldDocs = editingUsers
+      ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
+      : null;
+
+    if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
+      await updateUser({
+        id: idForPut,
+        data: { userDocuments: newDocs },
+      }).unwrap();
+    }
+  }
+
+
             } catch (err) {
               console.error("Update user failed:", err);
               return;
@@ -361,7 +376,7 @@ const UsersTypeModal = ({
             if (currentIndex < totalSteps - 1) {
               setActiveStep((s) => s + 1);
             } else {
-              await submitForm();
+              // await submitForm();
               onClose?.();
             }
           };
@@ -395,7 +410,7 @@ const UsersTypeModal = ({
 
           return (
             <Form className="space-y-6">
-              {/* Stepper */}
+
               <div className="flex items-center justify-between">
                 {steps.map((s, idx) => {
                   const isActive = idx === currentIndex;
