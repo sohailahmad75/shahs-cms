@@ -297,20 +297,6 @@ const UsersTypeModal = ({
                 }
               }
 
-              // if (current.key === "account") {
-              //   const newBank = mapUpdateDto(values, idForPut).userBankDetails;
-              //   const oldBank = editingUsers
-              //     ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-              //       .userBankDetails
-              //     : null;
-
-              //   if (!oldBank || shouldUpdate(oldBank, newBank)) {
-              //     await updateUser({
-              //       id: idForPut,
-              //       data: { userBankDetails: newBank },
-              //     }).unwrap();
-              //   }
-              // }
 
               if (current.key === "account") {
                 const newBank = mapUpdateDto(values, idForPut).userBankDetails;
@@ -518,17 +504,6 @@ const UsersTypeModal = ({
                             <label className="text-sm font-medium text-gray-700 mb-1 block">
                               Expiry Date
                             </label>
-                            {/* <DatePickerField
-                              name={`documents.${doc.id}.expiresAt`}
-                              value={
-                                values.documents?.[doc.id]?.expiresAt ||
-                                doc.userDoc?.expiresAt ||
-                                ""
-                              }
-                              onChange={(v: any) =>
-                                setFieldValue(`documents.${doc.id}.expiresAt`, v)
-                              }
-                            /> */}
                             <DatePickerField
                               name={`documents.${doc.id}.expiresAt`}
                               value={

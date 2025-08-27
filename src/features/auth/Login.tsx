@@ -9,10 +9,10 @@ import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import EyeCloseIcon from "../../assets/styledIcons/EyeCloseIcon";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { toast } from "react-toastify";
 import { useLoginMutation } from "../../services/authApi";
 import { setAdmin } from "./authSlice";
 import Button from "../../components/Button";
+import { useTheme } from "../../context/themeContext";
 
 interface LoginFormValues {
   email: string;
@@ -31,37 +31,47 @@ const Login = () => {
   const [login, { isLoading }] = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
+  const { isDarkMode } = useTheme();
+
   const handleLogin = async (values: LoginFormValues) => {
-    const res = await login(values).unwrap();
+    try {
+      const res = await login(values).unwrap();
 
-    dispatch(
-      setAdmin({
-        admin: {
-          ...res.admin,
-          imageUrl:
-            "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250",
-        },
-        token: res.token,
-        isAuthenticated: true,
-      }),
-    );
+      dispatch(
+        setAdmin({
+          admin: {
+            ...res.admin,
+            imageUrl:
+              "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250",
+          },
+          token: res.token,
+          isAuthenticated: true,
+        }),
+      );
 
-    navigate("/dashboard");
+      navigate("/dashboard");
+    } catch (error) {
+      console.log("Login failed. Please check your credentials.");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl flex flex-col md:flex-row overflow-hidden">
-        {/* Form Side */}
+    <div className={`min-h-screen flex items-center justify-center px-4 ${isDarkMode ? "bg-slate-900" : "bg-gray-100"
+      }`}>
+      <div className={`rounded-lg shadow-lg w-full max-w-6xl flex flex-col md:flex-row overflow-hidden ${isDarkMode ? "bg-slate-800" : "bg-white"
+        }`}>
+
         <div className="w-full md:w-1/2 p-10 flex flex-col justify-center">
           <div className="mb-4 mx-auto">
             <img src={shahIcon} alt="logo" className="h-12" />
           </div>
           <div className="text-center mb-6">
-            <h3 className="text-xl font-bold text-gray-800">
+            <h3 className={`text-xl font-bold ${isDarkMode ? "text-slate-100" : "text-gray-800"
+              }`}>
               Log in to your account
             </h3>
-            <p className="text-gray-600 mt-2">
+            <p className={`mt-2 ${isDarkMode ? "text-slate-400" : "text-gray-600"
+              }`}>
               Welcome back! Please enter your details.
             </p>
           </div>
@@ -79,7 +89,8 @@ const Login = () => {
             }: FormikProps<LoginFormValues>) => (
               <Form className="space-y-5" noValidate>
                 <div>
-                  <label className="block mb-1 font-medium text-gray-700">
+                  <label className={`block mb-1 font-medium ${isDarkMode ? "text-slate-300" : "text-gray-700"
+                    }`}>
                     Email
                   </label>
                   <InputField
@@ -90,11 +101,13 @@ const Login = () => {
                     onChange={handleChange}
                     icon={<EmailIcons size={20} />}
                     error={touched.email && errors.email ? errors.email : ""}
+
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-1 font-medium text-gray-700">
+                  <label className={`block mb-1 font-medium ${isDarkMode ? "text-slate-300" : "text-gray-700"
+                    }`}>
                     Password
                   </label>
                   <InputField
@@ -123,19 +136,25 @@ const Login = () => {
                     error={
                       touched.password && errors.password ? errors.password : ""
                     }
+
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <p className="text-sm">
-                    Don’t have an account?{" "}
-                    <Link to="/signup" className="text-orange-500">
+                  <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-gray-600"
+                    }`}>
+                    Don't have an account?{" "}
+                    <Link to="/signup" className={`${isDarkMode ? "text-slate-400" : "text-orange-500"
+                      } text-orange-500 ${isDarkMode ? "hover:text-slate-100" : "hover:text-orange-600"
+                      } hover:text-orange-600`}>
                       Sign Up
                     </Link>
                   </p>
                   <Link
                     to="/forgot-password"
-                    className="text-sm text-orange-500"
+                    className={`${isDarkMode ? "text-slate-400" : "text-orange-500"
+                      } text-orange-500 ${isDarkMode ? "hover:text-slate-100" : "hover:text-orange-600"
+                      }text-sm `}
                   >
                     Forgot Password?
                   </Link>
@@ -144,7 +163,7 @@ const Login = () => {
                 <Button
                   loading={isLoading}
                   type="submit"
-                  className="w-full bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-600 transition cursor-pointer"
+                  className={`w-full bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-600 transition cursor-pointer`}
                 >
                   Sign In
                 </Button>

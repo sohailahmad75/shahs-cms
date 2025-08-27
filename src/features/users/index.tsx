@@ -20,7 +20,7 @@ const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
   const { data: usersResponse, isLoading, refetch } = useGetUsersQuery();
-  const users = usersResponse?.data || []; 
+  const users = usersResponse?.data || [];
 
   const [createUser, { isLoading: creating }] = useCreateUsersMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
@@ -29,18 +29,18 @@ const UsersTypeListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
   const handleEdit = (user: UsersType) => {
-  const mappedUser: Partial<UserInfoTypes> = {
-    ...user,
-    dob: user.dateOfBirth || user.dob || "",
-    dateOfBirth: undefined, 
-    postcode: (user as any).postCode || user.postcode || "",
-    niRate: (user as any).NiRate ?? user.niRate ?? null,
-    type: user.role === UserRole.OWNER ? "owner" : "staff",
-  };
+    const mappedUser: Partial<UserInfoTypes> = {
+      ...user,
+      dob: user.dateOfBirth || user.dob || "",
+      dateOfBirth: undefined,
+      postcode: (user as any).postCode || user.postcode || "",
+      niRate: (user as any).NiRate ?? user.niRate ?? null,
+      type: user.role === UserRole.OWNER ? "owner" : "staff",
+    };
 
-  setEditingUser(mappedUser);
-  setModalOpen(true);
-};
+    setEditingUser(mappedUser);
+    setModalOpen(true);
+  };
 
 
   const handleDelete = async (id: string) => {
@@ -54,46 +54,46 @@ const UsersTypeListPage: React.FC = () => {
   };
 
   const columns: Column<UsersType>[] = [
-  { 
-    key: "firstName", 
-    label: "Name",
-    render: (_, row) => `${row.firstName} ${row.surName || ''}`.trim(),
-  },
-  { 
-    key: "email",
-    label: "Email",
-  },
-  { 
-    key: "phone",
-    label: "Phone",
-  },
-  { 
-    key: "city",
-    label: "City",
-  },
-  {
-    key: "actions",
-    label: "Actions",
-    render: (_, row) => (
-      <div className="flex gap-2">
-        <ActionIcon
-          icon={<EditIcon size={22} />}
-          onClick={() => handleEdit(row)}
-          className={
-            isDarkMode
-              ? "text-slate-400 hover:text-slate-200"
-              : "text-gray-500 hover:text-gray-700"
-          }
-        />
-        <ActionIcon
-          className="text-red-500"
-          icon={<TrashIcon size={22} />}
-          onClick={() => row.id && handleDelete(row.id)}
-        />
-      </div>
-    ),
-  },
-];
+    {
+      key: "firstName",
+      label: "Name",
+      render: (_, row) => `${row.firstName} ${row.surName || ''}`.trim(),
+    },
+    {
+      key: "email",
+      label: "Email",
+    },
+    {
+      key: "phone",
+      label: "Phone",
+    },
+    {
+      key: "city",
+      label: "City",
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (_, row) => (
+        <div className="flex gap-2">
+          <ActionIcon
+            icon={<EditIcon size={22} />}
+            onClick={() => handleEdit(row)}
+            className={
+              isDarkMode
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-gray-500 hover:text-gray-700"
+            }
+          />
+          <ActionIcon
+            className="text-red-500"
+            icon={<TrashIcon size={22} />}
+            onClick={() => row.id && handleDelete(row.id)}
+          />
+        </div>
+      ),
+    },
+  ];
 
 
   return (
@@ -114,10 +114,9 @@ const UsersTypeListPage: React.FC = () => {
         <Loader />
       ) : (
         <DynamicTable
-          data={users} 
+          data={users}
           columns={columns}
           rowKey="id"
-          tableClassName="bg-white dark:bg-slate-900"
         />
       )}
 
