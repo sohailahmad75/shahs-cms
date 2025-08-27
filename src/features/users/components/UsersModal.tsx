@@ -297,20 +297,42 @@ const UsersTypeModal = ({
                 }
               }
 
+              // if (current.key === "account") {
+              //   const newBank = mapUpdateDto(values, idForPut).userBankDetails;
+              //   const oldBank = editingUsers
+              //     ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
+              //       .userBankDetails
+              //     : null;
+
+              //   if (!oldBank || shouldUpdate(oldBank, newBank)) {
+              //     await updateUser({
+              //       id: idForPut,
+              //       data: { userBankDetails: newBank },
+              //     }).unwrap();
+              //   }
+              // }
+
               if (current.key === "account") {
                 const newBank = mapUpdateDto(values, idForPut).userBankDetails;
+
+
+                const hasData = newBank.some(
+                  (b) => b.accountNumber || b.sortCode || b.bankName || b.accountHolderName || b.iban || b.swiftCode
+                );
+
                 const oldBank = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-                    .userBankDetails
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
                   : null;
 
-                if (!oldBank || shouldUpdate(oldBank, newBank)) {
+
+                if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
                   await updateUser({
                     id: idForPut,
                     data: { userBankDetails: newBank },
                   }).unwrap();
                 }
               }
+
 
               if (current.key === "availability") {
                 const newAvail =
