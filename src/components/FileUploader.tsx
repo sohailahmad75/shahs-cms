@@ -13,16 +13,56 @@ import { useGetPresignedStoreDocUrlMutation } from "../services/documentApi";
 import { useGetAllMutation } from "../features/users/services/UsersApi";
 
 interface FileUploaderProps {
-  value: string; // The s3 key
-  // onChange: (key: string) => void;
-  onChange: (key: string, fileName: string) => void;
-  type?: "image" | "file" | "all"; // Type of file to upload
+  /** The S3 key */
+  value: string;
+  /**
+   * onChange can be used in two ways:
+   *  - onChange(key)
+   *  - onChange(key, fileName)
+   */
+  onChange: (key: string, fileName?: string) => void;
+  /** Type of file to upload */
+  type?: "image" | "file" | "all";
+  /** Upload path "menu-categories" | "menu-items" | "menu-banner" | "menu-modifier-options" | "store-documents" | "users-documents" */
   path: string;
+  /** Signed URL (or any URL) to show initial preview for edit mode */
   initialPreview?: string;
 
   error?: string | null;
-  pathId?: string; // Optional, used for a store path, user path, etc. stores/${storeId}/documents
+  /** e.g., storeId when path === "store-documents" */
+  pathId?: string;
+
+  /** size preset: 1 = small, 4 = extra large */
+  size?: 1 | 2 | 3 | 4;
+  fit?: "cover" | "contain";
 }
+
+const SIZE_PRESETS = {
+  1: {
+    height: "h-20 sm:h-24 md:h-28",
+    icon: "w-5 h-5",
+    font: "text-xs",
+    padding: "p-2 sm:p-3 md:p-4",
+  },
+  2: {
+    height: "h-32 sm:h-36 md:h-45",
+    icon: "w-6 h-6",
+    font: "text-sm",
+    padding: "p-3",
+  },
+  3: {
+    height: "h-32 sm:h-40 md:h-48",
+    icon: "w-8 h-8",
+    font: "text-base",
+    padding: "p-4",
+  },
+  4: {
+    height: "h-40 sm:h-56 md:h-64",
+    icon: "w-10 h-10",
+    font: "text-lg",
+    padding: "p-5",
+  },
+} as const;
 
 const FileUploader: React.FC<FileUploaderProps> = ({
   value,
@@ -32,21 +72,26 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   initialPreview,
   error,
   pathId,
+  size = 2,
+  fit = "cover",
 }) => {
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
   const [getPresignedUrl] = useGetPresignedUrlMutation();
   const [getPresignedStoreDocUrl] = useGetPresignedStoreDocUrlMutation();
-    const [getPresignedAll] = useGetAllMutation()
+  const [getPresignedAll] = useGetAllMutation();
+
+  const { height, icon, font, padding } = SIZE_PRESETS[size];
 
   const isImageType = (fileType: string) => fileType.startsWith("image/");
 
-  // Handle preview image display logic
   const getPreviewSource = () => {
-    if (localPreviewUrl) return localPreviewUrl; // New uploaded preview
-    if (initialPreview) return initialPreview; // Signed URL passed for edit
+    if (localPreviewUrl) return localPreviewUrl; // new uploaded preview
+    if (initialPreview) return initialPreview; // passed preview (signed URL)
     return null;
+    // If neither, and value holds a non-image key, we show a doc icon + filename.
   };
 
   const onDrop = useCallback(
@@ -60,18 +105,20 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       if (isImage) {
         const localUrl = URL.createObjectURL(file);
         setLocalPreviewUrl(localUrl);
+        setFileName(null);
       } else {
         setFileName(file.name);
         setLocalPreviewUrl(null);
       }
 
       try {
-        let presigned;
+        let presigned: { url: string; key: string };
 
         switch (path) {
           case "menu-categories":
           case "menu-items":
           case "menu-banner":
+          case "menu-modifier-options":
             presigned = await getPresignedUrl({
               fileName: file.name,
               fileType: file.type,
@@ -86,7 +133,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               toast.error(errorMessage);
               throw new Error(errorMessage);
             }
-
             presigned = await getPresignedStoreDocUrl({
               fileName: file.name,
               fileType: file.type,
@@ -94,10 +140,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
             }).unwrap();
             break;
 
-             case "users-documents":
+          case "users-documents":
             presigned = await getPresignedAll({
               fileName: file.name,
-              fileType: file.type
+              fileType: file.type,
             }).unwrap();
             break;
 
@@ -108,28 +154,32 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         await uploadToS3(presigned.url, file);
 
         toast.success("File uploaded successfully");
-        // onChange(presigned.key);
+        // Support both onChange signatures: (key) and (key, fileName)
         onChange(presigned.key, file.name);
       } catch (err) {
-        // toast.error("File upload failed");
         console.error(err);
         setLocalPreviewUrl(null);
         setFileName(null);
-        // onChange("");
         onChange("", "");
       } finally {
         setIsUploading(false);
       }
     },
-    [getPresignedUrl, onChange, path],
+    [
+      getPresignedStoreDocUrl,
+      getPresignedUrl,
+      getPresignedAll,
+      onChange,
+      path,
+      pathId,
+    ]
   );
 
   const removeFile = () => {
     if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
     setLocalPreviewUrl(null);
     setFileName(null);
-    // onChange("");
-     onChange("", "");
+    onChange("", "");
   };
 
   const acceptedTypes: Accept =
@@ -141,70 +191,77 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     onDrop,
     accept: acceptedTypes,
     maxFiles: 1,
-    maxSize: 10 * 1024 * 1024,
+    maxSize: 10 * 1024 * 1024, // 10MB
   });
 
   const previewSrc = getPreviewSource();
+  const fitClass = `object-${fit}`;
+
   return (
     <>
-      {value ? (
-        <div className="relative group border rounded-md p-2 bg-gray-50">
-          {previewSrc ? (
-            <img
-              src={previewSrc}
-              alt="Uploaded Preview"
-              className="w-full h-60 object-cover rounded-lg"
-            />
-          ) : (
-            <div className="flex items-center gap-2">
-              <DocumentIcon className="w-6 h-6 text-gray-500" />
-              <span className="text-sm text-gray-700 break-all">
-                {fileName ||
-                  initialPreview?.split("/").pop() ||
-                  "File uploaded"}
-              </span>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={removeFile}
-            className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm cursor-pointer"
+      <div className={`relative w-full ${height}`}>
+        {value ? (
+          <div
+            className={`absolute inset-0 group border rounded-md ${padding} bg-gray-50`}
           >
-            <XMarkIcon className="w-5 h-5 text-red-500" />
-          </button>
-        </div>
-      ) : (
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${error
-            ? "border-red-500 bg-red-50"
-            : isDragActive
-              ? "border-orange-100 bg-orange-05"
-              : "border-gray-300 hover:border-orange-100"
-            }`}
-        >
-          <input {...getInputProps()} />
-          {isUploading ? (
-            <div className="flex flex-col items-center justify-center">
-              <Loader className="h-26" />
-            </div>
-          ) : (
-            <>
-              <div className="mx-auto h-10 w-10 text-gray-400 mb-2">
-                <ArrowUpTrayIcon />
+            {previewSrc ? (
+              <img
+                src={previewSrc}
+                alt="Uploaded Preview"
+                className={`w-full h-full ${fitClass} rounded-lg`}
+              />
+            ) : (
+              <div className={`w-full h-full flex items-center gap-2 ${font}`}>
+                <DocumentIcon className={`${icon} text-gray-500`} />
+                <span className="text-gray-700 break-all">
+                  {fileName || initialPreview?.split("/").pop() || "File uploaded"}
+                </span>
               </div>
-              <p className="text-sm text-gray-600">
-                {isDragActive
-                  ? "Drop here"
-                  : `Drag & drop a ${type} here, or click to select`}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Max. 10MB {type === "image" ? " (JPG, PNG, WEBP)" : ""}
-              </p>
-            </>
-          )}
-        </div>
-      )}
+            )}
+
+            <button
+              type="button"
+              onClick={removeFile}
+              className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm cursor-pointer"
+            >
+              <XMarkIcon className={`text-red-500 ${icon}`} />
+            </button>
+          </div>
+        ) : (
+          <div
+            {...getRootProps()}
+            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${
+              error
+                ? "border-red-500 bg-red-50"
+                : isDragActive
+                ? "border-orange-100 bg-orange-05"
+                : "border-gray-300 hover:border-orange-100"
+            }`}
+          >
+            <input {...getInputProps()} />
+            {isUploading ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <Loader className={icon} />
+              </div>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <div className={`mx-auto ${icon} text-gray-400 mb-2`}>
+                  <ArrowUpTrayIcon />
+                </div>
+                <p className={`${font} text-gray-600`}>
+                  {isDragActive
+                    ? "Drop here"
+                    : `Drag & drop a ${type} here, or click to select`}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Max. 10MB {type === "image" ? " (JPG, PNG, WEBP)" : ""}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </>
   );
