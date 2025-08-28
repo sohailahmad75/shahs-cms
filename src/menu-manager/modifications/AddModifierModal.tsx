@@ -295,18 +295,20 @@ const AddModifierModal: React.FC<Props> = ({
                           <div className="order-last md:col-span-1 flex md:items-start md:justify-end">
                             <Button
                               type="button"
+                              className="md:hidden w-full md:w-9 md:h-9 md:p-0"
+                            >
+                              <span>Delete</span>
+                            </Button>
+
+                            <span
                               onClick={() =>
                                 setFieldValue(
                                   "options",
                                   values.options.filter((_, i) => i !== index),
                                 )
                               }
-                              className="md:hidden w-full md:w-9 md:h-9 md:p-0"
+                              className="hidden md:inline cursor-pointer text-orange-500 hover:scale-110 transition duration-200 ease-in-out "
                             >
-                              <span>Delete</span>
-                            </Button>
-
-                            <span className="hidden md:inline cursor-pointer text-orange-500 hover:scale-110 transition duration-200 ease-in-out ">
                               <CloseIcon size={20} />
                             </span>
                           </div>
