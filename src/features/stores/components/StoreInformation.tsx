@@ -10,12 +10,14 @@ import StoreMap from "./StoreMap";
 import { getFsaBadgeUrl } from "../helper/store-helper";
 import { toast } from "react-toastify";
 import OpeningHoursFormSection from "./OpeningHoursFormSection";
+import { useTheme } from "../../../context/themeContext";
 
 const StoreInformation = () => {
   const { id } = useParams();
   const { data: store, isLoading } = useGetStoreByIdQuery(id!);
   const [updateOpeningHours, { isLoading: updateOpeningHoursLoading }] =
     useUpdateOpeningHoursMutation();
+  const { isDarkMode } = useTheme();
   const defaultHours = [
     "Sunday",
     "Monday",
@@ -53,13 +55,13 @@ const StoreInformation = () => {
   }, [store]);
 
   if (isLoading) return <Loader />;
-  if (!store) return <div className="text-red-500 p-4">Store not found.</div>;
+  if (!store) return <div className={`p-4 ${isDarkMode ? "text-red-400" : "text-red-500"}`}>Store not found.</div>;
 
   return (
-    <div className=" mx-auto">
+    <div className={`mx-auto ${isDarkMode ? "bg-slate-950" : "bg-white"} `}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <Card>
+          <Card isDarkMode={isDarkMode}>
             <GridDetail
               data={[
                 ["Email", store.email],
@@ -72,17 +74,19 @@ const StoreInformation = () => {
                 ["Company Number", store.companyNumber],
                 ["VAT Number", store.vatNumber || "-"],
               ]}
+              isDarkMode={isDarkMode}
             />
           </Card>
 
           {/* Opening Hours */}
-          <Card>
-            <h2 className="font-semibold">Opening Hours</h2>
+          <Card isDarkMode={isDarkMode}>
+            <h2 className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}>Opening Hours</h2>
             <OpeningHoursFormSection
               openingHours={openingHours}
               setOpeningHours={setOpeningHours}
               sameAllDays={sameAllDays}
               setSameAllDays={setSameAllDays}
+            
             />
 
             <div className="flex gap-3 mt-4 flex-end justify-end">
@@ -107,20 +111,22 @@ const StoreInformation = () => {
           </Card>
 
           {/* Bank Accounts */}
-          <Card>
-            <h2 className="text-lg font-semibold mb-3">Bank Accounts</h2>
+          <Card isDarkMode={isDarkMode}>
+            <h2 className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}>Bank Accounts</h2>
             {store.bankDetails?.length === 0 ? (
-              <p className="text-gray-500">No bank accounts available.</p>
+              <p className={isDarkMode ? "text-slate-400" : "text-gray-500"}>No bank accounts available.</p>
             ) : (
               <ul className="space-y-3">
                 {store.bankDetails.map((bank) => (
                   <li
                     key={bank.id}
-                    className="border rounded-lg p-3 bg-slate-50 dark:bg-slate-700"
+                    className={`border rounded-lg p-3 ${
+                      isDarkMode ? "bg-slate-700 border-slate-600" : "bg-slate-50 border-gray-200"
+                    }`}
                   >
-                    <Detail label="Bank" value={bank.bankName} />
-                    <Detail label="Account Number" value={bank.accountNumber} />
-                    <Detail label="Sort Code" value={bank.sortCode} />
+                    <Detail label="Bank" value={bank.bankName} isDarkMode={isDarkMode} />
+                    <Detail label="Account Number" value={bank.accountNumber} isDarkMode={isDarkMode} />
+                    <Detail label="Sort Code" value={bank.sortCode} isDarkMode={isDarkMode} />
                   </li>
                 ))}
               </ul>
@@ -130,8 +136,10 @@ const StoreInformation = () => {
 
         <div className="rounded-xl">
           {store.fsa && (
-            <Card>
-              <h2 className="text-lg font-semibold mb-3 border-b border-gray-200 pb-3">
+            <Card isDarkMode={isDarkMode}>
+              <h2 className={`text-lg font-semibold mb-3 border-b pb-3 ${
+                isDarkMode ? "text-slate-100 border-slate-600" : "text-gray-800 border-gray-200"
+              }`}>
                 FSA Food Hygiene Rating
               </h2>
 
@@ -141,20 +149,25 @@ const StoreInformation = () => {
                   alt={`FSA Rating ${store.fsa.rating}`}
                   className="w-32 sm:w-36 md:w-60"
                 />
-                <div className="text-secondary-100">
-                  <p className="text-lg font-semibold">{store.fsa.name}</p>
+                <div className={isDarkMode ? "text-slate-300" : "text-gray-700"}>
+                  <p className={`text-lg font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}>{store.fsa.name}</p>
                   <p className="text-sm">
-                    <strong>Address:</strong> {store.fsa.address}
+                    <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>Address:</strong>{" "}
+                    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>{store.fsa.address}</span>
                   </p>
-                  <p className="text-xs ">
-                    <strong>Rated on:</strong>{" "}
-                    {new Date(store.fsa.ratingDate).toLocaleDateString()}
+                  <p className="text-xs">
+                    <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>Rated on:</strong>{" "}
+                    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>
+                      {new Date(store.fsa.ratingDate).toLocaleDateString()}
+                    </span>
                   </p>
-                  <p className="text-xs ">
-                    <strong>Authority:</strong> {store.fsa.authority}
+                  <p className="text-xs">
+                    <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>Authority:</strong>{" "}
+                    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>{store.fsa.authority}</span>
                   </p>
-                  <p className="text-xs ">
-                    <strong>Status:</strong> {store.fsa.status}
+                  <p className="text-xs">
+                    <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>Status:</strong>{" "}
+                    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>{store.fsa.status}</span>
                   </p>
                 </div>
               </div>
@@ -167,27 +180,29 @@ const StoreInformation = () => {
   );
 };
 
-// Simple reusable card container
-const Card = ({ children }: { children: React.ReactNode }) => (
-  <div className="bg-white dark:bg-slate-800 p-5 rounded-lg shadow">
+// Simple reusable card container with dark mode support
+const Card = ({ children, isDarkMode }: { children: React.ReactNode; isDarkMode: boolean }) => (
+  <div className={`p-5 rounded-lg shadow ${
+    isDarkMode ? "bg-slate-800 border border-slate-700" : "bg-white border border-gray-200"
+  }`}>
     {children}
   </div>
 );
 
-// Reusable grid layout for basic info
-const GridDetail = ({ data }: { data: [string, string | undefined][] }) => (
+// Reusable grid layout for basic info with dark mode support
+const GridDetail = ({ data, isDarkMode }: { data: [string, string | undefined][]; isDarkMode: boolean }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
     {data.map(([label, value]) => (
-      <Detail key={label} label={label} value={value} />
+      <Detail key={label} label={label} value={value} isDarkMode={isDarkMode} />
     ))}
   </div>
 );
 
-// One-line label-value pair
-const Detail = ({ label, value }: { label: string; value?: string }) => (
+// One-line label-value pair with dark mode support
+const Detail = ({ label, value, isDarkMode }: { label: string; value?: string; isDarkMode: boolean }) => (
   <div>
-    <strong className="text-secondary-100 dark:text-gray-300">{label}:</strong>{" "}
-    <span className="text-secondary-100 dark:text-gray-100">{value}</span>
+    <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>{label}:</strong>{" "}
+    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>{value}</span>
   </div>
 );
 

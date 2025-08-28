@@ -34,7 +34,6 @@ const StoreListPage: React.FC = () => {
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
-    isFetching,
     refetch,
   } = useGetStoresQuery({ page, perPage, query });
 
@@ -139,22 +138,9 @@ const StoreListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Table / loader / empty state */}
-      {isLoading || isFetching ? (
+
+      {isLoading ? (
         <Loader />
-      ) : stores.length === 0 ? (
-        <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
-          No stores found.
-          {query ? (
-            <span className="block text-sm text-gray-500 mt-1">
-              Try adjusting your search.
-            </span>
-          ) : (
-            <span className="block text-sm text-gray-500 mt-1">
-              Click <strong>Add Store</strong> to create your first one.
-            </span>
-          )}
-        </div>
       ) : (
         <>
           <div className=" rounded-lg shadow-sm">

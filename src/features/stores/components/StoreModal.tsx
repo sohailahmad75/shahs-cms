@@ -17,6 +17,7 @@ import {
   defaultDays,
 } from "../helper/store-helper";
 import { filterEditableFields } from "../../../helper";
+import { useTheme } from "../../../context/themeContext";
 
 const StoreModal = ({
   isOpen,
@@ -31,6 +32,7 @@ const StoreModal = ({
   editingStore: UpdateStoreDto | null | undefined;
   isSubmitting: boolean;
 }) => {
+  const { isDarkMode } = useTheme();
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
       day,
@@ -65,7 +67,7 @@ const StoreModal = ({
     >
       <div className="col-span-2 flex items-center gap-6 mb-6">
         <div className="flex-grow h-px bg-gray-200" />
-        <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+        <span className={`${isDarkMode ? "text-slate-100" :"text-orange-100"}  text-md font-medium whitespace-nowrap`}>
           Basic Details
         </span>
         <div className="flex-grow h-px bg-gray-200" />
@@ -147,7 +149,7 @@ const StoreModal = ({
 
             <div className="col-span-2 flex items-center gap-6 mb-2">
               <div className="flex-grow h-px bg-gray-200" />
-              <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+              <span className={`${isDarkMode ? "text-slate-100" :"text-orange-100"} text-md font-medium whitespace-nowrap`}>
                 Opening Hours
               </span>
               <div className="flex-grow h-px bg-gray-200" />
@@ -161,7 +163,7 @@ const StoreModal = ({
 
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
-              <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+              <span className={`${isDarkMode ? "text-slate-100" :"text-orange-100"} text-md font-medium whitespace-nowrap`}>
                 Additional Info
               </span>
               <div className="flex-grow h-px bg-gray-200" />

@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
+import { useTheme } from "../context/themeContext";
 
 export interface Tab {
   label: string;
@@ -15,6 +16,7 @@ interface TabbedPageLayoutProps extends PropsWithChildren {
 const TabbedPageLayout = ({ title, tabs, children }: TabbedPageLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
 
   const activeTab = useMemo(() => {
     const sortedTabs = [...tabs].sort((a, b) => b.path.length - a.path.length); // longest first
@@ -50,7 +52,7 @@ const TabbedPageLayout = ({ title, tabs, children }: TabbedPageLayoutProps) => {
         ))}
       </div>
 
-      <div className="bg-white p-6 rounded shadow-sm">
+      <div className={`${isDarkMode ? "bg-slate-950" : "bg-white"}  p-6 rounded shadow-sm`}>
         {children}
       </div>
     </div>

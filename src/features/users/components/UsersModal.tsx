@@ -31,6 +31,7 @@ import {
 import isEqual from "lodash";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 import { defaultDays } from "../../stores/helper/store-helper";
+import { useTheme } from "../../../context/themeContext";
 
 type Props = {
   isOpen: boolean;
@@ -53,7 +54,42 @@ const UsersTypeModal = ({
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
 
+
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
+
+
+  const [documentsList, setDocumentsList] = useState<any[]>([]);
+  const [role, setRole] = useState<UserInfoTypes["type"]>(editingUsers?.type || "staff");
+
+  const { data: documentTypes } = useGetDocumentsTypeQuery(
+    { role },
+    { skip: !role }
+  );
+
+
+  // const { data: documentTypes } = useGetDocumentsTypeQuery(
+  //   { role: editingUsers?.type || "staff" },
+  //   { skip: !editingUsers?.type }
+  // );
+
+  useEffect(() => {
+    if (!documentTypes?.data) {
+      setDocumentsList([]);
+      return;
+    }
+
+    const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+      acc[doc.documentTypeId] = doc;
+      return acc;
+    }, {});
+
+    setDocumentsList(
+      documentTypes.data.map((docType: any) => ({
+        ...docType,
+        userDoc: userDocsMap[docType.id] || null,
+      }))
+    );
+  }, [documentTypes, editingUsers]);
 
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
@@ -83,8 +119,9 @@ const UsersTypeModal = ({
 
   const formatDateOnly = (dateString?: string) => {
     if (!dateString) return "";
-    return new Date(dateString).toISOString().split("T")[0]; // sirf yyyy-mm-dd
+    return new Date(dateString).toISOString().split("T")[0];
   };
+  const { isDarkMode } = useTheme();
 
 
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
@@ -127,6 +164,7 @@ const UsersTypeModal = ({
       userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
         documentType: docTypeId,
         fileS3Key: doc.fileS3Key || null,
+        fileType: doc.fileType || null,
         name: doc.name || null,
         expiresAt: doc.expiresAt || null,
         remindBeforeDays: doc.remindBeforeDays ? Number(doc.remindBeforeDays) : null,
@@ -172,7 +210,7 @@ const UsersTypeModal = ({
           ...userEmptyInitialValues,
           ...(editingUsers || {}),
         }}
-        validationSchema={userSchema([])}
+        validationSchema={userSchema(documentsList)}
         enableReinitialize
         onSubmit={onSubmit}
       >
@@ -184,34 +222,39 @@ const UsersTypeModal = ({
           touched,
           setFieldTouched,
           validateForm,
-          submitForm,
+          // submitForm,
         }) => {
-          const { data: documentTypes } = useGetDocumentsTypeQuery(
-            { role: values.type },
-            { skip: !values.type }
-          );
+          // const { data: documentTypes } = useGetDocumentsTypeQuery(
+          //   { role: values.type },
+          //   { skip: !values.type }
+          // );
 
           // const documentsList = useMemo(() => {
           //   if (!documentTypes?.data) return [];
           //   return documentTypes.data;
           // }, [documentTypes]);
 
-          const documentsList = useMemo(() => {
-            if (!documentTypes?.data) return [];
+          // const documentsList = useMemo(() => {
+          //   if (!documentTypes?.data) return [];
 
 
-            const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
-              acc[doc.documentTypeId] = doc;
-              return acc;
-            }, {});
+          //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+          //     acc[doc.documentTypeId] = doc;
+          //     return acc;
+          //   }, {});
 
-            return documentTypes.data.map((docType: any) => {
-              return {
-                ...docType,
-                userDoc: userDocsMap[docType.id] || null,
-              };
-            });
-          }, [documentTypes, editingUsers]);
+          //   return documentTypes.data.map((docType: any) => {
+          //     return {
+          //       ...docType,
+          //       userDoc: userDocsMap[docType.id] || null,
+          //     };
+          //   });
+          // }, [documentTypes, editingUsers]);
+          useEffect(() => {
+            if (values.type && values.type !== role) {
+              setRole(values.type);
+            }
+          }, [values.type]);
 
 
           const steps = getVisibleSteps(values.type);
@@ -297,20 +340,28 @@ const UsersTypeModal = ({
                 }
               }
 
+
               if (current.key === "account") {
                 const newBank = mapUpdateDto(values, idForPut).userBankDetails;
+
+
+                const hasData = newBank.some(
+                  (b) => b.accountNumber || b.sortCode || b.bankName || b.accountHolderName || b.iban || b.swiftCode
+                );
+
                 const oldBank = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-                    .userBankDetails
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
                   : null;
 
-                if (!oldBank || shouldUpdate(oldBank, newBank)) {
+
+                if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
                   await updateUser({
                     id: idForPut,
                     data: { userBankDetails: newBank },
                   }).unwrap();
                 }
               }
+
 
               if (current.key === "availability") {
                 const newAvail =
@@ -328,11 +379,24 @@ const UsersTypeModal = ({
                 }
               }
 
+              // if (current.key === "documents") {
+              //   const newDocs = mapUpdateDto(values, idForPut).userDocuments;
+              //   const oldDocs = editingUsers
+              //     ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
+              //       .userDocuments
+              //     : null;
+
+              //   if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
+              //     await updateUser({
+              //       id: idForPut,
+              //       data: { userDocuments: newDocs },
+              //     }).unwrap();
+              //   }
+              // }
               if (current.key === "documents") {
                 const newDocs = mapUpdateDto(values, idForPut).userDocuments;
                 const oldDocs = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-                    .userDocuments
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
                   : null;
 
                 if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
@@ -342,6 +406,8 @@ const UsersTypeModal = ({
                   }).unwrap();
                 }
               }
+
+
             } catch (err) {
               console.error("Update user failed:", err);
               return;
@@ -350,7 +416,7 @@ const UsersTypeModal = ({
             if (currentIndex < totalSteps - 1) {
               setActiveStep((s) => s + 1);
             } else {
-              await submitForm();
+              // await submitForm();
               onClose?.();
             }
           };
@@ -384,7 +450,7 @@ const UsersTypeModal = ({
 
           return (
             <Form className="space-y-6">
-              {/* Stepper */}
+
               <div className="flex items-center justify-between">
                 {steps.map((s, idx) => {
                   const isActive = idx === currentIndex;
@@ -394,7 +460,7 @@ const UsersTypeModal = ({
                   const pillBase =
                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
                   const pillState = isActive
-                    ? "border-orange-400 text-orange-600"
+                    ? `border-orange-400 ${isDarkMode ? "border-slate-500 text-white" : "border-orange-400 text-orange-600"} text-orange-600`
                     : isError
                       ? "border-red-400 text-red-600"
                       : isDone
@@ -481,6 +547,7 @@ const UsersTypeModal = ({
                               ...(prevDocs[doc.id] || {}),
                               documentType: doc.id,
                               fileS3Key,
+                              fileType: prevDocs[doc.id]?.fileType || "all",
                               name: doc.name,
                             },
                           });
@@ -496,17 +563,6 @@ const UsersTypeModal = ({
                             <label className="text-sm font-medium text-gray-700 mb-1 block">
                               Expiry Date
                             </label>
-                            {/* <DatePickerField
-                              name={`documents.${doc.id}.expiresAt`}
-                              value={
-                                values.documents?.[doc.id]?.expiresAt ||
-                                doc.userDoc?.expiresAt ||
-                                ""
-                              }
-                              onChange={(v: any) =>
-                                setFieldValue(`documents.${doc.id}.expiresAt`, v)
-                              }
-                            /> */}
                             <DatePickerField
                               name={`documents.${doc.id}.expiresAt`}
                               value={

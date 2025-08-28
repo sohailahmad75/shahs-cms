@@ -6,6 +6,7 @@ import Button from "../../../components/Button";
 import SelectField from "../../../components/SelectField";
 import CheckboxField from "../../../components/CheckboxField";
 import type { UpdateDocumentDto } from "../documentTypes.types";
+import { useTheme } from "../../../context/themeContext";
 
 
 type DocumentTypeRole = "shop" | "owner" | "staff";
@@ -91,6 +92,7 @@ const DocumentTypeModal = ({
   editingDocument: UpdateDocumentDto | null | undefined;
   isSubmitting: boolean;
 }) => {
+  const { isDarkMode } = useTheme();
   return (
     <Modal
       isOpen={isOpen}
@@ -133,7 +135,7 @@ const DocumentTypeModal = ({
           <Form className="space-y-8">
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
-              <span className="text-orange-100 text-md font-medium whitespace-nowrap">
+              <span className={` ${isDarkMode ? "text-slate-600" : "text-orange-100"} text-orange-100 text-md font-medium whitespace-nowrap`}>
                 Document Type Details
               </span>
               <div className="flex-grow h-px bg-gray-200" />
@@ -157,7 +159,7 @@ const DocumentTypeModal = ({
          
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Description
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <InputField
                   type="textarea"

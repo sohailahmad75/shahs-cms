@@ -3,6 +3,7 @@ import React from "react";
 import SelectField from "./SelectField";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 import ForwardEndIcon from "../assets/styledIcons/ForwardEndIcon";
+import { useTheme } from "../context/themeContext";
 
 type Props = {
   page: number;
@@ -37,6 +38,7 @@ const Pagination: React.FC<Props> = ({
   disabled = false,
   leftTitle,
 }) => {
+    const { isDarkMode } = useTheme();
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, perPage)));
   const safePage = Math.min(Math.max(1, page), totalPages);
 
@@ -51,19 +53,40 @@ const Pagination: React.FC<Props> = ({
   const numberBtnBase =
     "h-8 min-w-8 px-2 text-sm rounded-md border transition select-none flex justify-center items-center " +
     "cursor-pointer focus:outline-none ";
-  const numberBtn = `${numberBtnBase} border-gray-300 bg-white hover:bg-orange-50`;
-  const numberBtnActive = `${numberBtnBase} border-orange-500 bg-orange-500 text-white`;
-  const chevronBtn =
-    "h-8 min-w-8 px-2 text-sm rounded-md border border-gray-300 bg-white flex justify-center items-center " +
-    "hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition " +
-    "cursor-pointer focus:outline-none ";
+  const numberBtn = `${numberBtnBase}
+   ${isDarkMode
+      ? "border-slate-700 bg-slate-900 text-slate-100" 
+      : "border-gray-300 bg-white hover:bg-orange-50"
+    }
+  border-gray-300 bg-white hover:bg-orange-50`;
+  const numberBtnActive = `${numberBtnBase} 
+  ${isDarkMode
+      ? "border-slate-700 bg-slate-950 text-slate-100" 
+      : "border-orange-500 bg-orange-500 text-white"
+    }
+  border-orange-500 bg-orange-500 text-white`;
+  const chevronBtn = `
+  h-8 min-w-8 px-2 text-sm rounded-md border flex justify-center items-center 
+  cursor-pointer focus:outline-none transition 
+  disabled:opacity-40 disabled:cursor-not-allowed
+  ${isDarkMode 
+    ? "border-slate-700 bg-slate-800 text-gray-100 hover:bg-slate-500" 
+    : "border-gray-300 bg-white text-gray-800 hover:bg-orange-50" 
+  }
+`;
+
 
   return (
     <div
-      className={
-        "w-full rounded-xl border border-gray-200 bg-white p-4 md:p-3 flex gap-3 mt-3 flex-wrap justify-center md:justify-between items-center md:flex-nowrap" +
-        className
-      }
+       className={`
+    w-full rounded-xl border p-4 md:p-3 flex gap-3 mt-3 flex-wrap 
+    justify-center md:justify-between items-center md:flex-nowrap
+    ${isDarkMode
+      ? "border-slate-700 bg-slate-900 text-slate-100" 
+      : "border-gray-200 bg-white text-gray-800"
+    }
+    ${className}
+  `}
     >
       {/* Left label */}
       <div className="text-sm text-gray-700 order-3 md:order-1">
