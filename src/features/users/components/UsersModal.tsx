@@ -28,7 +28,7 @@ import {
   useCreateUsersMutation,
   useUpdateUsersMutation,
 } from "../services/UsersApi";
-import isEqual from "lodash.isequal";
+import isEqual from "lodash";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 import { defaultDays } from "../../stores/helper/store-helper";
 

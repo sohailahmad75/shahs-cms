@@ -1,4 +1,5 @@
 import type { Store } from "../stores/store.types";
+import type { Meta } from "../../types";
 
 export interface Kiosk {
   id: string;
@@ -18,4 +19,10 @@ export interface CreateKioskDto {
   storeId?: string;
   deviceType: number;
 }
+
+export type KioskListResponse = {
+  data: Kiosk[];
+  meta: Meta;
+};
+
 export type UpdateKioskDto = CreateKioskDto;
