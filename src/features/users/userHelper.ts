@@ -31,7 +31,7 @@ export const userSchema = (documentsList: any[]) =>
       documentsList.reduce((acc: any, doc: any) => {
         acc[doc.id] = Yup.object({
           fileS3Key: doc.isMandatory
-            ? Yup.string().required(`${doc.name} document is required`)
+            ? Yup.string().required(`${doc.name} Document is required`)
             : Yup.string().nullable(),
           fileType: Yup.string().when("fileS3Key", {
             is: (v: string) => !!v,

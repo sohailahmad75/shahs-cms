@@ -57,6 +57,40 @@ const UsersTypeModal = ({
 
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
 
+
+  const [documentsList, setDocumentsList] = useState<any[]>([]);
+  const [role, setRole] = useState<UserInfoTypes["type"]>(editingUsers?.type || "staff");
+
+  const { data: documentTypes } = useGetDocumentsTypeQuery(
+    { role },
+    { skip: !role }
+  );
+
+
+  // const { data: documentTypes } = useGetDocumentsTypeQuery(
+  //   { role: editingUsers?.type || "staff" },
+  //   { skip: !editingUsers?.type }
+  // );
+
+  useEffect(() => {
+    if (!documentTypes?.data) {
+      setDocumentsList([]);
+      return;
+    }
+
+    const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+      acc[doc.documentTypeId] = doc;
+      return acc;
+    }, {});
+
+    setDocumentsList(
+      documentTypes.data.map((docType: any) => ({
+        ...docType,
+        userDoc: userDocsMap[docType.id] || null,
+      }))
+    );
+  }, [documentTypes, editingUsers]);
+
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
       day,
@@ -85,7 +119,7 @@ const UsersTypeModal = ({
 
   const formatDateOnly = (dateString?: string) => {
     if (!dateString) return "";
-    return new Date(dateString).toISOString().split("T")[0]; // sirf yyyy-mm-dd
+    return new Date(dateString).toISOString().split("T")[0];
   };
   const { isDarkMode } = useTheme();
 
@@ -176,7 +210,7 @@ const UsersTypeModal = ({
           ...userEmptyInitialValues,
           ...(editingUsers || {}),
         }}
-        validationSchema={userSchema([])}
+        validationSchema={userSchema(documentsList)}
         enableReinitialize
         onSubmit={onSubmit}
       >
@@ -190,32 +224,37 @@ const UsersTypeModal = ({
           validateForm,
           // submitForm,
         }) => {
-          const { data: documentTypes } = useGetDocumentsTypeQuery(
-            { role: values.type },
-            { skip: !values.type }
-          );
+          // const { data: documentTypes } = useGetDocumentsTypeQuery(
+          //   { role: values.type },
+          //   { skip: !values.type }
+          // );
 
           // const documentsList = useMemo(() => {
           //   if (!documentTypes?.data) return [];
           //   return documentTypes.data;
           // }, [documentTypes]);
 
-          const documentsList = useMemo(() => {
-            if (!documentTypes?.data) return [];
+          // const documentsList = useMemo(() => {
+          //   if (!documentTypes?.data) return [];
 
 
-            const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
-              acc[doc.documentTypeId] = doc;
-              return acc;
-            }, {});
+          //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+          //     acc[doc.documentTypeId] = doc;
+          //     return acc;
+          //   }, {});
 
-            return documentTypes.data.map((docType: any) => {
-              return {
-                ...docType,
-                userDoc: userDocsMap[docType.id] || null,
-              };
-            });
-          }, [documentTypes, editingUsers]);
+          //   return documentTypes.data.map((docType: any) => {
+          //     return {
+          //       ...docType,
+          //       userDoc: userDocsMap[docType.id] || null,
+          //     };
+          //   });
+          // }, [documentTypes, editingUsers]);
+          useEffect(() => {
+            if (values.type && values.type !== role) {
+              setRole(values.type);
+            }
+          }, [values.type]);
 
 
           const steps = getVisibleSteps(values.type);

@@ -60,7 +60,7 @@ export type UserInfoTypes = {
 
 
   fileS3Key?: string | null;
-  fileType?: DocumentInfo["fileType"];
+  fileType?: string;
   expiresAt?: any;
   remindBeforeDays?: number | null;
 };
