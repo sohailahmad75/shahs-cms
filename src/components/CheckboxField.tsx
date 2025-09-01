@@ -53,7 +53,7 @@ const CheckboxField: React.FC<CheckboxFieldProps> = ({
           )}
         </div>
       </div>
-      <span className={`text-gray-700 cursor-pointer ${labelClassName}`}>
+      <span className={`${isDarkMode ? "text-slate-100" : "text-gray-700"}  cursor-pointer ${labelClassName}`}>
         {label}
       </span>
     </label>

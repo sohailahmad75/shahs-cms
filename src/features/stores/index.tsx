@@ -20,6 +20,8 @@ import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
+import { useTheme } from "../../context/themeContext";
+
 
 const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -27,6 +29,7 @@ const StoreListPage: React.FC = () => {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
+  const { isDarkMode } = useTheme();
 
   const {
     data: storesResp = {
@@ -82,7 +85,7 @@ const StoreListPage: React.FC = () => {
         <div className="flex gap-2">
           <Link to={`/stores/${row.id}`} className="hover:underline">
             <ActionIcon
-              className="text-secondary-100"
+              className={isDarkMode ? "text-white" : "text-secondary-100"}
               icon={<EyeOpen size={22} />}
             />
           </Link>

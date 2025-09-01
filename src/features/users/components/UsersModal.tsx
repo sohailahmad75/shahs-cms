@@ -28,7 +28,7 @@ import {
   useCreateUsersMutation,
   useUpdateUsersMutation,
 } from "../services/UsersApi";
-import isEqual from "lodash";
+import isEqual from "lodash.isequal";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 import { defaultDays } from "../../stores/helper/store-helper";
 import { useTheme } from "../../../context/themeContext";
@@ -455,17 +455,15 @@ const UsersTypeModal = ({
                 {steps.map((s, idx) => {
                   const isActive = idx === currentIndex;
                   const isDone = idx < currentIndex;
-                  const isError = stepHasErrors(errors, idx);
+
 
                   const pillBase =
                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
                   const pillState = isActive
                     ? `border-orange-400 ${isDarkMode ? "border-slate-500 text-white" : "border-orange-400 text-orange-600"} text-orange-600`
-                    : isError
-                      ? "border-red-400 text-red-600"
-                      : isDone
-                        ? "border-green-400 text-green-600"
-                        : "border-gray-300 text-gray-600";
+                    : isDone
+                      ? "border-green-400 text-green-600"
+                      : "border-gray-300 text-gray-600";
 
                   return (
                     <div key={s.key} className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}>
