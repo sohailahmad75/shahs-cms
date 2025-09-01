@@ -13,7 +13,10 @@ export const baseApi = createApi({
     "Documents",
     "MenuItems",
     "Modifiers",
-    "Users"
+    "Users",
+    "MenuCategories",
+    "Category",
+    "Item",
   ],
   endpoints: () => ({}),
 });

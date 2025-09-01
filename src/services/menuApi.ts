@@ -1,10 +1,8 @@
 import { baseApi } from "./baseApi";
-import {
-  GetMenuItemsArgs,
+import type {
   Menu,
   MenuCategory,
   MenuItem,
-  MenuItemsListResponse,
   MenuModifier,
   UpdateMenuItemPayload,
 } from "../menu-manager/menu.types";
@@ -317,6 +315,19 @@ export const menuApi = baseApi.injectEndpoints({
         { type: "Menus" },
       ],
     }),
+
+    updateMenuOrdering: builder.mutation<{ success: boolean }, any>({
+      query: ({ menuId, ...body }) => ({
+        url: `/menus/${menuId}/ordering`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Menus", id: arg.menuId },
+        "Category",
+        "Item",
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -347,4 +358,5 @@ export const {
   useDuplicateMenuMutation,
   useDeleteMenuMutation,
   useDeleteCategoryMutation,
+  useUpdateMenuOrderingMutation,
 } = menuApi;

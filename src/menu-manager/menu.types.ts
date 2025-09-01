@@ -12,6 +12,7 @@ export type MenuItem = {
   categoryName?: string | null;
   category?: { id: string; name: string } | null;
   categoryId?: string;
+  order?: number;
 };
 
 export type MenuCategory = {
