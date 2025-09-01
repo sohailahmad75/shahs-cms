@@ -37,6 +37,7 @@ export type MenuModifier = {
   items: string[]; // item IDs
   options: ModifierOption[];
   modificationTypeId: string;
+  order?: number;
 };
 
 export type ModifierOption = {
