@@ -330,16 +330,7 @@ const CategoryCard: React.FC<CategoryProps> = ({
               }}
               mode="edit"
               categories={menuCategories}
-              item={{
-                id: editingItem.id,
-                name: editingItem.name,
-                description: editingItem.description,
-                price: editingItem.price,
-                deliveryPrice: editingItem.deliveryPrice,
-                s3Key: editingItem.s3Key,
-                categoryId: editingItem.categoryId,
-                signedUrl: editingItem.signedUrl,
-              }}
+              itemId={editingItem.id}
               onSuccess={() => {
                 setShowEditItem(false);
                 setEditingItem(null);

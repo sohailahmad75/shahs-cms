@@ -28,7 +28,7 @@ import {
   useCreateUsersMutation,
   useUpdateUsersMutation,
 } from "../services/UsersApi";
-import isEqual from "lodash.isequal";
+import {isEqual} from "lodash";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 import { defaultDays } from "../../stores/helper/store-helper";
 import { useTheme } from "../../../context/themeContext";
@@ -54,18 +54,17 @@ const UsersTypeModal = ({
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
 
-
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
 
-
   const [documentsList, setDocumentsList] = useState<any[]>([]);
-  const [role, setRole] = useState<UserInfoTypes["type"]>(editingUsers?.type || "staff");
+  const [role, setRole] = useState<UserInfoTypes["type"]>(
+    editingUsers?.type || "staff",
+  );
 
   const { data: documentTypes } = useGetDocumentsTypeQuery(
     { role },
-    { skip: !role }
+    { skip: !role },
   );
-
 
   // const { data: documentTypes } = useGetDocumentsTypeQuery(
   //   { role: editingUsers?.type || "staff" },
@@ -97,19 +96,21 @@ const UsersTypeModal = ({
       return;
     }
 
-    const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
-      acc[doc.documentTypeId] = doc;
-      return acc;
-    }, {});
+    const userDocsMap = (editingUsers?.documents || []).reduce(
+      (acc: any, doc: any) => {
+        acc[doc.documentTypeId] = doc;
+        return acc;
+      },
+      {},
+    );
 
     setDocumentsList(
       documentTypes.data.map((docType: any) => ({
         ...docType,
         userDoc: userDocsMap[docType.id] || null,
-      }))
+      })),
     );
   }, [documentTypes, editingUsers]);
-
 
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
@@ -142,7 +143,6 @@ const UsersTypeModal = ({
     return new Date(dateString).toISOString().split("T")[0];
   };
   const { isDarkMode } = useTheme();
-
 
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
     return {
@@ -181,14 +181,18 @@ const UsersTypeModal = ({
         close: o.closed ? null : o.close || null,
         closed: !!o.closed,
       })),
-      userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
-        documentType: docTypeId,
-        fileS3Key: doc.fileS3Key || null,
-        fileType: doc.fileType || null,
-        name: doc.name || null,
-        expiresAt: doc.expiresAt || null,
-        remindBeforeDays: doc.remindBeforeDays ? Number(doc.remindBeforeDays) : null,
-      })),
+      userDocuments: Object.entries(v.documents || {}).map(
+        ([docTypeId, doc]: [string, any]) => ({
+          documentType: docTypeId,
+          fileS3Key: doc.fileS3Key || null,
+          fileType: doc.fileType || null,
+          name: doc.name || null,
+          expiresAt: doc.expiresAt || null,
+          remindBeforeDays: doc.remindBeforeDays
+            ? Number(doc.remindBeforeDays)
+            : null,
+        }),
+      ),
     };
   };
 
@@ -210,7 +214,7 @@ const UsersTypeModal = ({
       { key: "availability", label: "Availability" },
       { key: "documents", label: "Documents" },
     ],
-    []
+    [],
   );
 
   const getVisibleSteps = (type: UserInfoTypes["type"]) =>
@@ -257,7 +261,6 @@ const UsersTypeModal = ({
           // const documentsList = useMemo(() => {
           //   if (!documentTypes?.data) return [];
 
-
           //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
           //     acc[doc.documentTypeId] = doc;
           //     return acc;
@@ -276,7 +279,6 @@ const UsersTypeModal = ({
             }
           }, [values.type]);
 
-
           const steps = getVisibleSteps(values.type);
           const totalSteps = steps.length;
           const currentIndex =
@@ -285,7 +287,7 @@ const UsersTypeModal = ({
 
           const stepKeysOf = (stepIdx: number) =>
             userStepFieldKeys[
-            steps[stepIdx].key as keyof typeof userStepFieldKeys
+              steps[stepIdx].key as keyof typeof userStepFieldKeys
             ];
 
           // const stepHasErrors = (
@@ -300,19 +302,19 @@ const UsersTypeModal = ({
             const stepKeys =
               userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
             await Promise.all(
-              stepKeys.map((k) => setFieldTouched(k, true, false))
+              stepKeys.map((k) => setFieldTouched(k, true, false)),
             );
 
             const allErrors = await validateForm();
             const stepErrors = stepKeys.filter(
-              (k) => getIn(allErrors, k) !== undefined
+              (k) => getIn(allErrors, k) !== undefined,
             );
 
             if (stepErrors.length) {
               const first = stepErrors[0];
               const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
               const el = document.querySelector(
-                `[name="${safe}"], [name="${safe}[]"]`
+                `[name="${safe}"], [name="${safe}[]"]`,
               ) as HTMLElement | null;
               if (el && "focus" in el) (el as any).focus();
               return;
@@ -360,21 +362,28 @@ const UsersTypeModal = ({
                 }
               }
 
-
               if (current.key === "account") {
                 const newBank = mapUpdateDto(values, idForPut).userBankDetails;
 
-
                 const hasData = newBank.some(
-                  (b) => b.accountNumber || b.sortCode || b.bankName || b.accountHolderName || b.iban || b.swiftCode
+                  (b) =>
+                    b.accountNumber ||
+                    b.sortCode ||
+                    b.bankName ||
+                    b.accountHolderName ||
+                    b.iban ||
+                    b.swiftCode,
                 );
 
                 const oldBank = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
+                      .userBankDetails
                   : null;
 
-
-                if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
+                if (
+                  (oldBank && shouldUpdate(oldBank, newBank)) ||
+                  (!oldBank && hasData)
+                ) {
                   await updateUser({
                     id: idForPut,
                     data: { userBankDetails: newBank },
@@ -382,13 +391,14 @@ const UsersTypeModal = ({
                 }
               }
 
-
               if (current.key === "availability") {
-                const newAvail =
-                  mapUpdateDto(values, idForPut).userAvailability;
+                const newAvail = mapUpdateDto(
+                  values,
+                  idForPut,
+                ).userAvailability;
                 const oldAvail = editingUsers
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-                    .userAvailability
+                      .userAvailability
                   : null;
 
                 if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
@@ -416,7 +426,8 @@ const UsersTypeModal = ({
               if (current.key === "documents") {
                 const newDocs = mapUpdateDto(values, idForPut).userDocuments;
                 const oldDocs = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
+                      .userDocuments
                   : null;
 
                 if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
@@ -426,8 +437,6 @@ const UsersTypeModal = ({
                   }).unwrap();
                 }
               }
-
-
             } catch (err) {
               console.error("Update user failed:", err);
               return;
@@ -443,17 +452,19 @@ const UsersTypeModal = ({
 
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
-
               setActiveStep(targetIdx);
               return;
             }
 
-
             const stepKeys = stepKeysOf(currentIndex);
-            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
+            await Promise.all(
+              stepKeys.map((k) => setFieldTouched(k, true, false)),
+            );
 
             const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+            const stepErrors = stepKeys.filter(
+              (k) => getIn(allErrors, k) !== undefined,
+            );
 
             if (stepErrors.length === 0) {
               setActiveStep(targetIdx);
@@ -462,20 +473,15 @@ const UsersTypeModal = ({
             }
           };
 
-
-
-
           const isSaving =
             isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 
           return (
             <Form className="space-y-6">
-
               <div className="flex items-center justify-between">
                 {steps.map((s, idx) => {
                   const isActive = idx === currentIndex;
                   const isDone = idx < currentIndex;
-
 
                   const pillBase =
                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
@@ -486,7 +492,10 @@ const UsersTypeModal = ({
                       : "border-gray-300 text-gray-600";
 
                   return (
-                    <div key={s.key} className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}>
+                    <div
+                      key={s.key}
+                      className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}
+                    >
                       <div
                         className={`${pillBase} ${pillState}`}
                         role="button"
@@ -498,7 +507,9 @@ const UsersTypeModal = ({
                           {s.label}
                         </span>
                       </div>
-                      {idx < steps.length - 1 && <div className="h-px flex-1 bg-gray-200 mx-2" />}
+                      {idx < steps.length - 1 && (
+                        <div className="h-px flex-1 bg-gray-200 mx-2" />
+                      )}
                     </div>
                   );
                 })}
@@ -532,9 +543,7 @@ const UsersTypeModal = ({
                 />
               )} */}
 
-
               {current.key === "availability" && values.type === "staff" && (
-
                 <OpeningHoursFormSection
                   openingHours={openingHours}
                   setOpeningHours={setOpeningHours}
@@ -546,13 +555,18 @@ const UsersTypeModal = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[100px]">
                   {documentsList.length === 0 ? (
                     <div className="col-span-2 flex justify-center items-center">
-                      <p className="text-gray-500">No Documents available for this role.</p>
+                      <p className="text-gray-500">
+                        No Documents available for this role.
+                      </p>
                     </div>
                   ) : (
                     documentsList.map((doc) => (
                       <div key={doc.id} className="md:col-span-2 pb-4">
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
+                          {doc.name}{" "}
+                          {doc.isMandatory && (
+                            <span className="text-red-500">*</span>
+                          )}
                         </label>
 
                         <FileUploader
@@ -579,7 +593,8 @@ const UsersTypeModal = ({
                           pathId={doc.id}
                         />
 
-                        {(values.documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key) && (
+                        {(values.documents?.[doc.id]?.fileS3Key ||
+                          doc.userDoc?.fileS3Key) && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                             <div>
                               <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -589,10 +604,13 @@ const UsersTypeModal = ({
                                 name={`documents.${doc.id}.expiresAt`}
                                 value={formatDateOnly(
                                   values.documents?.[doc.id]?.expiresAt ||
-                                  doc.userDoc?.expiresAt
+                                    doc.userDoc?.expiresAt,
                                 )}
                                 onChange={(v: any) =>
-                                  setFieldValue(`documents.${doc.id}.expiresAt`, v)
+                                  setFieldValue(
+                                    `documents.${doc.id}.expiresAt`,
+                                    v,
+                                  )
                                 }
                               />
                             </div>
@@ -606,9 +624,10 @@ const UsersTypeModal = ({
                                 name={`documents.${doc.id}.remindBeforeDays`}
                                 type="number"
                                 value={String(
-                                  values.documents?.[doc.id]?.remindBeforeDays ??
-                                  doc.userDoc?.remindBeforeDays ??
-                                  ""
+                                  values.documents?.[doc.id]
+                                    ?.remindBeforeDays ??
+                                    doc.userDoc?.remindBeforeDays ??
+                                    "",
                                 )}
                                 onChange={handleChange}
                               />
@@ -635,7 +654,11 @@ const UsersTypeModal = ({
                     Back
                   </Button>
                   <Button type="button" onClick={goNext} disabled={isSaving}>
-                    {currentIndex < steps.length - 1 ? "Next" : isSaving ? "Saving..." : "Save"}
+                    {currentIndex < steps.length - 1
+                      ? "Next"
+                      : isSaving
+                        ? "Saving..."
+                        : "Save"}
                   </Button>
                 </div>
               </div>
