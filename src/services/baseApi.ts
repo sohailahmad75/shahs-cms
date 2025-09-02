@@ -17,6 +17,7 @@ export const baseApi = createApi({
     "MenuCategories",
     "Category",
     "Item",
+    "MenuItem",
   ],
   endpoints: () => ({}),
 });

@@ -285,17 +285,7 @@ const ItemsListing: React.FC = () => {
           categories={categoryOptions
             .filter((c) => c.id !== "All")
             .map((c) => ({ id: c.id, name: c.name }))}
-          item={{
-            id: editingItem.id,
-            name: editingItem.name,
-            description: editingItem.description,
-            price: editingItem.price,
-            deliveryPrice: (editingItem as any).deliveryPrice,
-            s3Key: editingItem.s3Key,
-            categoryId:
-              editingItem.categoryId ?? editingItem.category?.id ?? "",
-            signedUrl: editingItem.signedUrl,
-          }}
+          itemId={editingItem.id}
           onSuccess={() => {
             setShowEdit(false);
             setEditingItem(null);

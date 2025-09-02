@@ -671,7 +671,7 @@ const AddModifierModal: React.FC<Props> = ({
                     items={optionIds}
                     strategy={verticalListSortingStrategy}
                   >
-                    <div className="flex flex-col gap-3 max-h-[40vh] overflow-y-auto pr-1 overflow-x-hidden">
+                    <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-1 overflow-x-hidden">
                       {values.options.length === 0 ? (
                         <div className="text-sm text-gray-500 italic border border-dashed border-gray-200 rounded p-4 text-center">
                           No options added yet.

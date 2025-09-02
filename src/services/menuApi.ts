@@ -119,19 +119,94 @@ export const menuApi = baseApi.injectEndpoints({
     }),
 
     updateMenuItem: builder.mutation<
-      MenuItem,
-      { menuId: string; itemId: string; payload: UpdateMenuItemPayload }
+      any,
+      { menuId: string; itemId: string; payload: any }
     >({
       query: ({ menuId, itemId, payload }) => ({
         url: `/menus/${menuId}/items/${itemId}`,
-        method: "PUT",
+        method: "PATCH",
         body: payload,
       }),
+      // Optimistic patch so UI updates immediately
+      async onQueryStarted(
+        { menuId, itemId, payload },
+        { dispatch, queryFulfilled },
+      ) {
+        const patch = dispatch(
+          baseApi.util.updateQueryData(
+            "getMenuItem",
+            { menuId, itemId },
+            (draft: any) => {
+              if (!draft) return;
+
+              // Patch base fields you edit in the form
+              if (payload.name !== undefined) draft.name = payload.name;
+              if (payload.description !== undefined)
+                draft.description = payload.description;
+              if (payload.price !== undefined) draft.price = payload.price;
+              if (payload.deliveryPrice !== undefined)
+                draft.deliveryPrice = payload.deliveryPrice;
+              if (payload.categoryId !== undefined) {
+                draft.categoryId = payload.categoryId;
+                if (
+                  draft.category &&
+                  draft.category.id !== payload.categoryId
+                ) {
+                  // Optional: clear or update category.name later on re-fetch
+                  draft.category.id = payload.categoryId;
+                }
+              }
+              if (payload.s3Key !== undefined) draft.s3Key = payload.s3Key;
+
+              // Reorder modifiers locally to reflect new order instantly
+              if (
+                Array.isArray(payload.modifiersOrder) &&
+                payload.modifiersOrder.length &&
+                Array.isArray(draft.modifiers)
+              ) {
+                const orderMap = new Map<string, number>();
+                for (const { modifierId, order } of payload.modifiersOrder) {
+                  orderMap.set(modifierId, order);
+                }
+                for (const m of draft.modifiers) {
+                  const o = orderMap.get(m.id);
+                  if (o !== undefined) {
+                    // support both pivot shapes
+                    if (!m.menuItemModifier) m.menuItemModifier = {};
+                    m.menuItemModifier.order = o;
+                    m.pivotOrder = o;
+                  }
+                }
+                draft.modifiers.sort((a: any, b: any) => {
+                  const ao = a.pivotOrder ?? a.menuItemModifier?.order ?? 0;
+                  const bo = b.pivotOrder ?? b.menuItemModifier?.order ?? 0;
+                  return ao - bo;
+                });
+              }
+            },
+          ),
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo(); // rollback on error
+        }
+      },
+
+      // Also force a re-fetch to get canonical server state
       invalidatesTags: (_res, _err, { itemId }) => [
-        { type: "MenuItems", id: itemId },
-        { type: "MenuItems", id: "LIST" },
+        { type: "MenuItem" as const, id: itemId },
       ],
     }),
+
+    getMenuItem: builder.query<any, { menuId: string; itemId: string }>({
+      query: ({ menuId, itemId }) => `/menus/${menuId}/items/${itemId}`, // your BE route
+      providesTags: (_res, _err, { itemId }) => [
+        { type: "MenuItem", id: itemId },
+      ],
+    }),
+
     deleteMenuItem: builder.mutation<void, { itemId: string; menuId?: string }>(
       {
         query: ({ itemId, menuId }) => ({
@@ -337,6 +412,7 @@ export const {
   useCreateMenuMutation,
   useUpdateMenuMutation,
   useGetMenuByIdQuery,
+  useGetMenuItemQuery,
   useGetMenuCategoriesQuery,
   useGetMenuItemsQuery,
   useGetMenuCategoryNamesQuery,
