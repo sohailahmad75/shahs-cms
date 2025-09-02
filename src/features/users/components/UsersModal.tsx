@@ -28,7 +28,7 @@ import {
   useCreateUsersMutation,
   useUpdateUsersMutation,
 } from "../services/UsersApi";
-import isEqual from "lodash";
+import isEqual from "lodash.isequal";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 import { defaultDays } from "../../stores/helper/store-helper";
 import { useTheme } from "../../../context/themeContext";
@@ -72,6 +72,25 @@ const UsersTypeModal = ({
   //   { skip: !editingUsers?.type }
   // );
 
+  // useEffect(() => {
+  //   if (!documentTypes?.data) {
+  //     setDocumentsList([]);
+  //     return;
+  //   }
+
+  //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+  //     acc[doc.documentTypeId] = doc;
+  //     return acc;
+  //   }, {});
+
+  //   setDocumentsList(
+  //     documentTypes.data.map((docType: any) => ({
+  //       ...docType,
+  //       userDoc: userDocsMap[docType.id] || null,
+  //     }))
+  //   );
+  // }, [documentTypes, editingUsers]);
+
   useEffect(() => {
     if (!documentTypes?.data) {
       setDocumentsList([]);
@@ -90,6 +109,7 @@ const UsersTypeModal = ({
       }))
     );
   }, [documentTypes, editingUsers]);
+
 
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
@@ -268,13 +288,13 @@ const UsersTypeModal = ({
             steps[stepIdx].key as keyof typeof userStepFieldKeys
             ];
 
-          const stepHasErrors = (
-            allErrors: Record<string, any>,
-            stepIdx: number
-          ) => {
-            const keys = stepKeysOf(stepIdx);
-            return keys.some((k) => getIn(allErrors, k) !== undefined);
-          };
+          // const stepHasErrors = (
+          //   allErrors: Record<string, any>,
+          //   stepIdx: number
+          // ) => {
+          //   const keys = stepKeysOf(stepIdx);
+          //   return keys.some((k) => getIn(allErrors, k) !== undefined);
+          // };
 
           const goNext = async () => {
             const stepKeys =
@@ -455,17 +475,15 @@ const UsersTypeModal = ({
                 {steps.map((s, idx) => {
                   const isActive = idx === currentIndex;
                   const isDone = idx < currentIndex;
-                  const isError = stepHasErrors(errors, idx);
+
 
                   const pillBase =
                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
                   const pillState = isActive
                     ? `border-orange-400 ${isDarkMode ? "border-slate-500 text-white" : "border-orange-400 text-orange-600"} text-orange-600`
-                    : isError
-                      ? "border-red-400 text-red-600"
-                      : isDone
-                        ? "border-green-400 text-green-600"
-                        : "border-gray-300 text-gray-600";
+                    : isDone
+                      ? "border-green-400 text-green-600"
+                      : "border-gray-300 text-gray-600";
 
                   return (
                     <div key={s.key} className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}>
@@ -524,80 +542,82 @@ const UsersTypeModal = ({
                   setSameAllDays={setSameAllDays}
                 />
               )}
-
               {current.key === "documents" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {documentsList.map((doc) => (
-                    <div key={doc.id} className="md:col-span-2 pb-4">
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
-                      </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[100px]">
+                  {documentsList.length === 0 ? (
+                    <div className="col-span-2 flex justify-center items-center">
+                      <p className="text-gray-500">No Documents available for this role.</p>
+                    </div>
+                  ) : (
+                    documentsList.map((doc) => (
+                      <div key={doc.id} className="md:col-span-2 pb-4">
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
+                        </label>
 
-                      <FileUploader
-                        value={
-                          values.documents?.[doc.id]?.fileS3Key ||
-                          doc.userDoc?.fileS3Key || // <-- prefill from userDoc
-                          ""
-                        }
-                        onChange={(fileS3Key) => {
-                          const prevDocs = values.documents || {};
-                          setFieldValue("documents", {
-                            ...prevDocs,
-                            [doc.id]: {
-                              ...(prevDocs[doc.id] || {}),
-                              documentType: doc.id,
-                              fileS3Key,
-                              fileType: prevDocs[doc.id]?.fileType || "all",
-                              name: doc.name,
-                            },
-                          });
-                        }}
-                        path="users-documents"
-                        type="all"
-                        pathId={doc.id}
-                      />
+                        <FileUploader
+                          value={
+                            values.documents?.[doc.id]?.fileS3Key ||
+                            doc.userDoc?.fileS3Key ||
+                            ""
+                          }
+                          onChange={(fileS3Key) => {
+                            const prevDocs = values.documents || {};
+                            setFieldValue("documents", {
+                              ...prevDocs,
+                              [doc.id]: {
+                                ...(prevDocs[doc.id] || {}),
+                                documentType: doc.id,
+                                fileS3Key,
+                                fileType: prevDocs[doc.id]?.fileType || "all",
+                                name: doc.name,
+                              },
+                            });
+                          }}
+                          path="users-documents"
+                          type="all"
+                          pathId={doc.id}
+                        />
 
-                      {(values.documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key) && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                          <div>
-                            <label className="text-sm font-medium text-gray-700 mb-1 block">
-                              Expiry Date
-                            </label>
-                            <DatePickerField
-                              name={`documents.${doc.id}.expiresAt`}
-                              value={
-                                formatDateOnly(
+                        {(values.documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key) && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                Expiry Date
+                              </label>
+                              <DatePickerField
+                                name={`documents.${doc.id}.expiresAt`}
+                                value={formatDateOnly(
                                   values.documents?.[doc.id]?.expiresAt ||
                                   doc.userDoc?.expiresAt
-                                )
-                              }
-                              onChange={(v: any) => setFieldValue(`documents.${doc.id}.expiresAt`, v)}
-                            />
+                                )}
+                                onChange={(v: any) =>
+                                  setFieldValue(`documents.${doc.id}.expiresAt`, v)
+                                }
+                              />
+                            </div>
 
-                          </div>
-
-                          <div>
-                            <label className="text-sm font-medium text-gray-700 mb-1 block">
-                              Remind Before (days)
-                            </label>
-                            <InputField
-                              placeholder="Remind Before (days)"
-                              name={`documents.${doc.id}.remindBeforeDays`}
-                              type="number"
-                              value={
-                                String(
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                Remind Before (days)
+                              </label>
+                              <InputField
+                                placeholder="Remind Before (days)"
+                                name={`documents.${doc.id}.remindBeforeDays`}
+                                type="number"
+                                value={String(
                                   values.documents?.[doc.id]?.remindBeforeDays ??
                                   doc.userDoc?.remindBeforeDays ??
                                   ""
-                                )
-                              }
-                              onChange={handleChange}
-                            />
+                                )}
+                                onChange={handleChange}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
 

@@ -88,7 +88,7 @@ const DocumentTypeModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: any) => void; 
+  onSubmit: (values: any) => void;
   editingDocument: UpdateDocumentDto | null | undefined;
   isSubmitting: boolean;
 }) => {
@@ -106,8 +106,8 @@ const DocumentTypeModal = ({
           ...emptyInitialValues,
           ...(editingDocument
             ? {
-              documentName: editingDocument.name ?? "",   
-              documentDescription: editingDocument.description ?? "", 
+              documentName: editingDocument.name ?? "",
+              documentDescription: editingDocument.description ?? "",
               isMandatory: editingDocument.isMandatory ?? false,
               role: (editingDocument.role as DocumentTypeRole) ?? "",
               staffKind:
@@ -135,16 +135,16 @@ const DocumentTypeModal = ({
           <Form className="space-y-8">
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
-              <span className={` ${isDarkMode ? "text-slate-600" : "text-orange-100"} text-orange-100 text-md font-medium whitespace-nowrap`}>
+              <span className={` ${isDarkMode ? "text-slate-100" : "text-orange-100"} text-orange-100 text-md font-medium whitespace-nowrap`}>
                 Document Type Details
               </span>
               <div className="flex-grow h-px bg-gray-200" />
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-           
+
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                <label className={` ${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium text-gray-700 mb-1 block`}>
                   Name <span className="text-red-500">*</span>
                 </label>
                 <InputField
@@ -156,9 +156,9 @@ const DocumentTypeModal = ({
                 />
               </div>
 
-         
+
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                <label className={` ${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium text-gray-700 mb-1 block`}>
                   Description <span className="text-red-500">*</span>
                 </label>
                 <InputField
@@ -171,9 +171,9 @@ const DocumentTypeModal = ({
                 />
               </div>
 
-          
+
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                <label className={` ${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium text-gray-700 mb-1 block`}>
                   Applies To <span className="text-red-500">*</span>
                 </label>
                 <SelectField
@@ -196,7 +196,7 @@ const DocumentTypeModal = ({
                 />
               </div>
 
-             
+
               {values.role === "staff" && (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -220,7 +220,7 @@ const DocumentTypeModal = ({
                 </div>
               )}
 
-             
+
               <div className="pt-2">
                 <CheckboxField
                   name="isMandatory"

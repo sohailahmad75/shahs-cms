@@ -37,7 +37,7 @@ const Modal = ({
           }`}>
           <span
             className={`absolute top-4 right-5 transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${finalDarkMode
-                ? "text-slate-700 hover:text-slate-400"
+                ? "text-slate-100 hover:text-slate-200"
                 : "text-gray-600 hover:text-orange-500"
               }`}
             onClick={onClose}

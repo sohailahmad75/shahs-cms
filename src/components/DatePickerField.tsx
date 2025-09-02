@@ -32,7 +32,7 @@ const DatePickerField: React.FC<Props> = ({
     key: "selection",
   });
 
-  // Format helper (YYYY-MM-DD)
+
   const formatDate = (date: Date | string) => {
     if (!date) return "";
     const d = new Date(date);
@@ -40,7 +40,6 @@ const DatePickerField: React.FC<Props> = ({
     return d.toISOString().split("T")[0];
   };
 
-  // Display value in input
   const displayValue = isRange
     ? Array.isArray(value)
       ? `${formatDate(value[0])} - ${formatDate(value[1])}`
@@ -104,9 +103,8 @@ const DatePickerField: React.FC<Props> = ({
       <input
         readOnly
         name={name}
-        className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${
-          error ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-orange-400"
-        }`}
+        className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${error ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-blue-500"
+          }`}
         placeholder={placeholder}
         value={displayValue}
         onClick={() => setShow((prev) => !prev)}
@@ -120,23 +118,35 @@ const DatePickerField: React.FC<Props> = ({
             style={{
               top: dropdownPosition.top,
               left: dropdownPosition.left,
-              
             }}
           >
+            <style>
+              {`
+                .rdrDayToday .rdrDayNumber span:after {
+                  background-color: #3b82f6;
+                }
+                .rdrSelected, .rdrInRange, .rdrStartEdge, .rdrEndEdge {
+                  background-color: #3b82f6;
+                }
+                .rdrDayStartPreview, .rdrDayInPreview, .rdrDayEndPreview {
+                  border-color: #3b82f6;
+                }
+              `}
+            </style>
             {isRange ? (
               <DateRange
                 ranges={[rangeState]}
                 onChange={handleRangeChange}
                 moveRangeOnFirstSelection={false}
                 editableDateInputs
-                rangeColors={["#fb923c"]}
+                rangeColors={["#3b82f6"]}
                 className="w-full"
               />
             ) : (
               <Calendar
                 date={value ? new Date(value as string) : new Date()}
                 onChange={handleSingleDateChange}
-                color="#fb923c"
+                color="#3b82f6"
                 className="w-full"
               />
             )}

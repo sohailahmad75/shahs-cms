@@ -23,28 +23,59 @@ export const documentsTypeApi = baseApi.injectEndpoints({
     //       : [{ type: "DocumentsType" as const, id: "LIST" }],
     // }),
 
-        getDocumentsType: builder.query<
-      DocumentTypeListResponse,
-      { page?: number; perPage?: number; search?: string; role?: string } | void
-    >({
-      query: (args) => {
-        const { page = 1, perPage = 10, search = "", role } = args ?? {};
-        return {
-          url: "/document-type",
-          params: { page, perPage, search, role }
-        };
-      },
-      providesTags: (result) =>
-        result
-          ? [
-            ...result.data.map((doc: { id: any }) => ({
-              type: "DocumentsType" as const,
-              id: doc.id,
-            })),
-            { type: "DocumentsType" as const, id: "LIST" },
-          ]
-          : [{ type: "DocumentsType" as const, id: "LIST" }],
-    }),
+    //     getDocumentsType: builder.query<
+    //   DocumentTypeListResponse,
+    //   { page?: number; perPage?: number; search?: string; role?: string } | void
+    // >({
+    //   query: (args) => {
+    //     const { page = 1, perPage = 10, search = "", role } = args ?? {};
+    //     return {
+    //       url: "/document-type",
+    //       params: { page, perPage, search, role }
+    //     };
+    //   },
+    //   providesTags: (result) =>
+    //     result
+    //       ? [
+    //         ...result.data.map((doc: { id: any }) => ({
+    //           type: "DocumentsType" as const,
+    //           id: doc.id,
+    //         })),
+    //         { type: "DocumentsType" as const, id: "LIST" },
+    //       ]
+    //       : [{ type: "DocumentsType" as const, id: "LIST" }],
+    // }),
+
+    getDocumentsType: builder.query<
+  DocumentTypeListResponse,
+  { page?: number; perPage?: number; search?: string; role?: string } | void
+>({
+  query: (args) => {
+    const { page, perPage, search, role } = args ?? {};
+    const params: Record<string, any> = {};
+
+    if (role) params.role = role;          // always include role if present
+    if (page !== undefined) params.page = page;
+    if (perPage !== undefined) params.perPage = perPage;
+    if (search) params.search = search;
+
+    return {
+      url: "/document-type",
+      params,
+    };
+  },
+  providesTags: (result) =>
+    result
+      ? [
+          ...result.data.map((doc: { id: any }) => ({
+            type: "DocumentsType" as const,
+            id: doc.id,
+          })),
+          { type: "DocumentsType" as const, id: "LIST" },
+        ]
+      : [{ type: "DocumentsType" as const, id: "LIST" }],
+}),
+
 
     createDocumentsType: builder.mutation<DocumentType, CreateDocumnetDto>({
       query: (body) => ({
