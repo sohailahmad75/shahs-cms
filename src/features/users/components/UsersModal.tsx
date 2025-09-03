@@ -538,6 +538,7 @@ const UsersTypeModal = ({
                               doc.userDoc?.fileS3Key ||
                               ""
                             }
+                            initialPreview={doc.userDoc?.fileUrl} 
                             onChange={(fileS3Key) => {
                               const prevDocs = values.documents || {};
                               setFieldValue("documents", {
