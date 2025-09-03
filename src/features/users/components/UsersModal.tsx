@@ -239,6 +239,48 @@ const UsersTypeModal = ({
 
           const goNext = async () => {
             // Flatten step keys for nested fields
+            // const getBankFields = (values: UserInfoTypes) => {
+            //   return values.bankDetails?.flatMap((_, idx) => [
+            //     `bankDetails[${idx}].bankName`,
+            //     `bankDetails[${idx}].accountNumber`,
+            //     `bankDetails[${idx}].sortCode`,
+            //   ]) || [];
+            // };
+
+            // const getDocumentFields = (documentsList: any[]) =>
+            //   documentsList.flatMap((doc) => [
+            //     `documents.${doc.id}.fileS3Key`,
+            //     `documents.${doc.id}.fileType`,
+            //     `documents.${doc.id}.expiresAt`,
+            //     `documents.${doc.id}.remindBeforeDays`,
+            //   ]);
+
+
+            // const stepKeys =
+            //   current.key === "account"
+            //     ? getBankFields(values)
+            //     : current.key === "documents"
+            //       ? getDocumentFields(documentsList || [])
+            //       : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
+
+
+            // await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
+
+
+            // const allErrors = await validateForm();
+            // const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+
+            // if (stepErrors.length) {
+            //   const first = stepErrors[0];
+            //   const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
+            //   const el = document.querySelector(
+            //     `[name="${safe}"], [name="${safe}[]"]`
+            //   ) as HTMLElement | null;
+            //   if (el && "focus" in el) (el as any).focus();
+            //   return;
+            // }
+
             const getBankFields = (values: UserInfoTypes) => {
               return values.bankDetails?.flatMap((_, idx) => [
                 `bankDetails[${idx}].bankName`,
@@ -248,13 +290,19 @@ const UsersTypeModal = ({
             };
 
             const getDocumentFields = (documentsList: any[]) =>
-              documentsList.flatMap((doc) => [
-                `documents.${doc.id}.fileS3Key`,
-                `documents.${doc.id}.fileType`,
-                `documents.${doc.id}.expiresAt`,
-                `documents.${doc.id}.remindBeforeDays`,
-              ]);
-
+              documentsList.flatMap((doc) => {
+                const fields = [];
+                if (doc.isMandatory) {
+                  fields.push(`documents.${doc.id}.fileS3Key`);
+                }
+                // Add other document fields if needed
+                fields.push(
+                  `documents.${doc.id}.fileType`,
+                  `documents.${doc.id}.expiresAt`,
+                  `documents.${doc.id}.remindBeforeDays`
+                );
+                return fields;
+              });
 
             const stepKeys =
               current.key === "account"
@@ -263,13 +311,10 @@ const UsersTypeModal = ({
                   ? getDocumentFields(documentsList || [])
                   : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
-
-            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
-
+            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
 
             const allErrors = await validateForm();
             const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
-
 
             if (stepErrors.length) {
               const first = stepErrors[0];
@@ -591,7 +636,7 @@ const UsersTypeModal = ({
                   setSameAllDays={setSameAllDays}
                 />
               )}
-              {current.key === "documents" && (
+              {/* {current.key === "documents" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[100px]">
                   {documentsList.length === 0 ? (
                     <div className="col-span-2 flex justify-center items-center">
@@ -666,6 +711,105 @@ const UsersTypeModal = ({
                         )}
                       </div>
                     ))
+                  )}
+                </div> */}
+              {/* )} */}
+              {current.key === "documents" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[100px]">
+                  {documentsList.length === 0 ? (
+                    <div className="col-span-2 flex justify-center items-center">
+                      <p className="text-gray-500">No Documents available for this role.</p>
+                    </div>
+                  ) : (
+                    documentsList.map((doc) => {
+                      const documentError = getIn(errors, `documents.${doc.id}.fileS3Key`);
+                      const documentTouched = getIn(touched, `documents.${doc.id}.fileS3Key`);
+                      const showError = documentError && documentTouched;
+
+                      return (
+                        <div key={doc.id} className="md:col-span-2 pb-4">
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
+                          </label>
+
+                          <FileUploader
+                            value={
+                              values.documents?.[doc.id]?.fileS3Key ||
+                              doc.userDoc?.fileS3Key ||
+                              ""
+                            }
+                            onChange={(fileS3Key) => {
+                              const prevDocs = values.documents || {};
+                              setFieldValue("documents", {
+                                ...prevDocs,
+                                [doc.id]: {
+                                  ...(prevDocs[doc.id] || {}),
+                                  documentType: doc.id,
+                                  fileS3Key,
+                                  fileType: prevDocs[doc.id]?.fileType || "all",
+                                  name: doc.name,
+                                },
+                              });
+
+                              // Clear the validation error when file is uploaded
+                              if (fileS3Key) {
+                                setTimeout(() => {
+                                  setFieldTouched(`documents.${doc.id}.fileS3Key`, true, true);
+                                  validateForm();
+                                }, 100);
+                              }
+                            }}
+                            path="users-documents"
+                            type="all"
+                            pathId={doc.id}
+                          />
+
+                          {/* Show validation error */}
+                          {showError && (
+                            <div className="text-red-500 text-sm mt-1">
+                              {documentError}
+                            </div>
+                          )}
+
+                          {(values.documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                              <div>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                  Expiry Date
+                                </label>
+                                <DatePickerField
+                                  name={`documents.${doc.id}.expiresAt`}
+                                  value={formatDateOnly(
+                                    values.documents?.[doc.id]?.expiresAt ||
+                                    doc.userDoc?.expiresAt
+                                  )}
+                                  onChange={(v: any) =>
+                                    setFieldValue(`documents.${doc.id}.expiresAt`, v)
+                                  }
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                  Remind Before (days)
+                                </label>
+                                <InputField
+                                  placeholder="Remind Before (days)"
+                                  name={`documents.${doc.id}.remindBeforeDays`}
+                                  type="number"
+                                  value={String(
+                                    values.documents?.[doc.id]?.remindBeforeDays ??
+                                    doc.userDoc?.remindBeforeDays ??
+                                    ""
+                                  )}
+                                  onChange={handleChange}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               )}
