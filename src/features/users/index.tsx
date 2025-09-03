@@ -28,19 +28,54 @@ const UsersTypeListPage: React.FC = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
+  // const handleEdit = (user: UsersType) => {
+  //   const mappedUser: Partial<UserInfoTypes> = {
+  //     ...user,
+  //     dateOfBirth: user.dateOfBirth,
+  //     postcode: (user as any).postCode || user.postcode || "",
+  //     niRate: (user as any).NiRate ?? user.niRate ?? null,
+  //     type: user.role === UserRole.OWNER ? "owner" : "staff",
+  //   };
+
+  //   setEditingUser(mappedUser);
+  //   setModalOpen(true);
+  // };
+
   const handleEdit = (user: UsersType) => {
+    console.log("📂 Raw user.documents:", user.documents, typeof user.documents);
+
+    let mappedDocuments: Record<string, any> = {};
+
+    if (Array.isArray(user.documents)) {
+      mappedDocuments = user.documents.reduce((acc: any, doc: any) => {
+        acc[doc.documentTypeId] = {
+          documentType: doc.documentTypeId,
+          fileS3Key: doc.fileS3Key,
+          fileType: doc.fileType || "all",
+          name: doc.name,
+          expiresAt: doc.expiresAt,
+          remindBeforeDays: doc.remindBeforeDays,
+        };
+        return acc;
+      }, {});
+    } else if (user.documents && typeof user.documents === "object") {
+      mappedDocuments = user.documents;
+    } else {
+      mappedDocuments = {};
+    }
+
     const mappedUser: Partial<UserInfoTypes> = {
       ...user,
       dateOfBirth: user.dateOfBirth,
       postcode: (user as any).postCode || user.postcode || "",
       niRate: (user as any).NiRate ?? user.niRate ?? null,
       type: user.role === UserRole.OWNER ? "owner" : "staff",
+      documents: mappedDocuments,
     };
 
     setEditingUser(mappedUser);
     setModalOpen(true);
   };
-
 
   const handleDelete = async (id: string) => {
     try {

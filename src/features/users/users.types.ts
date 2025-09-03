@@ -34,6 +34,7 @@ export type DocumentInfo = {
 };
 
 export type UserInfoTypes = {
+  availabilityHours: any[];
   documents: any;
   role: UserRole;
   dateOfBirth: string;

@@ -65,16 +65,51 @@ const UsersTypeModal = ({
     { skip: !role }
   );
 
+  // useEffect(() => {
+  //   if (!documentTypes?.data) {
+  //     setDocumentsList([]);
+  //     return;
+  //   }
+
+  //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+  //     acc[doc.documentTypeId] = doc;
+  //     return acc;
+  //   }, {});
+
+  //   setDocumentsList(
+  //     documentTypes.data.map((docType: any) => ({
+  //       ...docType,
+  //       userDoc: userDocsMap[docType.id] || null,
+  //     }))
+  //   );
+  // }, [documentTypes, editingUsers]);
+
   useEffect(() => {
     if (!documentTypes?.data) {
       setDocumentsList([]);
       return;
     }
 
-    const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
-      acc[doc.documentTypeId] = doc;
-      return acc;
-    }, {});
+    let docs = editingUsers?.documents;
+    if (typeof docs === "string") {
+      try {
+        docs = JSON.parse(docs);
+      } catch {
+        docs = [];
+      }
+    }
+
+    let userDocsMap: Record<string, any> = {};
+
+    if (Array.isArray(docs)) {
+
+      userDocsMap = docs.reduce((acc: any, doc: any) => {
+        acc[doc.documentTypeId] = doc;
+        return acc;
+      }, {});
+    } else if (docs && typeof docs === "object") {
+      userDocsMap = docs;
+    }
 
     setDocumentsList(
       documentTypes.data.map((docType: any) => ({
@@ -83,6 +118,7 @@ const UsersTypeModal = ({
       }))
     );
   }, [documentTypes, editingUsers]);
+
 
 
   const [openingHours, setOpeningHours] = useState(
