@@ -31,8 +31,7 @@ const UsersTypeListPage: React.FC = () => {
   const handleEdit = (user: UsersType) => {
     const mappedUser: Partial<UserInfoTypes> = {
       ...user,
-      dob: user.dateOfBirth || user.dob || "",
-      dateOfBirth: undefined,
+      dateOfBirth: user.dateOfBirth,
       postcode: (user as any).postCode || user.postcode || "",
       niRate: (user as any).NiRate ?? user.niRate ?? null,
       type: user.role === UserRole.OWNER ? "owner" : "staff",

@@ -26,10 +26,20 @@ const BasicInfoForm: React.FC<Props> = ({
     onTypeChange?.(nextType);
   };
 
+  // const formatDateOnly = (dateString?: string | null) => {
+  //   if (!dateString) return "";
+  //   try {
+  //     return new Date(dateString).toISOString().split("T")[0]; // yyyy-MM-dd
+  //   } catch {
+  //     return "";
+  //   }
+  // };
+
+
   const formatDateOnly = (dateString?: string | null) => {
     if (!dateString) return "";
     try {
-      return new Date(dateString).toISOString().split("T")[0]; // yyyy-MM-dd
+      return new Date(dateString).toISOString().split("T")[0];
     } catch {
       return "";
     }
@@ -129,20 +139,30 @@ const BasicInfoForm: React.FC<Props> = ({
         />
       </div>
 
+      {/* <div>
+        <label className="text-sm font-medium text-gray-700 mb-1 block">
+          Date of Birth <span className="text-red-500">*</span>
+        </label>
+        <DatePickerField
+          name="dateOfBirth"
+          value={formatDateOnly(values.dateOfBirth)}
+          onChange={(v: any) => setFieldValue("dateOfBirth", v)}
+          error={touched.dateOfBirth ? (errors.dateOfBirth as string) : ""}
+        />
+
+      </div> */}
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
           Date of Birth <span className="text-red-500">*</span>
         </label>
-        {/* <DatePickerField
-          name="dob"
-          value={values.dob as any}
-          onChange={(v: any) => setFieldValue("dob", v)}
-          error={touched.dob ? (errors.dob as string) : ""}
-        /> */}
         <DatePickerField
-          name="dob"
-          value={formatDateOnly(values.dob)}
-          onChange={(v: any) => setFieldValue("dob", v)}
+          name="dateOfBirth"
+          value={formatDateOnly(values.dateOfBirth)}
+          onChange={(v: string) => {
+            const formatted = v ? new Date(v).toISOString().split("T")[0] : "";
+            setFieldValue("dateOfBirth", formatted);
+          }}
+          error={touched.dateOfBirth ? (errors.dateOfBirth as string) : ""}
         />
 
       </div>

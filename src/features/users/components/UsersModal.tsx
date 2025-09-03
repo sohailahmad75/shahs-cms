@@ -154,7 +154,7 @@ const UsersTypeModal = ({
         street: v.street,
         city: v.city,
         postCode: v.postcode,
-        dateOfBirth: v.dob,
+        dateOfBirth: v.dateOfBirth,
         cashInRate: v.cashInRate ?? null,
         NiRate: v.niRate ?? null,
         shareCode: v.shareCode ?? null,

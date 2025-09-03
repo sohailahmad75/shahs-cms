@@ -66,7 +66,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
                       onChange={(e) =>
                         setFieldValue(`${prefix}.bankName`, e.target.value)
                       }
-                      error={getError("bankName") || ""}
+                      error={getError("bankName")}
                     />
                   </div>
 
@@ -81,7 +81,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
                       onChange={(e) =>
                         setFieldValue(`${prefix}.accountNumber`, e.target.value)
                       }
-                      error={getError("accountNumber") || ""}
+                      error={getError("accountNumber")}
                     />
                   </div>
 
@@ -96,7 +96,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
                       onChange={(e) =>
                         setFieldValue(`${prefix}.sortCode`, e.target.value)
                       }
-                      error={getError("sortCode") || ""}
+                      error={getError("sortCode")}
                     />
                   </div>
                 </div>

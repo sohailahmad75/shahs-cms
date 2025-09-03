@@ -46,7 +46,6 @@ export type UserInfoTypes = {
   street: string;
   city: string;
   postcode: string;
-  dob: any;
   cashInRate?: number | null;
   niRate?: number | null;
   niNumber?: string | null;
@@ -120,7 +119,7 @@ export const userStepFieldKeys = {
     "street",
     "city",
     "postcode",
-    "dob",
+    "dateOfBirth",
     "cashInRate",
     "niRate",
     "niNumber",
