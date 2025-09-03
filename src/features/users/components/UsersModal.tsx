@@ -237,65 +237,26 @@ const UsersTypeModal = ({
             steps[stepIdx].key as keyof typeof userStepFieldKeys
             ];
 
+
           const goNext = async () => {
-            // Flatten step keys for nested fields
-            // const getBankFields = (values: UserInfoTypes) => {
-            //   return values.bankDetails?.flatMap((_, idx) => [
-            //     `bankDetails[${idx}].bankName`,
-            //     `bankDetails[${idx}].accountNumber`,
-            //     `bankDetails[${idx}].sortCode`,
-            //   ]) || [];
-            // };
-
-            // const getDocumentFields = (documentsList: any[]) =>
-            //   documentsList.flatMap((doc) => [
-            //     `documents.${doc.id}.fileS3Key`,
-            //     `documents.${doc.id}.fileType`,
-            //     `documents.${doc.id}.expiresAt`,
-            //     `documents.${doc.id}.remindBeforeDays`,
-            //   ]);
-
-
-            // const stepKeys =
-            //   current.key === "account"
-            //     ? getBankFields(values)
-            //     : current.key === "documents"
-            //       ? getDocumentFields(documentsList || [])
-            //       : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
-
-
-            // await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
-
-
-            // const allErrors = await validateForm();
-            // const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
-
-
-            // if (stepErrors.length) {
-            //   const first = stepErrors[0];
-            //   const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
-            //   const el = document.querySelector(
-            //     `[name="${safe}"], [name="${safe}[]"]`
-            //   ) as HTMLElement | null;
-            //   if (el && "focus" in el) (el as any).focus();
-            //   return;
-            // }
 
             const getBankFields = (values: UserInfoTypes) => {
-              return values.bankDetails?.flatMap((_, idx) => [
-                `bankDetails[${idx}].bankName`,
-                `bankDetails[${idx}].accountNumber`,
-                `bankDetails[${idx}].sortCode`,
-              ]) || [];
+              return (
+                values.bankDetails?.flatMap((_, idx) => [
+                  `bankDetails[${idx}].bankName`,
+                  `bankDetails[${idx}].accountNumber`,
+                  `bankDetails[${idx}].sortCode`,
+                ]) || []
+              );
             };
+
 
             const getDocumentFields = (documentsList: any[]) =>
               documentsList.flatMap((doc) => {
-                const fields = [];
+                const fields: string[] = [];
                 if (doc.isMandatory) {
                   fields.push(`documents.${doc.id}.fileS3Key`);
                 }
-                // Add other document fields if needed
                 fields.push(
                   `documents.${doc.id}.fileType`,
                   `documents.${doc.id}.expiresAt`,
@@ -303,6 +264,7 @@ const UsersTypeModal = ({
                 );
                 return fields;
               });
+
 
             const stepKeys =
               current.key === "account"
@@ -312,7 +274,6 @@ const UsersTypeModal = ({
                   : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
-
             const allErrors = await validateForm();
             const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
 
@@ -326,8 +287,8 @@ const UsersTypeModal = ({
               return;
             }
 
-            let idForPut = userId || values.id;
 
+            let idForPut = userId || values.id;
 
             if (current.key === "basic" && !editingUsers && !idForPut) {
               try {
@@ -369,7 +330,13 @@ const UsersTypeModal = ({
               if (current.key === "account") {
                 const newBank = mapUpdateDto(values, idForPut).userBankDetails;
                 const hasData = newBank.some(
-                  (b) => b.accountNumber || b.sortCode || b.bankName || b.accountHolderName || b.iban || b.swiftCode
+                  (b) =>
+                    b.accountNumber ||
+                    b.sortCode ||
+                    b.bankName ||
+                    b.accountHolderName ||
+                    b.iban ||
+                    b.swiftCode
                 );
                 const oldBank = editingUsers
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
@@ -379,13 +346,17 @@ const UsersTypeModal = ({
                 }
               }
 
+
               if (current.key === "availability") {
                 const newAvail = mapUpdateDto(values, idForPut).userAvailability;
                 const oldAvail = editingUsers
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userAvailability
                   : null;
                 if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
-                  await updateUser({ id: idForPut, data: { userAvailability: newAvail } }).unwrap();
+                  await updateUser({
+                    id: idForPut,
+                    data: { userAvailability: newAvail },
+                  }).unwrap();
                 }
               }
 
@@ -396,10 +367,12 @@ const UsersTypeModal = ({
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
                   : null;
                 if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-                  await updateUser({ id: idForPut, data: { userDocuments: newDocs } }).unwrap();
+                  await updateUser({
+                    id: idForPut,
+                    data: { userDocuments: newDocs },
+                  }).unwrap();
                 }
               }
-
             } catch (err) {
               console.error("Update user failed:", err);
               return;
@@ -411,138 +384,6 @@ const UsersTypeModal = ({
               onClose?.();
             }
           };
-
-
-          // const goNext = async () => {
-          //   const stepKeys =
-          //     userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
-          //   await Promise.all(
-          //     stepKeys.map((k) => setFieldTouched(k, true, false))
-          //   );
-
-          //   const allErrors = await validateForm();
-          //   const stepErrors = stepKeys.filter(
-          //     (k) => getIn(allErrors, k) !== undefined
-          //   );
-
-          //   if (stepErrors.length) {
-          //     const first = stepErrors[0];
-          //     const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
-          //     const el = document.querySelector(
-          //       `[name="${safe}"], [name="${safe}[]"]`
-          //     ) as HTMLElement | null;
-          //     if (el && "focus" in el) (el as any).focus();
-          //     return;
-          //   }
-
-          //   let idForPut = userId || values.id;
-
-          //   if (current.key === "basic" && !editingUsers && !idForPut) {
-          //     try {
-          //       const payload = mapCreateDto(values);
-          //       const res: any = await createUser(payload).unwrap();
-
-          //       const newId = res.user?.id || res.id || res.data?.id;
-          //       if (newId) {
-          //         setUserId(newId);
-          //         await setFieldValue("id", newId);
-          //         idForPut = newId;
-          //       } else {
-          //         console.error("User create response missing ID", res);
-          //         return;
-          //       }
-          //     } catch (err) {
-          //       console.error("Create user failed:", err);
-          //       return;
-          //     }
-          //   }
-
-          //   if (!idForPut) {
-          //     console.error("No userId found to update.");
-          //     return;
-          //   }
-
-          //   try {
-          //     if (current.key === "basic") {
-          //       const newBasic = mapCreateDto(values).basicInfo;
-          //       const oldBasic = editingUsers
-          //         ? mapCreateDto(editingUsers as UserInfoTypes).basicInfo
-          //         : null;
-
-          //       if (!oldBasic || shouldUpdate(oldBasic, newBasic)) {
-          //         await updateUser({
-          //           id: idForPut,
-          //           data: { basicInfo: newBasic },
-          //         }).unwrap();
-          //       }
-          //     }
-
-
-          //     if (current.key === "account") {
-          //       const newBank = mapUpdateDto(values, idForPut).userBankDetails;
-
-
-          //       const hasData = newBank.some(
-          //         (b) => b.accountNumber || b.sortCode || b.bankName || b.accountHolderName || b.iban || b.swiftCode
-          //       );
-
-          //       const oldBank = editingUsers
-          //         ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
-          //         : null;
-
-
-          //       if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
-          //         await updateUser({
-          //           id: idForPut,
-          //           data: { userBankDetails: newBank },
-          //         }).unwrap();
-          //       }
-          //     }
-
-
-          //     if (current.key === "availability") {
-          //       const newAvail =
-          //         mapUpdateDto(values, idForPut).userAvailability;
-          //       const oldAvail = editingUsers
-          //         ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-          //           .userAvailability
-          //         : null;
-
-          //       if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
-          //         await updateUser({
-          //           id: idForPut,
-          //           data: { userAvailability: newAvail },
-          //         }).unwrap();
-          //       }
-          //     }
-
-          //     if (current.key === "documents") {
-          //       const newDocs = mapUpdateDto(values, idForPut).userDocuments;
-          //       const oldDocs = editingUsers
-          //         ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
-          //         : null;
-
-          //       if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-          //         await updateUser({
-          //           id: idForPut,
-          //           data: { userDocuments: newDocs },
-          //         }).unwrap();
-          //       }
-          //     }
-
-
-          //   } catch (err) {
-          //     console.error("Update user failed:", err);
-          //     return;
-          //   }
-
-          //   if (currentIndex < totalSteps - 1) {
-          //     setActiveStep((s) => s + 1);
-          //   } else {
-          //     // await submitForm();
-          //     onClose?.();
-          //   }
-          // };
 
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
@@ -751,7 +592,7 @@ const UsersTypeModal = ({
                                 },
                               });
 
-                              // Clear the validation error when file is uploaded
+
                               if (fileS3Key) {
                                 setTimeout(() => {
                                   setFieldTouched(`documents.${doc.id}.fileS3Key`, true, true);
@@ -764,7 +605,7 @@ const UsersTypeModal = ({
                             pathId={doc.id}
                           />
 
-                          {/* Show validation error */}
+
                           {showError && (
                             <div className="text-red-500 text-sm mt-1">
                               {documentError}
