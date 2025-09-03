@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Formik, Form, getIn } from "formik";
-// import { useParams } from "react-router-dom";
 
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
@@ -65,31 +64,6 @@ const UsersTypeModal = ({
     { role },
     { skip: !role }
   );
-
-
-  // const { data: documentTypes } = useGetDocumentsTypeQuery(
-  //   { role: editingUsers?.type || "staff" },
-  //   { skip: !editingUsers?.type }
-  // );
-
-  // useEffect(() => {
-  //   if (!documentTypes?.data) {
-  //     setDocumentsList([]);
-  //     return;
-  //   }
-
-  //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
-  //     acc[doc.documentTypeId] = doc;
-  //     return acc;
-  //   }, {});
-
-  //   setDocumentsList(
-  //     documentTypes.data.map((docType: any) => ({
-  //       ...docType,
-  //       userDoc: userDocsMap[docType.id] || null,
-  //     }))
-  //   );
-  // }, [documentTypes, editingUsers]);
 
   useEffect(() => {
     if (!documentTypes?.data) {
@@ -242,34 +216,9 @@ const UsersTypeModal = ({
           touched,
           setFieldTouched,
           validateForm,
-          // submitForm,
+ 
         }) => {
-          // const { data: documentTypes } = useGetDocumentsTypeQuery(
-          //   { role: values.type },
-          //   { skip: !values.type }
-          // );
-
-          // const documentsList = useMemo(() => {
-          //   if (!documentTypes?.data) return [];
-          //   return documentTypes.data;
-          // }, [documentTypes]);
-
-          // const documentsList = useMemo(() => {
-          //   if (!documentTypes?.data) return [];
-
-
-          //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
-          //     acc[doc.documentTypeId] = doc;
-          //     return acc;
-          //   }, {});
-
-          //   return documentTypes.data.map((docType: any) => {
-          //     return {
-          //       ...docType,
-          //       userDoc: userDocsMap[docType.id] || null,
-          //     };
-          //   });
-          // }, [documentTypes, editingUsers]);
+  
           useEffect(() => {
             if (values.type && values.type !== role) {
               setRole(values.type);
@@ -287,14 +236,6 @@ const UsersTypeModal = ({
             userStepFieldKeys[
             steps[stepIdx].key as keyof typeof userStepFieldKeys
             ];
-
-          // const stepHasErrors = (
-          //   allErrors: Record<string, any>,
-          //   stepIdx: number
-          // ) => {
-          //   const keys = stepKeysOf(stepIdx);
-          //   return keys.some((k) => getIn(allErrors, k) !== undefined);
-          // };
 
           const goNext = async () => {
             const stepKeys =
@@ -399,20 +340,6 @@ const UsersTypeModal = ({
                 }
               }
 
-              // if (current.key === "documents") {
-              //   const newDocs = mapUpdateDto(values, idForPut).userDocuments;
-              //   const oldDocs = editingUsers
-              //     ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut)
-              //       .userDocuments
-              //     : null;
-
-              //   if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-              //     await updateUser({
-              //       id: idForPut,
-              //       data: { userDocuments: newDocs },
-              //     }).unwrap();
-              //   }
-              // }
               if (current.key === "documents") {
                 const newDocs = mapUpdateDto(values, idForPut).userDocuments;
                 const oldDocs = editingUsers
@@ -522,16 +449,6 @@ const UsersTypeModal = ({
                   touched={touched}
                 />
               )}
-
-              {/* {current.key === "availability" && values.type === "staff" && (
-                <OpeningHoursFormSection
-                  openingHours={values.openingHours}
-                  setOpeningHours={(hrs) => setFieldValue("openingHours", hrs)}
-                  sameAllDays={values.sameAllDays}
-                  setSameAllDays={(v: boolean) => setFieldValue("sameAllDays", v)}
-                />
-              )} */}
-
 
               {current.key === "availability" && values.type === "staff" && (
 

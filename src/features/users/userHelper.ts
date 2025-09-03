@@ -19,8 +19,8 @@ export const userSchema = (documentsList: any[]) =>
     bankDetails: Yup.array().of(
       Yup.object({
         bankName: Yup.string().required("Bank name is required"),
-        accountNumber: Yup.string().required(" is required"),
-        sortCode: Yup.string().required(),
+        accountNumber: Yup.string().required("AccountNumber is required"),
+        sortCode: Yup.string().required("SortCode is Required"),
       })
     ),
 

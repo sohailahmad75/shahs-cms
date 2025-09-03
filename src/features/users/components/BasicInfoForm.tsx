@@ -138,19 +138,6 @@ const BasicInfoForm: React.FC<Props> = ({
           error={touched.postcode ? (errors.postcode as string) : ""}
         />
       </div>
-
-      {/* <div>
-        <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Date of Birth <span className="text-red-500">*</span>
-        </label>
-        <DatePickerField
-          name="dateOfBirth"
-          value={formatDateOnly(values.dateOfBirth)}
-          onChange={(v: any) => setFieldValue("dateOfBirth", v)}
-          error={touched.dateOfBirth ? (errors.dateOfBirth as string) : ""}
-        />
-
-      </div> */}
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
           Date of Birth <span className="text-red-500">*</span>
