@@ -3,7 +3,7 @@ import Button from "../../components/Button";
 import {
   useGetStoresQuery,
   useCreateStoreMutation,
-  useUpdateStoreMutation,
+  useUpdateStoresMutation,
   useDeleteStoreMutation,
   useGetStoreByIdQuery,
 } from "./services/storeApi";
@@ -42,7 +42,7 @@ const StoreListPage: React.FC = () => {
 
   const [createStore, { isLoading: creatingLoading }] =
     useCreateStoreMutation();
-  const [updateStore, { isLoading: updateLoading }] = useUpdateStoreMutation();
+  const [updateStore, { isLoading: updateLoading }] = useUpdateStoresMutation();
   const [deleteStore] = useDeleteStoreMutation();
 
   const { data: editingStoreData } = useGetStoreByIdQuery(editingStoreId!, {

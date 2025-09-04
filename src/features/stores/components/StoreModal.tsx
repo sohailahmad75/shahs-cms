@@ -1,214 +1,3 @@
-// import { Formik, Form } from "formik";
-// import Modal from "../../../components/Modal";
-// import {
-//   StoreTypeEnum,
-//   StoreTypeOptions,
-// } from "../../../common/enums/status.enum";
-// import SelectField from "../../../components/SelectField";
-// import InputField from "../../../components/InputField";
-// import BankDetailsFields from "./BankDetailsFields";
-// import Button from "../../../components/Button";
-// import type { UpdateStoreDto } from "../store.types";
-// import { useEffect, useState } from "react";
-// import OpeningHoursFormSection from "./OpeningHoursFormSection";
-// import {
-//   createStoreInitialValues,
-//   CreateStoreSchema,
-//   defaultDays,
-// } from "../helper/store-helper";
-// import { filterEditableFields } from "../../../helper";
-// import { useTheme } from "../../../context/themeContext";
-
-// const StoreModal = ({
-//   isOpen,
-//   onClose,
-//   onSubmit,
-//   editingStore,
-//   isSubmitting,
-// }: {
-//   isOpen: boolean;
-//   onClose: () => void;
-//   onSubmit: (values: any) => void;
-//   editingStore: UpdateStoreDto | null | undefined;
-//   isSubmitting: boolean;
-// }) => {
-//   const { isDarkMode } = useTheme();
-//   const [openingHours, setOpeningHours] = useState(
-//     defaultDays.map((day) => ({
-//       day,
-//       open: "11:00 am",
-//       close: "11:00 pm",
-//       closed: false,
-//     })),
-//   );
-//   const [sameAllDays, setSameAllDays] = useState(false);
-//   useEffect(() => {
-//     if (editingStore?.openingHours?.length) {
-//       const dayMap = Object.fromEntries(
-//         editingStore.openingHours.map((h) => [h.day, h]),
-//       );
-
-//       const mapped = defaultDays.map((day) => ({
-//         day,
-//         open: dayMap[day]?.open || "11:00 am",
-//         close: dayMap[day]?.close || "11:00 pm",
-//         closed: dayMap[day]?.closed ?? false,
-//       }));
-
-//       setOpeningHours(mapped);
-//     }
-//   }, [editingStore]);
-//   return (
-//     <Modal
-//       isOpen={isOpen}
-//       onClose={onClose}
-//       title={editingStore ? "Edit Store" : "Add Store"}
-//       width="max-w-4xl"
-//     >
-//       <div className="col-span-2 flex items-center gap-6 mb-6">
-//         <div className="flex-grow h-px bg-gray-200" />
-//         <span className={`${isDarkMode ? "text-slate-100" :"text-orange-100"}  text-md font-medium whitespace-nowrap`}>
-//           Basic Details
-//         </span>
-//         <div className="flex-grow h-px bg-gray-200" />
-//       </div>
-//       <Formik
-//         initialValues={{
-//           ...filterEditableFields(editingStore, createStoreInitialValues),
-//           storeType:
-//             editingStore?.storeType !== undefined
-//               ? Number(editingStore.storeType)
-//               : StoreTypeEnum.SHOP,
-//         }}
-//         validationSchema={CreateStoreSchema}
-//         enableReinitialize
-//         onSubmit={(values) => {
-//           const finalValues = {
-//             ...values,
-//             openingHours,
-//           };
-//           onSubmit(finalValues);
-//         }}
-//       >
-//         {({ values, handleChange, touched, errors, setFieldValue }) => (
-//           <Form className="space-y-8">
-//             {/* Basic Info */}
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//               {[
-//                 { name: "name", label: "Store Name", required: true },
-//                 { name: "email", label: "Email", required: true },
-//                 {
-//                   name: "companyName",
-//                   label: "Company Name",
-//                   required: true,
-//                 },
-//                 {
-//                   name: "companyNumber",
-//                   label: "Company Number",
-//                   required: true,
-//                 },
-//                 { name: "phone", label: "Phone", required: true },
-//                 { name: "street", label: "Street", required: true },
-//                 { name: "city", label: "City", required: true },
-//                 { name: "postcode", label: "Postcode", required: true },
-//                 { name: "country", label: "Country", required: true },
-//                 { name: "storeType", label: "Store Type", required: true },
-//               ].map(({ name, label, required }) => (
-//                 <div key={name}>
-//                   <label className="text-sm font-medium text-gray-700 mb-1 block">
-//                     {label}
-//                     {required && <span className="text-red-500"> *</span>}
-//                   </label>
-//                   {name === "storeType" ? (
-//                     <SelectField
-//                       name={name}
-//                       value={values[name].toString()}
-//                       onChange={handleChange}
-//                       options={StoreTypeOptions}
-//                       error={touched[name] ? errors[name] : ""}
-//                     />
-//                   ) : (
-//                     <InputField
-//                       name={name}
-//                       placeholder={label}
-//                       value={values[name]}
-//                       onChange={handleChange}
-//                       error={touched[name] ? errors[name] : ""}
-//                     />
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-
-//             <BankDetailsFields
-//               values={values}
-//               setFieldValue={setFieldValue}
-//               errors={errors}
-//               touched={touched}
-//             />
-
-//             <div className="col-span-2 flex items-center gap-6 mb-2">
-//               <div className="flex-grow h-px bg-gray-200" />
-//               <span className={`${isDarkMode ? "text-slate-100" :"text-orange-100"} text-md font-medium whitespace-nowrap`}>
-//                 Opening Hours
-//               </span>
-//               <div className="flex-grow h-px bg-gray-200" />
-//             </div>
-//             <OpeningHoursFormSection
-//               openingHours={openingHours}
-//               setOpeningHours={setOpeningHours}
-//               sameAllDays={sameAllDays}
-//               setSameAllDays={setSameAllDays}
-//             />
-
-//             <div className="col-span-2 flex items-center gap-6 mb-6">
-//               <div className="flex-grow h-px bg-gray-200" />
-//               <span className={`${isDarkMode ? "text-slate-100" :"text-orange-100"} text-md font-medium whitespace-nowrap`}>
-//                 Additional Info
-//               </span>
-//               <div className="flex-grow h-px bg-gray-200" />
-//             </div>
-//             {/* Additional Info */}
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//               {[
-//                 { name: "vatNumber", label: "VAT Number" },
-//                 { name: "googlePlaceId", label: "Google Place ID" },
-//                 { name: "uberStoreId", label: "Uber Eats Store ID" },
-//                 { name: "deliverooStoreId", label: "Deliveroo Store ID" },
-//                 { name: "justEatStoreId", label: "Just Eat Store ID" },
-//                 { name: "fsaId", label: "FSA Store ID" },
-//                 { name: "lat", label: "Google Place lat" },
-//                 { name: "lon", label: "Google Place lon" },
-//               ].map(({ name, label }) => (
-//                 <div key={name}>
-//                   <label className="text-sm font-medium text-gray-700 mb-1 block">
-//                     {label}
-//                   </label>
-//                   <InputField
-//                     name={name}
-//                     placeholder={label}
-//                     value={values[name]}
-//                     onChange={handleChange}
-//                     error={touched[name] ? errors[name] : ""}
-//                   />
-//                 </div>
-//               ))}
-//             </div>
-
-//             <Button type="submit" className="w-full" loading={isSubmitting}>
-//               {editingStore ? "Update Store" : "Create Store"}
-//             </Button>
-//           </Form>
-//         )}
-//       </Formik>
-//     </Modal>
-//   );
-// };
-
-// export default StoreModal;
-
-
-
 import { useEffect, useMemo, useState } from "react";
 import { Formik, Form, getIn } from "formik";
 import isEqual from "lodash.isequal";
@@ -233,13 +22,12 @@ import {
 import {
   type Store,
   type CreateStoreDto,
-  type UpdateStoreDto,
-  type StoreDocument,
+  type UpdateStoreDto
 } from "../store.types";
 
 import {
   useCreateStoreMutation,
-  useUpdateStoreMutation,
+  useUpdateStoresMutation,
 } from "../services/storeApi";
 import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
 import { useTheme } from "../../../context/themeContext";
@@ -264,13 +52,13 @@ const StoreModal = ({
   const [storeId, setStoreId] = useState<string | null>(editingStore?.id || null);
 
   const [createStore, createStatus] = useCreateStoreMutation();
-  const [updateStore, updateStatus] = useUpdateStoreMutation();
+  const [updateStore, updateStatus] = useUpdateStoresMutation();
 
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
 
   const [documentsList, setDocumentsList] = useState<any[]>([]);
   const { data: documentTypes } = useGetDocumentsTypeQuery(
-    { role: "store" },
+    { role: "shop" },
     { skip: !isOpen }
   );
 
@@ -344,39 +132,28 @@ const StoreModal = ({
 
   const mapCreateDto = (v: any): CreateStoreDto => {
     return {
-      name: v.name,
-      email: v.email,
-      phone: v.phone,
-      street: v.street,
-      city: v.city,
-      postcode: v.postcode,
-      country: v.country,
-      companyName: v.companyName,
-      companyNumber: v.companyNumber,
-      storeType: v.storeType,
-      vatNumber: v.vatNumber || undefined,
-      googlePlaceId: v.googlePlaceId || undefined,
-      uberStoreId: v.uberStoreId || undefined,
-      deliverooStoreId: v.deliverooStoreId || undefined,
-      justEatStoreId: v.justEatStoreId || undefined,
-      fsaId: v.fsaId || undefined,
-      lat: v.lat || undefined,
-      lon: v.lon || undefined,
-      bankDetails: (v.bankDetails || []).map((b: any) => ({
-         id: b.id || undefined,
-        bankName: b.bankName || "",
-        accountNumber: b.accountNumber || "",
-        sortCode: b.sortCode || "",
-        accountHolderName: b.accountHolderName || undefined,
-        iban: b.iban || undefined,
-        swiftCode: b.swiftCode || undefined,
-      })),
+      storeBasicInfo: {
+        name: v.name,
+        email: v.email,
+        phone: v.phone,
+        street: v.street,
+        city: v.city,
+        postcode: v.postcode,
+        country: v.country,
+        companyName: v.companyName,
+        companyNumber: v.companyNumber,
+        storeType: v.storeType,
+      },
     };
   };
 
   const mapUpdateDto = (v: any, storeId: string): Partial<UpdateStoreDto> => {
-    return {
+    const updateData: Partial<UpdateStoreDto> = {
       id: storeId,
+    };
+
+    // Add basic info
+    updateData.storeBasicInfo = {
       name: v.name,
       email: v.email,
       phone: v.phone,
@@ -387,30 +164,58 @@ const StoreModal = ({
       companyName: v.companyName,
       companyNumber: v.companyNumber,
       storeType: v.storeType,
-      vatNumber: v.vatNumber || undefined,
-      googlePlaceId: v.googlePlaceId || undefined,
-      uberStoreId: v.uberStoreId || undefined,
-      deliverooStoreId: v.deliverooStoreId || undefined,
-      justEatStoreId: v.justEatStoreId || undefined,
-      fsaId: v.fsaId || undefined,
-      lat: v.lat || undefined,
-      lon: v.lon || undefined,
-      bankDetails: (v.bankDetails || []).map((b: any) => ({
-         id: b.id || undefined,
+    };
+
+    // Add bank details if they exist
+    if (v.bankDetails?.length) {
+      updateData.storeBankDetails = v.bankDetails.map((b: any) => ({
+        id: b.id || undefined,
         bankName: b.bankName || "",
         accountNumber: b.accountNumber || "",
         sortCode: b.sortCode || "",
-        accountHolderName: b.accountHolderName || undefined,
-        iban: b.iban || undefined,
-        swiftCode: b.swiftCode || undefined,
-      })),
-      openingHours: openingHours.map((o) => ({
-        day: o.day,
-        open: o.closed ? null : o.open || null,
-        close: o.closed ? null : o.close || null,
-        closed: !!o.closed,
-      })),
-    };
+      }));
+    }
+
+    // Add opening hours
+    updateData.storeAvailability = openingHours.map((o) => ({
+      day: o.day,
+      open: o.closed ? null : o.open || null,
+      close: o.closed ? null : o.close || null,
+      closed: !!o.closed,
+    }));
+
+    // Add additional info
+    if (v.vatNumber || v.googlePlaceId || v.uberStoreId || v.deliverooStoreId ||
+      v.justEatStoreId || v.fsaId || v.lat || v.lon) {
+      updateData.storeAdditionalInfo = {
+        vatNumber: v.vatNumber || undefined,
+        googlePlaceId: v.googlePlaceId || undefined,
+        uberStoreId: v.uberStoreId || undefined,
+        deliverooStoreId: v.deliverooStoreId || undefined,
+        justEatStoreId: v.justEatStoreId || undefined,
+        fsaId: v.fsaId || undefined,
+        lat: v.lat || undefined,
+        lon: v.lon || undefined,
+      };
+    }
+
+    // Add documents
+    if (v.documents && Object.keys(v.documents).length > 0) {
+      updateData.storeDocuments = Object.entries(v.documents).map(
+        ([docTypeId, doc]: [string, any]) => ({
+          documentType: docTypeId,
+          fileS3Key: doc.fileS3Key || "",
+          fileType: doc.fileType || "all",
+          name: doc.name || "",
+          expiresAt: doc.expiresAt ? new Date(doc.expiresAt).toISOString() : undefined,
+          remindBeforeDays: doc.remindBeforeDays
+            ? Number(doc.remindBeforeDays)
+            : undefined,
+        })
+      );
+    }
+
+    return updateData;
   };
 
   useEffect(() => {
@@ -551,20 +356,20 @@ const StoreModal = ({
 
             try {
               if (current.key === "basic") {
-                const newBasic = mapCreateDto(values);
+                const newBasic = mapUpdateDto(values, idForPut).storeBasicInfo;
                 const oldBasic = editingStore
-                  ? mapCreateDto(editingStore as any)
+                  ? mapUpdateDto(editingStore as any, idForPut).storeBasicInfo
                   : null;
                 if (!oldBasic || shouldUpdate(oldBasic, newBasic)) {
                   await updateStore({
                     id: idForPut,
-                    data: newBasic,
+                    data: { storeBasicInfo: newBasic },
                   }).unwrap();
                 }
               }
 
               if (current.key === "account") {
-                const newBank = mapUpdateDto(values, idForPut).bankDetails;
+                const newBank = mapUpdateDto(values, idForPut).storeBankDetails;
                 const hasData = newBank?.some(
                   (b: any) =>
                     b.accountNumber || b.sortCode || b.bankName
@@ -576,73 +381,42 @@ const StoreModal = ({
                 ) {
                   await updateStore({
                     id: idForPut,
-                    data: { bankDetails: newBank },
+                    data: { storeBankDetails: newBank },
                   }).unwrap();
                 }
               }
 
               if (current.key === "availability") {
-                const newAvail = mapUpdateDto(values, idForPut).openingHours;
+                const newAvail = mapUpdateDto(values, idForPut).storeAvailability;
                 const oldAvail = editingStore?.openingHours || [];
                 if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
                   await updateStore({
                     id: idForPut,
-                    data: { openingHours: newAvail },
+                    data: { storeAvailability: newAvail },
                   }).unwrap();
                 }
               }
 
               if (current.key === "additional") {
-                const newAdditional = {
-                  vatNumber: values.vatNumber,
-                  googlePlaceId: values.googlePlaceId,
-                  uberStoreId: values.uberStoreId,
-                  deliverooStoreId: values.deliverooStoreId,
-                  justEatStoreId: values.justEatStoreId,
-                  fsaId: values.fsaId,
-                  lat: values.lat,
-                  lon: values.lon,
-                };
-                const oldAdditional = {
-                  vatNumber: editingStore?.vatNumber,
-                  googlePlaceId: editingStore?.googlePlaceId,
-                  uberStoreId: editingStore?.uberStoreId,
-                  deliverooStoreId: editingStore?.deliverooStoreId,
-                  justEatStoreId: editingStore?.justEatStoreId,
-                  fsaId: editingStore?.fsaId,
-                  lat: editingStore?.lat,
-                  lon: editingStore?.lon,
-                };
-                if (
-                  !oldAdditional ||
-                  shouldUpdate(oldAdditional, newAdditional)
-                ) {
+                const newAdditional = mapUpdateDto(values, idForPut).storeAdditionalInfo;
+                const oldAdditional = editingStore
+                  ? mapUpdateDto(editingStore as any, idForPut).storeAdditionalInfo
+                  : null;
+                if (!oldAdditional || shouldUpdate(oldAdditional, newAdditional)) {
                   await updateStore({
                     id: idForPut,
-                    data: newAdditional,
+                    data: { storeAdditionalInfo: newAdditional },
                   }).unwrap();
                 }
               }
 
               if (current.key === "documents") {
-                const newDocs: StoreDocument[] = Object.entries(values.documents || {}).map(
-                  ([docTypeId, doc]: [string, any]) => ({
-                    documentTypeId: docTypeId,   // ✅ fixed
-                    fileS3Key: doc.fileS3Key || "",
-                    fileType: doc.fileType || "all",
-                    name: doc.name || "",
-                    expiresAt: doc.expiresAt || undefined,
-                    remindBeforeDays: doc.remindBeforeDays
-                      ? Number(doc.remindBeforeDays)
-                      : undefined,
-                  })
-                );
-
+                const newDocs = mapUpdateDto(values, idForPut).storeDocuments;
                 const oldDocs = editingStore?.documents || [];
                 if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
                   await updateStore({
                     id: idForPut,
-                    data: { documents: newDocs },
+                    data: { storeDocuments: newDocs },
                   }).unwrap();
                 }
               }
@@ -813,7 +587,7 @@ const StoreModal = ({
                                 }, 100);
                               }
                             }}
-                            path="stores-documents"
+                            path="store-documents"
                             type="all"
                             pathId={doc.id}
                           />
