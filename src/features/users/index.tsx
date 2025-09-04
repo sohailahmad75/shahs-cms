@@ -53,6 +53,7 @@ const UsersTypeListPage: React.FC = () => {
         acc[doc.documentTypeId] = {
           documentType: doc.documentTypeId,
           fileS3Key: doc.fileS3Key,
+          signedUrl: doc.signedUrl,
           fileType: doc.fileType || "all",
           name: doc.name,
           expiresAt: doc.expiresAt,

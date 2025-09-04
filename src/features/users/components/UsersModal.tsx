@@ -198,6 +198,7 @@ const UsersTypeModal = ({
         name: doc.name || null,
         expiresAt: doc.expiresAt || null,
         remindBeforeDays: doc.remindBeforeDays ? Number(doc.remindBeforeDays) : null,
+        signedUrl: doc.signedUrl || null,
       })),
     };
   };
@@ -538,7 +539,7 @@ const UsersTypeModal = ({
                               doc.userDoc?.fileS3Key ||
                               ""
                             }
-                            initialPreview={doc.userDoc?.fileUrl} 
+                            initialPreview={doc.userDoc?.signedUrl}
                             onChange={(fileS3Key) => {
                               const prevDocs = values.documents || {};
                               setFieldValue("documents", {
