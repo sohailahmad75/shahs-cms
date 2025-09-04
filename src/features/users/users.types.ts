@@ -159,3 +159,41 @@ export type UserDocument = {
   expiresAt?: string | null;
   remindBeforeDays?: number | null;
 };
+
+
+
+
+
+interface AvailabilityHour {
+  day: string;
+  open: string;
+  close: string;
+  closed: boolean;
+}
+
+interface DocumentType {
+  id: number;
+  name: string;
+  documentTypeId: number;
+  expiresAt: string;
+}
+
+export interface Users {
+  id: number;
+  firstName: string;
+  surName: string;
+  email: string;
+  phone: string;
+  street: string;
+  city: string;
+  postCode: string;
+  dateOfBirth: string;
+  cashInRate: string;
+  NiRate: string;
+  shareCode: string;
+  role: string;
+  statusId: string;
+  availabilityHours: AvailabilityHour[];
+  bankDetails: BankDetail[];
+  documents: DocumentType[];
+}

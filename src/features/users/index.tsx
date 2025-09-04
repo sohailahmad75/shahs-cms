@@ -9,6 +9,7 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
 import { UserRole, type UserInfoTypes, type UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
+import { Link } from "react-router-dom";
 
 import {
   useGetUsersQuery,
@@ -16,6 +17,7 @@ import {
   useUpdateUsersMutation,
   useDeleteUsersMutation,
 } from "./services/UsersApi";
+import EyeOpen from "../../assets/styledIcons/EyeOpen";
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
@@ -110,6 +112,13 @@ const UsersTypeListPage: React.FC = () => {
       label: "Actions",
       render: (_, row) => (
         <div className="flex gap-2">
+
+          <Link to={`/users/${row.id}`} className="hover:underline">
+            <ActionIcon
+              className={isDarkMode ? "text-white" : "text-secondary-100"}
+              icon={<EyeOpen size={22} />}
+            />
+          </Link>
           <ActionIcon
             icon={<EditIcon size={22} />}
             onClick={() => handleEdit(row)}

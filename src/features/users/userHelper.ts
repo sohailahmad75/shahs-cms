@@ -82,7 +82,8 @@ export const userEmptyInitialValues: UserInfoTypes = {
   expiresAt: "",
   remindBeforeDays: 7,
   role: UserRole.OWNER,
-  documents: undefined
+  documents: undefined,
+  availabilityHours: []
 };
 
 

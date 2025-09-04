@@ -1,5 +1,5 @@
 import { baseApi } from "../../../services/baseApi";
-import type { UpdateUsersDto, UsersTypeListResponse, CreateUsersDto } from "../users.types";
+import type { UpdateUsersDto, UsersTypeListResponse, CreateUsersDto, Users } from "../users.types";
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -60,7 +60,7 @@ export const usersApi = baseApi.injectEndpoints({
     }),
 
 
-    getUsersById: builder.query<DocumentType, string>({
+    getUsersById: builder.query<Users, string>({
       query: (id) => `/users/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Users", id }],
     }),
