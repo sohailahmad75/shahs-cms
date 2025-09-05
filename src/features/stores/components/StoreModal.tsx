@@ -255,7 +255,7 @@ const StoreModal = ({
             ? Number(editingStore.storeType)
             : StoreTypeEnum.SHOP,
         }}
-        validationSchema={CreateStoreSchema}
+        validationSchema={CreateStoreSchema(documentsList)}
         enableReinitialize
         onSubmit={onSubmit}
       >
