@@ -287,15 +287,17 @@ const StoreModal = ({
             ];
 
           const goNext = async () => {
+
             const getBankFields = (values: any) => {
               return (
-                values.bankDetails?.flatMap((_: any, idx: number) => [
+                values.bankDetails?.flatMap((_, idx) => [
                   `bankDetails[${idx}].bankName`,
                   `bankDetails[${idx}].accountNumber`,
                   `bankDetails[${idx}].sortCode`,
                 ]) || []
               );
             };
+
 
             const getDocumentFields = (documentsList: any[]) =>
               documentsList.flatMap((doc) => {
@@ -310,21 +312,17 @@ const StoreModal = ({
                 );
                 return fields;
               });
-
             const stepKeys =
               current.key === "account"
                 ? getBankFields(values)
                 : current.key === "documents"
                   ? getDocumentFields(documentsList || [])
-                  : stepKeysOf(currentIndex);
+                  : storeStepFieldKeys[current.key as keyof typeof storeStepFieldKeys];
 
-            await Promise.all(
-              stepKeys.map((k) => setFieldTouched(k, true, true))
-            );
+            // ✅ Run validation
+            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
             const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter(
-              (k) => getIn(allErrors, k) !== undefined
-            );
+            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
 
             if (stepErrors.length) {
               const first = stepErrors[0];
@@ -338,7 +336,7 @@ const StoreModal = ({
 
             let idForPut = storeId || values.id;
 
-            // For new stores, create the store first with basic info
+            
             if (current.key === "basic" && !editingStore && !idForPut) {
               try {
                 const payload = mapCreateDto(values);
@@ -364,34 +362,73 @@ const StoreModal = ({
             }
 
             try {
-              // Update only the current step's data
-              const updatePayload = mapUpdateDto(values, idForPut);
+              // 🟡 Step-wise update with shouldUpdate check
 
-              // For new stores, we need to include the availability hours in the update
-              if (!editingStore && current.key === "basic") {
-                updatePayload.availabilityHour = openingHours.map((o) => ({
-                  day: o.day,
-                  open: o.closed ? null : o.open || null,
-                  close: o.closed ? null : o.close || null,
-                  closed: !!o.closed,
-                }));
+              if (current.key === "basic") {
+                const newBasic = mapCreateDto(values).storeBasicInfo;
+                const oldBasic = editingStore
+                  ? mapCreateDto(editingStore as Store).storeBasicInfo
+                  : null;
+                if (!oldBasic || shouldUpdate(oldBasic, newBasic)) {
+                  await updateStore({ id: idForPut, data: { storeBasicInfo: newBasic } }).unwrap();
+                }
               }
 
-              await updateStore({
-                id: idForPut,
-                data: updatePayload,
-              }).unwrap();
+              if (current.key === "account") {
+                const newBank = mapUpdateDto(values, idForPut).storeBankDetails;
+                const hasData = newBank.some(
+                  (b) => b.accountNumber || b.sortCode || b.bankName
+                );
+                const oldBank = editingStore
+                  ? mapUpdateDto(editingStore as Store, idForPut).storeBankDetails
+                  : null;
+                if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
+                  await updateStore({ id: idForPut, data: { storeBankDetails: newBank } }).unwrap();
+                }
+              }
+
+              if (current.key === "availability") {
+                const newAvail = mapUpdateDto(values, idForPut).availabilityHour;
+                const oldAvail = editingStore
+                  ? mapUpdateDto(editingStore as Store, idForPut).availabilityHour
+                  : null;
+                if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
+                  await updateStore({ id: idForPut, data: { availabilityHour: newAvail } }).unwrap();
+                }
+              }
+
+              if (current.key === "additional") {
+                const newAdd = mapUpdateDto(values, idForPut).storeAdditionalInfo;
+                const oldAdd = editingStore
+                  ? mapUpdateDto(editingStore as Store, idForPut).storeAdditionalInfo
+                  : null;
+                if (!oldAdd || shouldUpdate(oldAdd, newAdd)) {
+                  await updateStore({ id: idForPut, data: { storeAdditionalInfo: newAdd } }).unwrap();
+                }
+              }
+
+              if (current.key === "documents") {
+                const newDocs = mapUpdateDto(values, idForPut).storeDocuments;
+                const oldDocs = editingStore
+                  ? mapUpdateDto(editingStore as Store, idForPut).storeDocuments
+                  : null;
+                if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
+                  await updateStore({ id: idForPut, data: { storeDocuments: newDocs } }).unwrap();
+                }
+              }
             } catch (err) {
               console.error("Update store failed:", err);
               return;
             }
 
+            // ✅ Next step navigation
             if (currentIndex < totalSteps - 1) {
               setActiveStep((s) => s + 1);
             } else {
               onClose?.();
             }
           };
+
 
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
