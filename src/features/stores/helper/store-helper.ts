@@ -110,7 +110,7 @@ export const createStoreInitialValues = {
   companyNumber: "",
   storeType: StoreTypeEnum.SHOP,
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
-  openingHours: defaultDays.map((day) => ({
+  availabilityHour: defaultDays.map((day) => ({
     day,
     open: "11:00 am",
     close: "11:00 pm",
@@ -118,7 +118,7 @@ export const createStoreInitialValues = {
   })),
   lat: "",
   lon: "",
-  documents: {},
+  storeDocuments: {},
 };
 
 export const storeStepFieldKeys = {
@@ -146,5 +146,5 @@ export const storeStepFieldKeys = {
     "lat",
     "lon",
   ],
-  documents: ["documents"],
+  storeDocuments: ["documents"],
 };

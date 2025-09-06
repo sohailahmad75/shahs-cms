@@ -68,7 +68,7 @@ const StoreModal = ({
       return;
     }
 
-    let docs = editingStore?.documents;
+    let docs = editingStore?.storeDocuments;
     if (typeof docs === "string") {
       try {
         docs = JSON.parse(docs);
@@ -107,9 +107,9 @@ const StoreModal = ({
   const [sameAllDays, setSameAllDays] = useState(false);
 
   useEffect(() => {
-    if (editingStore?.openingHours?.length) {
+    if (editingStore?.availabilityHour?.length) {
       const dayMap = Object.fromEntries(
-        editingStore.openingHours.map((h) => [h.day, h])
+        editingStore.availabilityHour.map((h) => [h.day, h])
       );
 
       const mapped = defaultDays.map((day) => ({
@@ -148,45 +148,47 @@ const StoreModal = ({
   };
 
   const mapUpdateDto = (v: any, storeId: string): Partial<UpdateStoreDto> => {
-    const updateData: Partial<UpdateStoreDto> = {
-      id: storeId,
-    };
+    const updateData: Partial<UpdateStoreDto> = { id: storeId };
 
-    // Add basic info
-    updateData.storeBasicInfo = {
-      name: v.name,
-      email: v.email,
-      phone: v.phone,
-      street: v.street,
-      city: v.city,
-      postcode: v.postcode,
-      country: v.country,
-      companyName: v.companyName,
-      companyNumber: v.companyNumber,
-      storeType: v.storeType,
-    };
+    // Only include fields that are relevant to the current step
+    if (activeStep === 0) {
+      updateData.storeBasicInfo = {
+        name: v.name,
+        email: v.email,
+        phone: v.phone,
+        street: v.street,
+        city: v.city,
+        postcode: v.postcode,
+        country: v.country,
+        companyName: v.companyName,
+        companyNumber: v.companyNumber,
+        storeType: v.storeType,
+      };
+    }
 
-    // Add bank details if they exist
-    if (v.bankDetails?.length) {
+    if (activeStep === 1 && v.bankDetails?.length) {
       updateData.storeBankDetails = v.bankDetails.map((b: any) => ({
         id: b.id || undefined,
         bankName: b.bankName || "",
         accountNumber: b.accountNumber || "",
         sortCode: b.sortCode || "",
+        accountHolderName: b.accountHolderName || undefined,
+        iban: b.iban || undefined,
+        swiftCode: b.swiftCode || undefined,
       }));
     }
 
-    // Add opening hours
-    updateData.storeAvailability = openingHours.map((o) => ({
-      day: o.day,
-      open: o.closed ? null : o.open || null,
-      close: o.closed ? null : o.close || null,
-      closed: !!o.closed,
-    }));
+    if (activeStep === 2) {
+      updateData.availabilityHour = openingHours.map((o) => ({
+        day: o.day,
+        open: o.closed ? null : o.open || null,
+        close: o.closed ? null : o.close || null,
+        closed: !!o.closed,
+      }));
+    }
 
-    // Add additional info
-    if (v.vatNumber || v.googlePlaceId || v.uberStoreId || v.deliverooStoreId ||
-      v.justEatStoreId || v.fsaId || v.lat || v.lon) {
+    if (activeStep === 3 && (v.vatNumber || v.googlePlaceId || v.uberStoreId || v.deliverooStoreId ||
+      v.justEatStoreId || v.fsaId || v.lat || v.lon)) {
       updateData.storeAdditionalInfo = {
         vatNumber: v.vatNumber || undefined,
         googlePlaceId: v.googlePlaceId || undefined,
@@ -199,8 +201,7 @@ const StoreModal = ({
       };
     }
 
-    // Add documents
-    if (v.documents && Object.keys(v.documents).length > 0) {
+    if (activeStep === 4 && v.documents && Object.keys(v.documents).length > 0) {
       updateData.storeDocuments = Object.entries(v.documents).map(
         ([docTypeId, doc]: [string, any]) => ({
           documentType: docTypeId,
@@ -208,9 +209,7 @@ const StoreModal = ({
           fileType: doc.fileType || "all",
           name: doc.name || "",
           expiresAt: doc.expiresAt ? new Date(doc.expiresAt).toISOString() : undefined,
-          remindBeforeDays: doc.remindBeforeDays
-            ? Number(doc.remindBeforeDays)
-            : undefined,
+          remindBeforeDays: doc.remindBeforeDays ? Number(doc.remindBeforeDays) : undefined,
         })
       );
     }
@@ -254,6 +253,15 @@ const StoreModal = ({
           storeType: editingStore?.storeType !== undefined
             ? Number(editingStore.storeType)
             : StoreTypeEnum.SHOP,
+          // Initialize documents properly
+          documents: editingStore?.storeDocuments
+            ? (Array.isArray(editingStore.storeDocuments)
+              ? editingStore.storeDocuments.reduce((acc: any, doc: any) => {
+                acc[doc.documentType] = doc;
+                return acc;
+              }, {})
+              : editingStore.storeDocuments)
+            : {}
         }}
         validationSchema={CreateStoreSchema(documentsList)}
         enableReinitialize
@@ -330,6 +338,7 @@ const StoreModal = ({
 
             let idForPut = storeId || values.id;
 
+            // For new stores, create the store first with basic info
             if (current.key === "basic" && !editingStore && !idForPut) {
               try {
                 const payload = mapCreateDto(values);
@@ -355,71 +364,23 @@ const StoreModal = ({
             }
 
             try {
-              if (current.key === "basic") {
-                const newBasic = mapUpdateDto(values, idForPut).storeBasicInfo;
-                const oldBasic = editingStore
-                  ? mapUpdateDto(editingStore as any, idForPut).storeBasicInfo
-                  : null;
-                if (!oldBasic || shouldUpdate(oldBasic, newBasic)) {
-                  await updateStore({
-                    id: idForPut,
-                    data: { storeBasicInfo: newBasic },
-                  }).unwrap();
-                }
+              // Update only the current step's data
+              const updatePayload = mapUpdateDto(values, idForPut);
+
+              // For new stores, we need to include the availability hours in the update
+              if (!editingStore && current.key === "basic") {
+                updatePayload.availabilityHour = openingHours.map((o) => ({
+                  day: o.day,
+                  open: o.closed ? null : o.open || null,
+                  close: o.closed ? null : o.close || null,
+                  closed: !!o.closed,
+                }));
               }
 
-              if (current.key === "account") {
-                const newBank = mapUpdateDto(values, idForPut).storeBankDetails;
-                const hasData = newBank?.some(
-                  (b: any) =>
-                    b.accountNumber || b.sortCode || b.bankName
-                );
-                const oldBank = editingStore?.bankDetails || [];
-                if (
-                  (oldBank && shouldUpdate(oldBank, newBank)) ||
-                  (!oldBank && hasData)
-                ) {
-                  await updateStore({
-                    id: idForPut,
-                    data: { storeBankDetails: newBank },
-                  }).unwrap();
-                }
-              }
-
-              if (current.key === "availability") {
-                const newAvail = mapUpdateDto(values, idForPut).storeAvailability;
-                const oldAvail = editingStore?.openingHours || [];
-                if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
-                  await updateStore({
-                    id: idForPut,
-                    data: { storeAvailability: newAvail },
-                  }).unwrap();
-                }
-              }
-
-              if (current.key === "additional") {
-                const newAdditional = mapUpdateDto(values, idForPut).storeAdditionalInfo;
-                const oldAdditional = editingStore
-                  ? mapUpdateDto(editingStore as any, idForPut).storeAdditionalInfo
-                  : null;
-                if (!oldAdditional || shouldUpdate(oldAdditional, newAdditional)) {
-                  await updateStore({
-                    id: idForPut,
-                    data: { storeAdditionalInfo: newAdditional },
-                  }).unwrap();
-                }
-              }
-
-              if (current.key === "documents") {
-                const newDocs = mapUpdateDto(values, idForPut).storeDocuments;
-                const oldDocs = editingStore?.documents || [];
-                if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-                  await updateStore({
-                    id: idForPut,
-                    data: { storeDocuments: newDocs },
-                  }).unwrap();
-                }
-              }
+              await updateStore({
+                id: idForPut,
+                data: updatePayload,
+              }).unwrap();
             } catch (err) {
               console.error("Update store failed:", err);
               return;
@@ -561,7 +522,7 @@ const StoreModal = ({
                               doc.storeDoc?.fileS3Key ||
                               ""
                             }
-                            initialPreview={doc.storeDoc?.fileUrl}
+                            initialPreview={doc.storeDoc?.signedUrl}
                             onChange={(fileS3Key) => {
                               const prevDocs = values.documents || {};
                               setFieldValue("documents", {
