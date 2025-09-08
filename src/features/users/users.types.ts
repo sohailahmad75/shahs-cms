@@ -171,7 +171,7 @@ interface AvailabilityHour {
   closed: boolean;
 }
 
-interface DocumentType {
+interface userDocuments {
   id: number;
   name: string;
   documentTypeId: number;
@@ -195,5 +195,5 @@ export interface Users {
   statusId: string;
   availabilityHours: AvailabilityHour[];
   bankDetails: BankDetail[];
-  documents: DocumentType[];
+  userDocuments: userDocuments[];
 }

@@ -140,7 +140,7 @@ const UsersInformation = () => {
                         >
                             Documents
                         </h2>
-                        {Users.documents?.length === 0 ? (
+                        {Users.userDocuments?.length === 0 ? (
                             <p
                                 className={isDarkMode ? "text-slate-400" : "text-gray-500"}
                             >
@@ -148,7 +148,7 @@ const UsersInformation = () => {
                             </p>
                         ) : (
                             <ul className="space-y-3">
-                                {Users.documents.map((doc: any) => (
+                                {Users.userDocuments.map((doc: any) => (
                                     <li
                                         key={doc.id}
                                         className={`border rounded-lg p-3 ${isDarkMode
@@ -168,11 +168,23 @@ const UsersInformation = () => {
                                         />
                                         <Detail
                                             label="Expires At"
-                                            value={new Date(
+                                            value={doc.expiresAt ? new Date(
                                                 doc.expiresAt
-                                            ).toLocaleDateString()}
+                                            ).toLocaleDateString() : "N/A"}
                                             isDarkMode={isDarkMode}
                                         />
+                                        {doc.signedUrl && (
+                                            <div className="mt-2">
+                                                <a
+                                                    href={doc.signedUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-500 hover:text-blue-700 underline"
+                                                >
+                                                    View Document
+                                                </a>
+                                            </div>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
@@ -240,4 +252,3 @@ const Detail = ({
 );
 
 export default UsersInformation;
-
