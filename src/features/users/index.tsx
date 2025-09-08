@@ -43,13 +43,51 @@ const UsersTypeListPage: React.FC = () => {
   //   setModalOpen(true);
   // };
 
+  // const handleEdit = (user: UsersType) => {
+  //   console.log("📂 Raw user.documents:", user.documents, typeof user.documents);
+
+  //   let mappedDocuments: Record<string, any> = {};
+
+  //   if (Array.isArray(user.documents)) {
+  //     mappedDocuments = user.documents.reduce((acc: any, doc: any) => {
+  //       acc[doc.documentTypeId] = {
+  //         documentType: doc.documentTypeId,
+  //         fileS3Key: doc.fileS3Key,
+  //         signedUrl: doc.signedUrl,
+  //         fileType: doc.fileType || "all",
+  //         name: doc.name,
+  //         expiresAt: doc.expiresAt,
+  //         remindBeforeDays: doc.remindBeforeDays,
+  //       };
+  //       return acc;
+  //     }, {});
+  //   } else if (user.documents && typeof user.documents === "object") {
+  //     mappedDocuments = user.documents;
+  //   } else {
+  //     mappedDocuments = {};
+  //   }
+
+  //   const mappedUser: Partial<UserInfoTypes> = {
+  //     ...user,
+  //     dateOfBirth: user.dateOfBirth,
+  //     postcode: (user as any).postCode || user.postcode || "",
+  //     niRate: (user as any).NiRate ?? user.niRate ?? null,
+  //     type: user.role === UserRole.OWNER ? "owner" : "staff",
+  //     documents: mappedDocuments,
+  //   };
+
+  //   setEditingUser(mappedUser);
+  //   setModalOpen(true);
+  // };
+
+
   const handleEdit = (user: UsersType) => {
-    console.log("📂 Raw user.documents:", user.documents, typeof user.documents);
+    console.log("📂 Raw user data:", user);
 
     let mappedDocuments: Record<string, any> = {};
 
-    if (Array.isArray(user.documents)) {
-      mappedDocuments = user.documents.reduce((acc: any, doc: any) => {
+    if (Array.isArray((user as any).userDocuments)) {
+      mappedDocuments = (user as any).userDocuments.reduce((acc: any, doc: any) => {
         acc[doc.documentTypeId] = {
           documentType: doc.documentTypeId,
           fileS3Key: doc.fileS3Key,
@@ -74,12 +112,13 @@ const UsersTypeListPage: React.FC = () => {
       niRate: (user as any).NiRate ?? user.niRate ?? null,
       type: user.role === UserRole.OWNER ? "owner" : "staff",
       documents: mappedDocuments,
+      bankDetails: (user as any).bankDetails || user.bankDetails || [],
+      availabilityHours: (user as any).availabilityHours || user.availabilityHours || [],
     };
 
     setEditingUser(mappedUser);
     setModalOpen(true);
   };
-
   const handleDelete = async (id: string) => {
     try {
       await deleteUser(id).unwrap();
