@@ -182,10 +182,21 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     onChange("", "");
   };
 
+  // const acceptedTypes: Accept =
+  //   type === "image"
+  //     ? { "image/*": [".jpeg", ".jpg", ".png", ".webp"] }
+  //     : { "*/*": [] };
+
+
   const acceptedTypes: Accept =
     type === "image"
-      ? { "image/*": [".jpeg", ".jpg", ".png", ".webp"] }
-      : { "*/*": [] };
+      ? {
+        "image/jpeg": [".jpeg", ".jpg"],
+        "image/png": [".png"],
+        "image/webp": [".webp"]
+      }
+      : {};
+
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -230,13 +241,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         ) : (
           <div
             {...getRootProps()}
-            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${
-              error
+            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${error
                 ? "border-red-500 bg-red-50"
                 : isDragActive
-                ? "border-orange-100 bg-orange-05"
-                : "border-gray-300 hover:border-orange-100"
-            }`}
+                  ? "border-orange-100 bg-orange-05"
+                  : "border-gray-300 hover:border-orange-100"
+              }`}
           >
             <input {...getInputProps()} />
             {isUploading ? (
