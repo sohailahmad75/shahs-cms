@@ -3,9 +3,8 @@ import Button from "../../components/Button";
 import {
   useGetStoresQuery,
   useCreateStoreMutation,
-  useUpdateStoreMutation,
+  useUpdateStoresMutation,
   useDeleteStoreMutation,
-  useGetStoreByIdQuery,
 } from "./services/storeApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
@@ -20,13 +19,15 @@ import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
+import { useTheme } from "../../context/themeContext";
 
 const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
+  const [editingStore, setEditingStore] = useState<Partial<Store> | null>(null);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
+  const { isDarkMode } = useTheme();
 
   const {
     data: storesResp = {
@@ -34,31 +35,58 @@ const StoreListPage: React.FC = () => {
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
-    isFetching,
     refetch,
   } = useGetStoresQuery({ page, perPage, query });
 
-  const [createStore, { isLoading: creatingLoading }] =
-    useCreateStoreMutation();
-  const [updateStore, { isLoading: updateLoading }] = useUpdateStoreMutation();
+  const [createStore, { isLoading: creating }] = useCreateStoreMutation();
+  const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
   const [deleteStore] = useDeleteStoreMutation();
-
-  const { data: editingStoreData } = useGetStoreByIdQuery(editingStoreId!, {
-    skip: !editingStoreId,
-  });
 
   const stores = storesResp.data;
   const meta = storesResp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
-  const handleEdit = (storeId: string) => {
-    setEditingStoreId(storeId);
+  const handleEdit = (store: Store) => {
+    console.log("📂 Raw store.storeDocuments:", store.storeDocuments, typeof store.storeDocuments);
+
+    let mappedDocuments: Record<string, any> = {};
+
+    if (Array.isArray(store.storeDocuments)) {
+      mappedDocuments = store.storeDocuments.reduce((acc: any, doc: any) => {
+        acc[doc.documentTypeId] = {
+          documentType: doc.documentTypeId,
+          fileS3Key: doc.fileS3Key,
+          signedUrl: doc.signedUrl,
+          fileType: doc.fileType || "all",
+          name: doc.name,
+          expiresAt: doc.expiresAt,
+          remindBeforeDays: doc.remindBeforeDays,
+        };
+        return acc;
+      }, {});
+    } else if (store.storeDocuments && typeof store.storeDocuments === "object") {
+      mappedDocuments = store.storeDocuments;
+    } else {
+      mappedDocuments = {};
+    }
+
+    const mappedStore: Partial<Store> = {
+      ...store,
+      storeDocuments: mappedDocuments,
+    };
+
+    setEditingStore(mappedStore);
     setModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    await deleteStore(id).unwrap();
-    toast.success("Store deleted");
+    try {
+      await deleteStore(id).unwrap();
+      toast.success("Store deleted successfully");
+      refetch();
+    } catch {
+      toast.error("Failed to delete store");
+    }
   };
 
   const columns: Column<Store>[] = [
@@ -69,29 +97,46 @@ const StoreListPage: React.FC = () => {
         <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
       ),
     },
-    { key: "name", label: "Name" },
-    { key: "email", label: "Email" },
-    { key: "phone", label: "Phone" },
-    { key: "street", label: "Street" },
-    { key: "postcode", label: "Postcode" },
-    { key: "companyName", label: "Company Name" },
-    { key: "companyNumber", label: "Company Number" },
+    {
+      key: "name",
+      label: "Name",
+    },
+    {
+      key: "email",
+      label: "Email",
+    },
+    {
+      key: "phone",
+      label: "Phone",
+    },
+    {
+      key: "city",
+      label: "City",
+    },
+    {
+      key: "companyName",
+      label: "Company Name",
+    },
     {
       key: "actions",
       label: "Actions",
-      render: (_value: unknown, row: Store) => (
+      render: (_, row) => (
         <div className="flex gap-2">
           <Link to={`/stores/${row.id}`} className="hover:underline">
             <ActionIcon
-              className="text-secondary-100"
+              className={isDarkMode ? "text-white" : "text-secondary-100"}
               icon={<EyeOpen size={22} />}
             />
           </Link>
           <ActionIcon
             icon={<EditIcon size={22} />}
-            onClick={() => handleEdit(row.id)}
+            onClick={() => handleEdit(row)}
+            className={
+              isDarkMode
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-gray-500 hover:text-gray-700"
+            }
           />
-
           <ConfirmDelete
             onConfirm={async () => handleDelete(row.id)}
             renderTrigger={({ open }) => (
@@ -115,7 +160,7 @@ const StoreListPage: React.FC = () => {
         <h1 className="text-xl font-bold">Stores</h1>
         <Button
           onClick={() => {
-            setEditingStoreId(null);
+            setEditingStore(null);
             setModalOpen(true);
           }}
         >
@@ -139,25 +184,11 @@ const StoreListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Table / loader / empty state */}
-      {isLoading || isFetching ? (
+      {isLoading ? (
         <Loader />
-      ) : stores.length === 0 ? (
-        <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
-          No stores found.
-          {query ? (
-            <span className="block text-sm text-gray-500 mt-1">
-              Try adjusting your search.
-            </span>
-          ) : (
-            <span className="block text-sm text-gray-500 mt-1">
-              Click <strong>Add Store</strong> to create your first one.
-            </span>
-          )}
-        </div>
       ) : (
         <>
-          <div className=" rounded-lg shadow-sm">
+          <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={stores}
               columns={columns}
@@ -185,22 +216,25 @@ const StoreListPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);
-          setEditingStoreId(null);
+          setEditingStore(null);
         }}
-        onSubmit={async (values) => {
-          if (editingStoreId) {
-            await updateStore({ id: editingStoreId, data: values }).unwrap();
-            toast.success("Store updated successfully");
+        onSubmit={async (values: any) => {
+          if (editingStore) {
+            await updateStore({
+              id: editingStore.id,
+              data: values,
+            }).unwrap();
+            toast.success("Store updated");
           } else {
             await createStore(values).unwrap();
-            toast.success("Store created successfully");
+            toast.success("Store created");
           }
           refetch();
           setModalOpen(false);
-          setEditingStoreId(null);
+          setEditingStore(null);
         }}
-        editingStore={editingStoreId ? editingStoreData : null}
-        isSubmitting={creatingLoading || updateLoading}
+        editingStore={editingStore}
+        isSubmitting={creating || updating}
       />
     </div>
   );

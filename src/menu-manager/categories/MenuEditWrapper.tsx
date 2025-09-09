@@ -5,12 +5,10 @@ import {
   useGetMenuByIdQuery,
   useSyncMenuToUberMutation,
 } from "../../services/menuApi";
-import Button from "../../components/Button";
 import { toast } from "react-toastify";
 import PublishBanner from "./PublishBanner";
 import Loader from "../../components/Loader";
 import { useTheme } from "../../context/themeContext";
-import UberIcon from "../../assets/styledIcons/UberIcon";
 import BrandButton from "../components/BrandButton";
 
 const tabs = [

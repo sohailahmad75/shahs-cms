@@ -3,6 +3,7 @@ import CheckboxField from "../../../components/CheckboxField";
 import ToggleSwitch from "../../../components/ToggleSwitch";
 import SelectField from "../../../components/SelectField";
 import { TIME_OPTIONS } from "../helper/store-helper";
+import { useTheme } from "../../../context/themeContext"; 
 
 interface OpeningHour {
   day: string;
@@ -16,6 +17,7 @@ interface Props {
   setOpeningHours: React.Dispatch<React.SetStateAction<OpeningHour[]>>;
   sameAllDays: boolean;
   setSameAllDays: (value: boolean) => void;
+  isDarkMode?: boolean; 
 }
 
 const OpeningHoursFormSection: React.FC<Props> = ({
@@ -23,7 +25,11 @@ const OpeningHoursFormSection: React.FC<Props> = ({
   setOpeningHours,
   sameAllDays,
   setSameAllDays,
+  isDarkMode = false, // Default to false
 }) => {
+  const { isDarkMode: themeDarkMode } = useTheme(); // Get theme from context
+  const finalDarkMode = isDarkMode || themeDarkMode; // Use prop if provided, otherwise use context
+
   const handleChange = (
     e: React.ChangeEvent<any>,
     index: number,
@@ -62,22 +68,29 @@ const OpeningHoursFormSection: React.FC<Props> = ({
               idx === 0
                 ? item
                 : {
-                    ...item,
-                    open: sunday.open,
-                    close: sunday.close,
-                    closed: sunday.closed,
-                  },
+                  ...item,
+                  open: sunday.open,
+                  close: sunday.close,
+                  closed: sunday.closed,
+                },
             );
             setOpeningHours(updated);
           }}
+       
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
         {openingHours.map((h, idx) => (
-          <div key={h.day} className="flex flex-col">
+          <div key={h.day} className={`flex flex-col p-3 rounded-lg ${
+            finalDarkMode ? "bg-slate-800" : "bg-gray-50"
+          }`}>
             <div className="flex items-center justify-between flex-wrap me-5">
-              <div className="me-4 font-medium p-3">{h.day}</div>
+              <div className={`me-4 font-medium ${
+                finalDarkMode ? "text-slate-200" : "text-gray-800"
+              }`}>
+                {h.day}
+              </div>
 
               <ToggleSwitch
                 checked={!h.closed}
@@ -95,21 +108,27 @@ const OpeningHoursFormSection: React.FC<Props> = ({
                     return updated;
                   });
                 }}
+            
               />
             </div>
 
             {!h.closed && (
-              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-                <div className="w-full ">
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center mt-2">
+                <div className="w-full">
                   <SelectField
                     value={h.open}
                     onChange={(e) => handleChange(e, idx, "open")}
                     options={TIME_OPTIONS}
                     name={`open-${idx}`}
                     disabled={sameAllDays && idx !== 0}
+               
                   />
                 </div>
-                <span className="hidden sm:inline">-</span>
+                <span className={`hidden sm:inline ${
+                  finalDarkMode ? "text-slate-400" : "text-gray-500"
+                }`}>
+                  -
+                </span>
                 <div className="w-full">
                   <SelectField
                     value={h.close}
@@ -117,6 +136,7 @@ const OpeningHoursFormSection: React.FC<Props> = ({
                     options={TIME_OPTIONS}
                     name={`close-${idx}`}
                     disabled={sameAllDays && idx !== 0}
+             
                   />
                 </div>
               </div>

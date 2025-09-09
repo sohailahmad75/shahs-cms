@@ -1,9 +1,10 @@
 import React from "react";
+import { useTheme } from "../../src/context/themeContext";
 
 type InputFieldProps = {
   type?: string;
   placeholder?: string;
-  value: string;
+  value: string | number;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -15,6 +16,7 @@ type InputFieldProps = {
   label?: string;
   rows?: number;
   required?: boolean;
+  darkMode?: boolean;
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -30,23 +32,32 @@ const InputField: React.FC<InputFieldProps> = ({
   label,
   rows = 3,
   required = false,
+  darkMode = false,
   ...props
 }) => {
-  const baseStyles = "w-full outline-none bg-transparent";
+  const { isDarkMode } = useTheme();
+  const finalDarkMode = darkMode || isDarkMode;
+
+  const baseStyles = `w-full outline-none ${finalDarkMode ? "bg-slate-800 text-slate-100 placeholder-slate-400" : "bg-transparent"}`;
   const textareaStyles = `${baseStyles} resize-none min-h-[100px]`;
 
   return (
     <div className={`relative group ${className}`} {...props}>
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor={name}
+          className={`block text-sm font-medium mb-1 ${finalDarkMode ? "text-slate-300" : "text-gray-700"}`}
+        >
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <div
-        className={`flex items-start w-full border rounded px-4 py-2 transition-colors duration-200 ${error
+        className={`flex items-start w-full border rounded-md px-4 py-2 transition-colors duration-200 ${error
             ? "border-red-500"
-            : "border-gray-300 group-focus-within:border-red-500"
-          }`}
+            : finalDarkMode
+              ? "border-slate-600 group-focus-within:border-slate-400"
+              : "border-gray-300 group-focus-within:border-orange-500"
+          } ${finalDarkMode ? "bg-slate-800" : "bg-white"}`}
       >
         {type === "textarea" ? (
           <textarea
@@ -69,7 +80,10 @@ const InputField: React.FC<InputFieldProps> = ({
           />
         )}
         {icon && (
-          <div className={`absolute right-3 top-3 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200 ${iconContainerClassName || ''}`}>
+          <div className={`absolute right-3 top-3 transition-colors duration-200 ${finalDarkMode
+              ? "text-slate-400 group-focus-within:text-slate-200"
+              : "text-gray-400 group-focus-within:text-orange-500"
+            } ${iconContainerClassName || ''}`}>
             {icon}
           </div>
         )}

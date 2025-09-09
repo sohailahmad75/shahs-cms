@@ -19,12 +19,12 @@ export const storeApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map((s) => ({
-                type: "Stores" as const,
-                id: s.id,
-              })),
-              { type: "Stores" as const, id: "LIST" },
-            ]
+            ...result.data.map((s) => ({
+              type: "Stores" as const,
+              id: s.id,
+            })),
+            { type: "Stores" as const, id: "LIST" },
+          ]
           : [{ type: "Stores" as const, id: "LIST" }],
     }),
 
@@ -37,10 +37,10 @@ export const storeApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "Stores" }],
     }),
 
-    updateStore: builder.mutation<Store, { id: string; data: UpdateStoreDto }>({
+    updateStores: builder.mutation<Store, { id: string; data: UpdateStoreDto }>({
       query: ({ id, data }) => ({
         url: `/stores/${id}`,
-        method: "PATCH",
+        method: "PUT",
         body: data,
       }),
       invalidatesTags: (_result, _error, { id }) => [
@@ -85,7 +85,7 @@ export const storeApi = baseApi.injectEndpoints({
 export const {
   useGetStoresQuery,
   useCreateStoreMutation,
-  useUpdateStoreMutation,
+  useUpdateStoresMutation,
   useDeleteStoreMutation,
   useGetStoreByIdQuery,
   useUpdateOpeningHoursMutation,

@@ -5,12 +5,12 @@ import InputField from "../../../components/InputField";
 import Button from "../../../components/Button";
 import { useGetStoresQuery } from "../../stores/services/storeApi";
 import SelectField from "../../../components/SelectField";
-import type { CreateKioskDto, Kiosk, UpdateKioskDto } from "../kiosks.types";
+import type { CreateKioskDto, UpdateKioskDto } from "../kiosks.types";
 
 const KioskSchema = Yup.object().shape({
   deviceId: Yup.string().required("Device ID is required"),
   storeId: Yup.string().nullable(),
-  deviceType: Yup.number().required("Device Type is required"),
+  deviceType: Yup.number().oneOf([1, 2]).required("Device Type is required"),
 });
 
 const emptyInitialValues: CreateKioskDto = {
@@ -32,7 +32,13 @@ const KioskModal = ({
   editingKiosk: UpdateKioskDto | null | undefined;
   isSubmitting: boolean;
 }) => {
-  const { data: stores = [] } = useGetStoresQuery();
+  const { data: storesResp } = useGetStoresQuery({
+    page: 1,
+    perPage: 10,
+    query: "",
+  });
+  const stores = storesResp?.data ?? [];
+
   return (
     <Modal
       isOpen={isOpen}
@@ -45,9 +51,9 @@ const KioskModal = ({
           ...emptyInitialValues,
           ...(editingKiosk
             ? {
-                deviceId: editingKiosk.deviceId,
-                storeId: editingKiosk.storeId,
-                deviceType: editingKiosk.deviceType,
+                deviceId: editingKiosk.deviceId ?? "",
+                storeId: editingKiosk.storeId ?? "",
+                deviceType: editingKiosk.deviceType ?? 1,
               }
             : {}),
         }}
@@ -66,46 +72,37 @@ const KioskModal = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { name: "deviceId", label: "Device ID", required: true },
-                { name: "storeId", label: "Select Store" },
-              ].map(({ name, label, required }) => (
-                <div key={name}>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    {label}
-                    {required && <span className="text-red-500"> *</span>}
-                  </label>
+              {/* Device ID */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Device ID <span className="text-red-500"> *</span>
+                </label>
+                <InputField
+                  name="deviceId"
+                  placeholder="Device ID"
+                  value={values.deviceId}
+                  onChange={handleChange}
+                  error={touched.deviceId ? (errors.deviceId as string) : ""}
+                />
+              </div>
 
-                  {name === "storeId" ? (
-                    <SelectField
-                      name={name}
-                      value={values[name].toString()}
-                      onChange={handleChange}
-                      options={stores.map((s) => ({
-                        label: s.name,
-                        value: s.id,
-                      }))}
-                      error={touched[name] ? errors[name] : ""}
-                    />
-                  ) : (
-                    <InputField
-                      name={name}
-                      placeholder={label}
-                      value={
-                        values[name as keyof typeof values]?.toString() ?? ""
-                      }
-                      onChange={handleChange}
-                      error={
-                        touched[name as keyof typeof touched]
-                          ? (errors[name as keyof typeof errors] as string)
-                          : ""
-                      }
-                    />
-                  )}
-                </div>
-              ))}
+              {/* Store (optional) */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Select Store
+                </label>
+                <SelectField
+                  name="storeId"
+                  value={values.storeId ?? ""}
+                  onChange={handleChange}
+                  options={[
+                    ...stores.map((s) => ({ label: s.name, value: s.id })),
+                  ]}
+                  error={touched.storeId ? (errors.storeId as string) : ""}
+                />
+              </div>
 
-              {/* ✅ Device Type Dropdown */}
+              {/* Device Type */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Device Type <span className="text-red-500"> *</span>
@@ -118,7 +115,9 @@ const KioskModal = ({
                     { label: "Self-Service", value: 1 },
                     { label: "Till", value: 2 },
                   ]}
-                  error={touched.deviceType ? errors.deviceType : ""}
+                  error={
+                    touched.deviceType ? (errors.deviceType as string) : ""
+                  }
                 />
               </div>
             </div>

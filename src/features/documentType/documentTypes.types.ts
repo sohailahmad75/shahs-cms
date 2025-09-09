@@ -1,13 +1,29 @@
+import type { Meta } from "../../types";
+
 export interface DocumentType {
+  isMandatory: any;
   id: string;
-  documentName: string;
+  name: string;
   description: string;
-  created: string;
+  createdAt: string;
 }
 
+
+
+
+
+export interface DocumentTypeListResponse {
+  data: DocumentType[];
+  meta: Meta;
+}
+
+
 export interface CreateDocumnetDto {
-  documentName: string;
-  documentDescription?: string;
+  staffKind: DocumentTypeStaffKind;
+  role: DocumentTypeRole;
+  isMandatory: boolean;
+  name: string;
+  description?: string;
 }
 export type UpdateDocumentDto = CreateDocumnetDto;
 

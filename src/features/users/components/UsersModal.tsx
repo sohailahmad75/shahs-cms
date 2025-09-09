@@ -1,22 +1,47 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Formik, Form, getIn } from "formik";
 
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
-import SelectField from "../../../components/SelectField";
 import DatePickerField from "../../../components/DatePickerField";
 import Button from "../../../components/Button";
-import FileUploader from "../../../components/FileUploader";
-import { useParams } from "react-router-dom";
+// import FileUploader from "../../../components/FileUploader"; // Uncomment and wire up if you want uploads here
+
 import BankDetailsFields from "../../stores/components/BankDetailsFields";
 import OpeningHoursFormSection from "../../stores/components/OpeningHoursFormSection";
-import type { UserInfoTypes } from "../users.types";
+
+import BasicInfoForm from "./BasicInfoForm";
 import {
   userEmptyInitialValues,
   userSchema,
   userStepFieldKeys,
 } from "../userHelper";
-import BasicInfoForm from "./BasicInfoForm";
+import {
+  type UserInfoTypes,
+  type CreateUsersDto,
+  type UpdateUsersDto,
+  UserRole,
+} from "../users.types";
+
+import {
+  useCreateUsersMutation,
+  useUpdateUsersMutation,
+} from "../services/UsersApi";
+import { isEqual } from "lodash";
+import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTypeApi";
+import { defaultDays } from "../../stores/helper/store-helper";
+import { useTheme } from "../../../context/themeContext";
+
+// ---------------------------------------------
+// Types
+// ---------------------------------------------
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (values: UserInfoTypes) => void;
+  editingUsers?: Partial<UserInfoTypes>;
+  isSubmitting?: boolean;
+};
 
 const UsersTypeModal = ({
   isOpen,
@@ -24,15 +49,154 @@ const UsersTypeModal = ({
   onSubmit,
   editingUsers,
   isSubmitting,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (values: UserInfoTypes) => void;
-  editingUsers?: Partial<UserInfoTypes>;
-  isSubmitting?: boolean;
-}) => {
-  const { id } = useParams();
+}: Props) => {
   const [activeStep, setActiveStep] = useState(0);
+  const [userId, setUserId] = useState<string | null>(editingUsers?.id || null);
+
+  const [createUser, createStatus] = useCreateUsersMutation();
+  const [updateUser, updateStatus] = useUpdateUsersMutation();
+
+  const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
+
+  const [documentsList, setDocumentsList] = useState<any[]>([]);
+  const [role, setRole] = useState<UserInfoTypes["type"]>(
+    editingUsers?.type || "staff",
+  );
+
+  const { data: documentTypes } = useGetDocumentsTypeQuery(
+    { role },
+    { skip: !role },
+  );
+
+  useEffect(() => {
+    if (!documentTypes?.data) {
+      setDocumentsList([]);
+      return;
+    }
+
+    const userDocsMap = (editingUsers?.documents || []).reduce(
+      (acc: any, doc: any) => {
+        acc[doc.documentTypeId] = doc;
+        return acc;
+      },
+      {},
+    );
+
+    setDocumentsList(
+      documentTypes.data.map((docType: any) => ({
+        ...docType,
+        userDoc: userDocsMap[docType.id] || null,
+      })),
+    );
+  }, [documentTypes, editingUsers]);
+
+  const [openingHours, setOpeningHours] = useState(
+    defaultDays.map((day) => ({
+      day,
+      open: "11:00 am",
+      close: "11:00 pm",
+      closed: false,
+    })),
+  );
+  const [sameAllDays, setSameAllDays] = useState(false);
+
+  useEffect(() => {
+    const source = editingUsers?.availabilityHours || editingUsers?.openingHours;
+
+    if (source?.length) {
+      const dayMap = Object.fromEntries(source.map((h: any) => [h.day, h]));
+
+      const mapped = defaultDays.map((day) => ({
+        id: dayMap[day]?.id || null,
+        day,
+        open: dayMap[day]?.open || "11:00 am",
+        close: dayMap[day]?.close || "11:00 pm",
+        closed: dayMap[day]?.closed ?? false,
+      }));
+
+      setOpeningHours(mapped);
+    } else {
+      setOpeningHours(
+        defaultDays.map((day) => ({
+          day,
+          open: "11:00 am",
+          close: "11:00 pm",
+          closed: false,
+        })),
+      );
+    }
+  }, [editingUsers]);
+
+  const formatDateOnly = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Date(dateString).toISOString().split("T")[0];
+  };
+  const { isDarkMode } = useTheme();
+
+  const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
+    return {
+      basicInfo: {
+        firstName: v.firstName,
+        surName: v.surName,
+        email: v.email,
+        phone: Number(v.phone),
+        street: v.street,
+        city: v.city,
+        postCode: v.postcode,
+        dateOfBirth: v.dateOfBirth,
+        cashInRate: v.cashInRate ?? null,
+        NiRate: v.niRate ?? null,
+        shareCode: v.shareCode ?? null,
+        role: v.type === "owner" ? UserRole.OWNER : UserRole.STAFF,
+      },
+    };
+  };
+
+  const mapUpdateDto = (v: UserInfoTypes, userId: string): UpdateUsersDto => {
+    return {
+      userBankDetails:
+        (v.bankDetails || []).map((b) => ({
+          userId,
+          accountNumber: b.accountNumber || "",
+          sortCode: b.sortCode || "",
+          bankName: b.bankName || "",
+          accountHolderName: b.accountHolderName || "",
+          iban: b.iban || "",
+          swiftCode: b.swiftCode || "",
+        })) || [],
+      userAvailability: (v.openingHours || []).map((o) => ({
+        id: (o as any).id || undefined,
+        day: o.day,
+        open: o.closed ? null : o.open || null,
+        close: o.closed ? null : o.close || null,
+        closed: !!o.closed,
+        userId,
+      })),
+      userDocuments: Object.entries(v.documents || {}).map(
+        ([docTypeId, doc]: [string, any]) => ({
+          documentType: docTypeId, // backend expects doc type id here
+          fileS3Key: doc.fileS3Key || null,
+          fileType: doc.fileType || null,
+          name: doc.name || null,
+          expiresAt: doc.expiresAt || null,
+          remindBeforeDays: doc.remindBeforeDays
+            ? Number(doc.remindBeforeDays)
+            : null,
+        }),
+      ),
+    };
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveStep(0);
+      if (!editingUsers) {
+        setUserId(null);
+      } else {
+        setUserId(editingUsers.id || null);
+      }
+    }
+  }, [isOpen, editingUsers]);
 
   const baseSteps = useMemo(
     () => [
@@ -44,7 +208,6 @@ const UsersTypeModal = ({
     [],
   );
 
-  // Visible steps depend on selected type (availability not for owner)
   const getVisibleSteps = (type: UserInfoTypes["type"]) =>
     type === "owner"
       ? baseSteps.filter((s) => s.key !== "availability")
@@ -62,7 +225,7 @@ const UsersTypeModal = ({
           ...userEmptyInitialValues,
           ...(editingUsers || {}),
         }}
-        validationSchema={userSchema}
+        validationSchema={userSchema(documentsList)}
         enableReinitialize
         onSubmit={onSubmit}
       >
@@ -74,187 +237,211 @@ const UsersTypeModal = ({
           touched,
           setFieldTouched,
           validateForm,
-          submitForm,
         }) => {
+          useEffect(() => {
+            if (values.type && values.type !== role) {
+              setRole(values.type);
+            }
+          }, [values.type]);
+
           const steps = getVisibleSteps(values.type);
-          if (activeStep >= steps.length) setActiveStep(steps.length - 1);
-          const current = steps[activeStep];
+          const totalSteps = steps.length;
+          const currentIndex = activeStep >= totalSteps ? totalSteps - 1 : activeStep;
+          const current = steps[currentIndex];
+
           const stepKeysOf = (stepIdx: number) =>
-            userStepFieldKeys[
-              steps[stepIdx].key as keyof typeof userStepFieldKeys
-            ];
+            userStepFieldKeys[steps[stepIdx].key as keyof typeof userStepFieldKeys];
 
-          // does a given step have errors?
-          const stepHasErrors = (
-            allErrors: Record<string, any>,
-            stepIdx: number,
-          ) => {
-            const keys = stepKeysOf(stepIdx);
-            return keys.some((k) => getIn(allErrors, k) !== undefined);
-          };
-
-          // touch fields for a set of steps (so errors render)
-          const touchSteps = async (from: number, to: number) => {
-            const toTouch = new Set<string>();
-            for (let i = from; i <= to; i++) {
-              stepKeysOf(i).forEach((k) => toTouch.add(k));
-            }
-            await Promise.all(
-              [...toTouch].map((k) => setFieldTouched(k, true, false)),
-            );
-          };
-
-          // focus first invalid field among steps [from..to]
-          const focusFirstInvalidInSteps = (
-            allErrors: Record<string, any>,
-            from: number,
-            to: number,
-          ) => {
-            for (let i = from; i <= to; i++) {
-              for (const k of stepKeysOf(i)) {
-                if (getIn(allErrors, k) !== undefined) {
-                  const safe = k.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
-                  const el = document.querySelector(
-                    `[name="${safe}"], [name="${safe}[]"]`,
-                  ) as HTMLElement | null;
-                  if (el && "focus" in el) (el as any).focus();
-                  return;
-                }
-              }
-            }
-          };
           const goNext = async () => {
+            // Build step-specific keys (validate only the visible fields of the step)
+            const getBankFields = (vals: UserInfoTypes) =>
+              vals.bankDetails?.flatMap((_, idx) => [
+                `bankDetails[${idx}].bankName`,
+                `bankDetails[${idx}].accountNumber`,
+                `bankDetails[${idx}].sortCode`,
+              ]) || [];
+
+            const getDocumentFields = (docs: any[]) =>
+              docs.flatMap((doc) => {
+                const fields: string[] = [];
+                if (doc.isMandatory) fields.push(`documents.${doc.id}.fileS3Key`);
+                fields.push(
+                  `documents.${doc.id}.fileType`,
+                  `documents.${doc.id}.expiresAt`,
+                  `documents.${doc.id}.remindBeforeDays`,
+                );
+                return fields;
+              });
+
             const stepKeys =
-              userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
+              current.key === "account"
+                ? getBankFields(values)
+                : current.key === "documents"
+                ? getDocumentFields(documentsList || [])
+                : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
-            // Mark current step fields as touched so errors render
-            await Promise.all(
-              stepKeys.map((k) => setFieldTouched(k, true, false)),
-            );
+            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
 
-            // Validate whole form, then filter to current step's errors
             const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter(
-              (k) => getIn(allErrors, k) !== undefined,
-            );
+            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
 
             if (stepErrors.length) {
-              // Focus the first field with an error
               const first = stepErrors[0];
-
-              // CSS attribute selector needs brackets escaped for nested names
               const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
               const el = document.querySelector(
                 `[name="${safe}"], [name="${safe}[]"]`,
               ) as HTMLElement | null;
-
               if (el && "focus" in el) (el as any).focus();
-              return; // stop; don't advance
+              return;
             }
 
-            // No errors for this step -> advance or submit
-            if (activeStep < steps.length - 1) {
+            // Ensure we have an ID (create on first step for new users)
+            let idForPut = userId || values.id;
+
+            if (current.key === "basic" && !editingUsers && !idForPut) {
+              try {
+                const payload = mapCreateDto(values);
+                const res: any = await createUser(payload).unwrap();
+                const newId = res.user?.id || res.id || res.data?.id;
+                if (newId) {
+                  setUserId(newId);
+                  await setFieldValue("id", newId);
+                  idForPut = newId;
+                } else {
+                  console.error("User create response missing ID", res);
+                  return;
+                }
+              } catch (err) {
+                console.error("Create user failed:", err);
+                return;
+              }
+            }
+
+            if (!idForPut) {
+              console.error("No userId found to update.");
+              return;
+            }
+
+            try {
+              if (current.key === "basic") {
+                const newBasic = mapCreateDto(values).basicInfo;
+                const oldBasic = editingUsers
+                  ? mapCreateDto(editingUsers as UserInfoTypes).basicInfo
+                  : null;
+                if (!oldBasic || shouldUpdate(oldBasic, newBasic)) {
+                  await updateUser({ id: idForPut, data: { basicInfo: newBasic } }).unwrap();
+                }
+              }
+
+              if (current.key === "account") {
+                const newBank = mapUpdateDto(values, idForPut).userBankDetails;
+                const hasData = newBank.some(
+                  (b) =>
+                    b.accountNumber ||
+                    b.sortCode ||
+                    b.bankName ||
+                    b.accountHolderName ||
+                    b.iban ||
+                    b.swiftCode,
+                );
+                const oldBank = editingUsers
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
+                  : null;
+
+                if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
+                  await updateUser({ id: idForPut, data: { userBankDetails: newBank } }).unwrap();
+                }
+              }
+
+              if (current.key === "availability") {
+                const newAvail = mapUpdateDto(values, idForPut).userAvailability;
+                const oldAvail = editingUsers
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userAvailability
+                  : null;
+                if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
+                  await updateUser({ id: idForPut, data: { userAvailability: newAvail } }).unwrap();
+                }
+              }
+
+              if (current.key === "documents") {
+                const newDocs = mapUpdateDto(values, idForPut).userDocuments;
+                const oldDocs = editingUsers
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
+                  : null;
+                if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
+                  await updateUser({ id: idForPut, data: { userDocuments: newDocs } }).unwrap();
+                }
+              }
+            } catch (err) {
+              console.error("Update user failed:", err);
+              return;
+            }
+
+            if (currentIndex < totalSteps - 1) {
               setActiveStep((s) => s + 1);
             } else {
-              await submitForm();
+              onClose?.();
             }
           };
 
-          const goBack = () => setActiveStep((s) => Math.max(0, s - 1));
+          const goToStep = async (targetIdx: number) => {
+            if (targetIdx <= currentIndex) {
+              setActiveStep(targetIdx);
+              return;
+            }
+
+            const stepKeys = stepKeysOf(currentIndex);
+            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
+
+            const allErrors = await validateForm();
+            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+            if (stepErrors.length === 0) {
+              setActiveStep(targetIdx);
+            } else {
+              console.log("Validation failed, cannot move to next step");
+            }
+          };
+
+          const isSaving = isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 
           return (
             <Form className="space-y-6">
-              {/* Stepper Header */}
               <div className="flex items-center justify-between">
                 {steps.map((s, idx) => {
-                  const isActive = idx === activeStep;
-                  const isDone = idx < activeStep;
-                  const isError = stepHasErrors(errors, idx);
+                  const isActive = idx === currentIndex;
+                  const isDone = idx < currentIndex;
 
                   const pillBase =
                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
                   const pillState = isActive
                     ? "border-orange-400 text-orange-600"
-                    : isError
-                      ? "border-red-400 text-red-600"
-                      : isDone
-                        ? "border-green-400 text-green-600"
-                        : "border-gray-300 text-gray-600";
-
-                  const dotBase =
-                    "w-6 h-6 flex items-center justify-center rounded-full";
-                  const dotState = isActive
-                    ? "bg-orange-500 text-white"
-                    : isError
-                      ? "bg-red-500 text-white"
-                      : isDone
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-200 text-gray-700";
-
-                  const handleStepClick = async () => {
-                    if (idx <= activeStep) {
-                      setActiveStep(idx);
-                      return;
-                    }
-                    await touchSteps(0, idx - 1);
-                    const allErrors = await validateForm();
-                    let firstInvalid = -1;
-                    for (let i = 0; i <= idx - 1; i++) {
-                      if (stepHasErrors(allErrors, i)) {
-                        firstInvalid = i;
-                        break;
-                      }
-                    }
-                    if (firstInvalid !== -1) {
-                      setActiveStep(firstInvalid);
-                      focusFirstInvalidInSteps(
-                        allErrors,
-                        firstInvalid,
-                        firstInvalid,
-                      );
-                      return;
-                    }
-                    setActiveStep(idx);
-                  };
+                    : isDone
+                    ? "border-green-400 text-green-600"
+                    : "border-gray-300 text-gray-600";
 
                   return (
-                    <div
-                      key={s.key}
-                      className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}
-                    >
+                    <div key={s.key} className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}>
                       <div
+                        className={`${pillBase} ${pillState}`}
                         role="button"
                         tabIndex={0}
-                        onClick={handleStepClick}
-                        onKeyDown={(e) =>
-                          (e.key === "Enter" || e.key === " ") &&
-                          handleStepClick()
-                        }
-                        className={`${pillBase} ${pillState}`}
+                        onClick={() => goToStep(idx)}
                       >
-                        <span className={`${dotBase} ${dotState}`}>
-                          {idx + 1}
-                        </span>
-                        <span className="font-medium whitespace-nowrap">
-                          {s.label}
-                        </span>
+                        <span>{idx + 1}</span>
+                        <span className="font-medium whitespace-nowrap">{s.label}</span>
                       </div>
-
-                      {idx < steps.length - 1 && (
-                        <div className="h-px flex-1 bg-gray-200 mx-2" />
-                      )}
+                      {idx < steps.length - 1 && <div className="h-px flex-1 bg-gray-200 mx-2" />}
                     </div>
                   );
                 })}
               </div>
 
-              {/* Step Content */}
               {current.key === "basic" && (
                 <BasicInfoForm
                   onTypeChange={(nextType) => {
                     const visible = getVisibleSteps(nextType);
-                    if (activeStep >= visible.length)
-                      setActiveStep(visible.length - 1);
+                    if (currentIndex >= visible.length) setActiveStep(visible.length - 1);
                   }}
                 />
               )}
@@ -263,6 +450,7 @@ const UsersTypeModal = ({
                 <BankDetailsFields
                   values={values}
                   setFieldValue={setFieldValue}
+                  setFieldTouched={setFieldTouched}
                   errors={errors}
                   touched={touched}
                 />
@@ -270,115 +458,109 @@ const UsersTypeModal = ({
 
               {current.key === "availability" && values.type === "staff" && (
                 <OpeningHoursFormSection
-                  openingHours={values.openingHours}
-                  setOpeningHours={(hrs) => setFieldValue("openingHours", hrs)}
-                  sameAllDays={values.sameAllDays}
-                  setSameAllDays={(v: boolean) =>
-                    setFieldValue("sameAllDays", v)
-                  }
+                  openingHours={openingHours}
+                  setOpeningHours={(updated) => {
+                    setOpeningHours(updated);
+                    setFieldValue("openingHours", updated);
+                  }}
+                  sameAllDays={sameAllDays}
+                  setSameAllDays={setSameAllDays}
                 />
               )}
 
               {current.key === "documents" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Upload Document{" "}
-                      {values.type === "staff" && (
-                        <span className="text-red-500">*</span>
-                      )}
-                    </label>
-                    <FileUploader
-                      value={values.fileS3Key}
-                      onChange={(key) => setFieldValue("fileS3Key", key)}
-                      path="user-documents"
-                      type="all"
-                      pathId={id}
-                      error={
-                        touched.fileS3Key && errors.fileS3Key
-                          ? (errors.fileS3Key as string)
-                          : ""
-                      }
-                    />
-                  </div>
-
-                  {values.fileS3Key && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        File Type <span className="text-red-500">*</span>
-                      </label>
-                      <SelectField
-                        name="fileType"
-                        value={values.fileType}
-                        onChange={handleChange}
-                        options={[
-                          { label: "Passport", value: "passport" },
-                          { label: "FSA Cert", value: "fsa_cert" },
-                          { label: "License", value: "license" },
-                        ]}
-                        error={
-                          touched.fileType ? (errors.fileType as string) : ""
-                        }
-                      />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[100px]">
+                  {documentsList.length === 0 ? (
+                    <div className="col-span-2 flex justify-center items-center">
+                      <p className="text-gray-500">No Documents available for this role.</p>
                     </div>
+                  ) : (
+                    documentsList.map((doc) => {
+                      const hasFile = Boolean(
+                        (values as any).documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key,
+                      );
+                      return (
+                        <div key={doc.id} className="md:col-span-2 pb-4">
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
+                          </label>
+
+                          {/* File key (string). If you have a FileUploader, wire it here and set fileS3Key/fileType/name */}
+                          <InputField
+                            placeholder="File S3 Key"
+                            name={`documents.${doc.id}.fileS3Key`}
+                            value={
+                              (values as any).documents?.[doc.id]?.fileS3Key ?? doc.userDoc?.fileS3Key ?? ""
+                            }
+                            onChange={handleChange}
+                          />
+
+                          {/* Optional: name & fileType */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                            <InputField
+                              placeholder="Document Name (optional)"
+                              name={`documents.${doc.id}.name`}
+                              value={(values as any).documents?.[doc.id]?.name ?? doc.userDoc?.name ?? ""}
+                              onChange={handleChange}
+                            />
+                            <InputField
+                              placeholder="File Type (e.g., pdf)"
+                              name={`documents.${doc.id}.fileType`}
+                              value={(values as any).documents?.[doc.id]?.fileType ?? doc.userDoc?.fileType ?? ""}
+                              onChange={handleChange}
+                            />
+                          </div>
+
+                          {hasFile && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                              <div>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">Expiry Date</label>
+                                <DatePickerField
+                                  name={`documents.${doc.id}.expiresAt`}
+                                  value={formatDateOnly(
+                                    (values as any).documents?.[doc.id]?.expiresAt || doc.userDoc?.expiresAt,
+                                  )}
+                                  onChange={(v: any) => setFieldValue(`documents.${doc.id}.expiresAt`, v)}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">Remind Before (days)</label>
+                                <InputField
+                                  placeholder="Remind Before (days)"
+                                  name={`documents.${doc.id}.remindBeforeDays`}
+                                  type="number"
+                                  value={String(
+                                    (values as any).documents?.[doc.id]?.remindBeforeDays ??
+                                      doc.userDoc?.remindBeforeDays ??
+                                      "",
+                                  )}
+                                  onChange={handleChange}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Expiry Date
-                    </label>
-                    <DatePickerField
-                      name="expiresAt"
-                      value={values.expiresAt}
-                      onChange={(v: any) => setFieldValue("expiresAt", v)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Remind Before (days)
-                    </label>
-                    <InputField
-                      placeholder="Remind Before (days)"
-                      name="remindBeforeDays"
-                      type="number"
-                      value={String(values.remindBeforeDays ?? "")}
-                      onChange={handleChange}
-                      error={
-                        touched.remindBeforeDays
-                          ? (errors.remindBeforeDays as string)
-                          : ""
-                      }
-                    />
-                  </div>
                 </div>
               )}
 
-              {/* Footer Buttons */}
               <div className="flex justify-between pt-2">
                 <Button type="button" variant="outlined" onClick={onClose}>
                   Cancel
                 </Button>
-
                 <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outlined"
-                    onClick={goBack}
-                    disabled={activeStep === 0}
+                    onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
+                    disabled={currentIndex === 0 || isSaving}
                   >
                     Back
                   </Button>
-                  <Button
-                    type="button"
-                    onClick={goNext}
-                    disabled={isSubmitting}
-                  >
-                    {activeStep < steps.length - 1
-                      ? "Next"
-                      : isSubmitting
-                        ? "Saving..."
-                        : "Save"}
+                  <Button type="button" onClick={goNext} disabled={isSaving}>
+                    {currentIndex < steps.length - 1 ? "Next" : isSaving ? "Saving..." : "Save"}
                   </Button>
                 </div>
               </div>

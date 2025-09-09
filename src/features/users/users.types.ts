@@ -1,58 +1,200 @@
-export interface UsersType {
-  id: string;
-  name: string;
-  userType: "staff" | "store_owner";
-  fileS3Key?: string;
-  fileType?: string;
-  expiresAt?: string;
-  remindBeforeDays?: number;
-  stores?: string[];
-  created: string;
+import type { Meta } from "../../types";
+
+export type UserType = "owner" | "staff";
+
+export enum UserRole {
+  OWNER = 1,
+  STAFF = 3,
 }
 
-export interface CreateUsersDto {
-  name: string;
-  userType: "staff" | "store_owner";
-  fileS3Key?: string;
-  fileType?: string;
-  expiresAt?: string;
-  remindBeforeDays?: number;
-  stores?: string[];
-  documentDescription?: string;
-}
+export type OpeningHour = {
+  id: any;
+  day: string;
+  open: string;
+  close: string;
+  closed: boolean;
+};
 
-export type UpdateUsersDto = CreateUsersDto & {
-  id: string;
+export type BankDetail = {
+  userId?: string;
+  accountNumber?: string;
+  sortCode?: string;
+  bankName?: string;
+  accountHolderName?: string;
+  iban?: string;
+  swiftCode?: string;
+};
+
+export type FileType = "passport" | "fsa_cert" | "license" | "all" | "";
+
+export type DocumentInfo = {
+  fileS3Key?: string | null;
+  fileType?: FileType;
+  expiresAt?: any;
+  remindBeforeDays?: number | null;
 };
 
 export type UserInfoTypes = {
+  availabilityHours: any[];
+  documents: any;
+  role: UserRole;
+  dateOfBirth: string;
+  id?: string;
+  type: UserType;
+  firstName: string;
+  surName: string;
+  email: string;
+  phone: number;
+  street: string;
+  city: string;
+  postcode: string;
+  cashInRate?: number | null;
+  niRate?: number | null;
+  niNumber?: string | null;
+  shareCode?: string | null;
+
+  bankDetails?: BankDetail[];
+
+
+  openingHours: OpeningHour[];
+  sameAllDays?: boolean;
+
+
+  fileS3Key?: string | null;
+  fileType?: string;
+  expiresAt?: any;
+  remindBeforeDays?: number | null;
+};
+
+export type UsersType = UserInfoTypes;
+
+
+export type CreateUsersDto = {
+  basicInfo: {
+    firstName: string;
+    surName: string;
+    email: string;
+    phone: number;
+    street: string;
+    city: string;
+    postCode: string;
+    dateOfBirth: string;
+    cashInRate?: number | null;
+    NiRate?: number | null;
+    shareCode?: string | null;
+    role: UserRole;
+  };
+};
+
+export type UpdateUsersDto = {
+  basicInfo?: {
+    firstName?: string;
+    surName?: string;
+    email?: string;
+    phone?: number;
+    street?: string;
+    city?: string;
+    postCode?: string;
+    dateOfBirth?: string;
+    cashInRate?: number | null;
+    NiRate?: number | null;
+    shareCode?: string | null;
+    role?: UserRole;
+  };
+  userBankDetails?: Array<Required<BankDetail>>;
+  userAvailability?: Array<{
+    day: string;
+    open?: string | null;
+    close?: string | null;
+    closed?: boolean;
+  }>;
+  userDocuments?: UserDocument[];
+};
+
+
+export const userStepFieldKeys = {
+  basic: [
+    "firstName",
+    "surName",
+    "email",
+    "phone",
+    "street",
+    "city",
+    "postcode",
+    "dateOfBirth",
+    "cashInRate",
+    "niRate",
+    "niNumber",
+    "shareCode",
+    "password",
+    "type",
+  ],
+  account: [
+    "bankDetails",
+  ],
+  availability: [
+    "openingHours",
+    "sameAllDays",
+  ],
+  documents: [
+    "fileS3Key",
+    "fileType",
+    "expiresAt",
+    "remindBeforeDays",
+  ],
+} as const;
+
+
+
+export interface UsersTypeListResponse {
+  data: UsersType[];
+  meta: Meta;
+}
+
+
+export type UserDocument = {
+  documentType: string;
+  fileType: string;
+  fileS3Key: string | null;
+  name?: string | null;
+  expiresAt?: string | null;
+  remindBeforeDays?: number | null;
+};
+
+
+
+
+
+interface AvailabilityHour {
+  day: string;
+  open: string;
+  close: string;
+  closed: boolean;
+}
+
+interface userDocuments {
+  id: number;
+  name: string;
+  documentTypeId: number;
+  expiresAt: string;
+}
+
+export interface Users {
+  id: number;
   firstName: string;
   surName: string;
   email: string;
   phone: string;
   street: string;
   city: string;
-  postcode: string;
-  dob: string | Date | null;
-  cashInRate: number | string;
-  niRate: number | string;
+  postCode: string;
+  dateOfBirth: string;
+  cashInRate: string;
+  NiRate: string;
   shareCode: string;
-  type: "staff" | "owner" | "";
-  niNumber: string;
-  bankDetails: Array<{
-    bankName: string;
-    accountNumber: string;
-    sortCode: string;
-  }>;
-  openingHours: Array<{
-    day: string;
-    open: string;
-    close: string;
-    closed: boolean;
-  }>;
-  sameAllDays: boolean;
-  fileS3Key: string;
-  fileType: string;
-  expiresAt: string | Date | null;
-  remindBeforeDays: number | string;
-};
+  role: string;
+  statusId: string;
+  availabilityHours: AvailabilityHour[];
+  bankDetails: BankDetail[];
+  userDocuments: userDocuments[];
+}

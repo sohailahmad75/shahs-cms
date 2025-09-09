@@ -9,26 +9,47 @@ import {
 } from "./services/kiosksApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
+import type { Kiosk, CreateKioskDto, UpdateKioskDto } from "./kiosks.types";
 import Loader from "../../components/Loader";
 import KioskModal from "./components/KioskModal";
+import { Link } from "react-router-dom";
 import EditIcon from "../../assets/styledIcons/EditIcon";
-import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
-import StatusTag from "../../components/StatusTag";
-import type { Kiosk } from "./kiosks.types";
-import { useTheme } from "../../context/themeContext";
+import TrashIcon from "../../assets/styledIcons/TrashIcon";
+import EyeOpen from "../../assets/styledIcons/EyeOpen";
+import InputField from "../../components/InputField";
+import Pagination from "../../components/Pagination";
+import ConfirmDelete from "../../components/ConfirmDelete";
 
-const KiosksListPage: React.FC = () => {
-  const { data: kiosks = [], isLoading, refetch } = useGetKiosksQuery();
-  const [createKiosk, { isLoading: creating }] = useCreateKioskMutation();
-  const [updateKiosk, { isLoading: updating }] = useUpdateKioskMutation();
-  const [deleteKiosk] = useDeleteKioskMutation();
-  const { isDarkMode } = useTheme();
+const KioskListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingKioskId, setEditingKioskId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState<number>(10);
+
+  const {
+    data: kiosksResp = {
+      data: [],
+      meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
+    },
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetKiosksQuery({ page, perPage, query });
+
+  const [createKiosk, { isLoading: creatingLoading }] =
+    useCreateKioskMutation();
+  const [updateKiosk, { isLoading: updateLoading }] = useUpdateKioskMutation();
+  const [deleteKiosk] = useDeleteKioskMutation();
+
   const { data: editingKioskData } = useGetKioskByIdQuery(editingKioskId!, {
     skip: !editingKioskId,
   });
+
+  const kiosks = kiosksResp.data;
+  const meta = kiosksResp.meta;
+  const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
   const handleEdit = (id: string) => {
     setEditingKioskId(id);
@@ -36,53 +57,57 @@ const KiosksListPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await deleteKiosk(id).unwrap();
-      toast.success("Kiosk deleted");
-      refetch();
-    } catch (err: any) {
-      toast.error("Failed to delete kiosk");
-    }
+    await deleteKiosk(id).unwrap();
+    toast.success("Kiosk deleted");
+    refetch();
   };
+
+  const deviceTypeLabel = (t: number) => (t === 2 ? "Till" : "Self-Service");
 
   const columns: Column<Kiosk>[] = [
     {
       key: "index",
       label: "#",
-      render: (_, __, index) => <span>{index + 1}</span>,
+      render: (_v, _row, index) => (
+        <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
+      ),
     },
-    { key: "deviceTypeLabel", label: "Device Type" },
     { key: "deviceId", label: "Device ID" },
     {
-      key: "status",
-      label: "Status",
-      render: (_, row) => <StatusTag status={row.status} />,
+      key: "deviceType",
+      label: "Type",
+      render: (v) => <span>{deviceTypeLabel(Number(v ?? 1))}</span>,
     },
     {
-      key: "storeId",
+      key: "store",
       label: "Store",
-      render: (_, row) => (
-        <span className="capitalize">{row?.store?.name ?? "-"}</span>
-      ),
+      render: (_v, row) => <span>{row.store?.name ?? "—"}</span>,
     },
     {
       key: "actions",
       label: "Actions",
-      render: (_, row) => (
+      render: (_v, row) => (
         <div className="flex gap-2">
+          <Link to={`/kiosks/${row.id}`} className="hover:underline">
+            <ActionIcon
+              className="text-secondary-100"
+              icon={<EyeOpen size={22} />}
+            />
+          </Link>
           <ActionIcon
             icon={<EditIcon size={22} />}
             onClick={() => handleEdit(row.id)}
-            className={
-              isDarkMode
-                ? "text-slate-400 hover:text-slate-200"
-                : "text-gray-500 hover:text-gray-700"
-            }
           />
-          <ActionIcon
-            className="text-red-500"
-            icon={<TrashIcon size={22} />}
-            onClick={() => handleDelete(row.id)}
+          <ConfirmDelete
+            onConfirm={async () => handleDelete(row.id)}
+            renderTrigger={({ open }) => (
+              <ActionIcon
+                className="text-red-500"
+                icon={<TrashIcon size={22} />}
+                onClick={open}
+                title="Delete"
+              />
+            )}
           />
         </div>
       ),
@@ -91,7 +116,8 @@ const KiosksListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Kiosks</h1>
         <Button
           onClick={() => {
@@ -103,15 +129,62 @@ const KiosksListPage: React.FC = () => {
         </Button>
       </div>
 
-      {isLoading ? (
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <InputField
+            className="w-72"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search kiosks…"
+            name="query"
+          />
+        </div>
+      </div>
+
+      {/* Table / loader / empty state */}
+      {isLoading || isFetching ? (
         <Loader />
+      ) : kiosks.length === 0 ? (
+        <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
+          No kiosks found.
+          {query ? (
+            <span className="block text-sm text-gray-500 mt-1">
+              Try adjusting your search.
+            </span>
+          ) : (
+            <span className="block text-sm text-gray-500 mt-1">
+              Click <strong>Add Kiosk</strong> to create your first one.
+            </span>
+          )}
+        </div>
       ) : (
-        <DynamicTable
-          data={kiosks}
-          columns={columns}
-          rowKey="id"
-          tableClassName="bg-white dark:bg-slate-900"
-        />
+        <>
+          <div className="rounded-lg shadow-sm">
+            <DynamicTable
+              data={kiosks}
+              columns={columns}
+              rowKey="id"
+              tableClassName="bg-white"
+            />
+          </div>
+
+          <Pagination
+            className="mt-4"
+            page={page}
+            perPage={perPage}
+            total={meta.total}
+            onPageChange={(p) => setPage(p)}
+            onPerPageChange={(pp) => {
+              setPerPage(pp);
+              setPage(1);
+            }}
+            perPageOptions={[10, 25, 50]}
+          />
+        </>
       )}
 
       <KioskModal
@@ -120,28 +193,23 @@ const KiosksListPage: React.FC = () => {
           setModalOpen(false);
           setEditingKioskId(null);
         }}
-        onSubmit={async (values) => {
+        onSubmit={async (values: CreateKioskDto | UpdateKioskDto) => {
           if (editingKioskId) {
-            await updateKiosk({
-              id: editingKioskId,
-              data: values,
-            }).unwrap();
-
-            toast.success("Kiosk updated");
+            await updateKiosk({ id: editingKioskId, data: values }).unwrap();
+            toast.success("Kiosk updated successfully");
           } else {
             await createKiosk(values).unwrap();
-
-            toast.success("Kiosk created");
+            toast.success("Kiosk created successfully");
           }
           refetch();
           setModalOpen(false);
           setEditingKioskId(null);
         }}
         editingKiosk={editingKioskId ? editingKioskData : null}
-        isSubmitting={creating || updating}
+        isSubmitting={creatingLoading || updateLoading}
       />
     </div>
   );
 };
 
-export default KiosksListPage;
+export default KioskListPage;

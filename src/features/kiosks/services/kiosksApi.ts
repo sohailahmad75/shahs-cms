@@ -1,23 +1,43 @@
 import { baseApi } from "../../../services/baseApi";
-import type { Kiosk } from "../kiosks.types";
+import type { Kiosk, KioskListResponse } from "../kiosks.types";
 import type { CreateKioskDto, UpdateKioskDto } from "../kiosks.types";
 
 export const kiosksApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getKiosks: builder.query<Kiosk[], void>({
-      query: () => "/Kiosks",
+
+    getKiosks: builder.query<
+      KioskListResponse,
+      { page?: number; perPage?: number; query?: string }
+    >({
+      query: (args) => {
+        const { page = 1, perPage = 10, query = "" } = args ?? {};
+        return { url: "/kiosks", params: { page, perPage, query } };
+      },
+      transformResponse: (resp: any) => {
+        if (Array.isArray(resp)) {
+          return {
+            data: resp,
+            meta: {
+              total: resp.length,
+              page: 1,
+              perPage: resp.length,
+              totalPages: 1,
+            },
+          } as KioskListResponse;
+        }
+        return resp;
+      },
       providesTags: (result) =>
         result
           ? [
-              ...result.map((kiosk) => ({
+              ...result.data.map((k) => ({
                 type: "Kiosks" as const,
-                id: kiosk.id,
+                id: k.id,
               })),
-              { type: "Kiosks" },
+              { type: "Kiosks" as const, id: "LIST" },
             ]
-          : [{ type: "Kiosks" }],
+          : [{ type: "Kiosks" as const, id: "LIST" }],
     }),
-
     createKiosk: builder.mutation<Kiosk, CreateKioskDto>({
       query: (body) => ({
         url: "/kiosks",

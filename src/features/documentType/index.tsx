@@ -9,21 +9,39 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
 import type { DocumentType } from "./documentTypes.types";
 import { useTheme } from "../../context/themeContext";
+import InputField from "../../components/InputField";
+import Pagination from "../../components/Pagination";
 
 import {
-  useGetDocumentsQuery,
-  useCreateDocumentMutation,
-  useUpdateDocumentMutation,
-  useDeleteDocumentMutation,
-} from "./services/documentsApi";
+  useGetDocumentsTypeQuery,
+  useCreateDocumentsTypeMutation,
+  useUpdateDocumentsTypeMutation,
+  useDeleteDocumentsTypeMutation,
+} from "./services/documentTypeApi";
 
 const DocumentTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery();
-  const [createDocument, { isLoading: creating }] = useCreateDocumentMutation();
-  const [updateDocument, { isLoading: updating }] = useUpdateDocumentMutation();
-  const [deleteDocument] = useDeleteDocumentMutation();
+  // State for pagination and search
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [search, setSearch] = useState("");
+6
+  // API call with pagination params
+  const {
+    data: resp = { data: [], meta: { total: 0, page: 1, perPage: 10, totalPages: 1 } },
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetDocumentsTypeQuery({ page, perPage, search });
+
+  const documents = resp.data;
+  const meta = resp.meta;
+  const apiPageIndexBase = (meta.page - 1) * meta.perPage;
+
+  const [createDocument, { isLoading: creating }] = useCreateDocumentsTypeMutation();
+  const [updateDocument, { isLoading: updating }] = useUpdateDocumentsTypeMutation();
+  const [deleteDocument] = useDeleteDocumentsTypeMutation();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState<DocumentType | null>(
@@ -46,14 +64,18 @@ const DocumentTypeListPage: React.FC = () => {
   };
 
   const columns: Column<DocumentType>[] = [
-    { key: "id", label: "ID" },
-    { key: "documentName", label: "Document Name" },
+    {
+      key: "index",
+      label: "#",
+      render: (_v, _row, index) => <span>{apiPageIndexBase + (index ?? 0) + 1}</span>,
+    },
+    { key: "name", label: "Document Name" },
     { key: "description", label: "Description" },
     {
-      key: "created",
+      key: "createdAt",
       label: "Created At",
       render: (_, row) =>
-        row.created ? new Date(row.created).toLocaleString() : "-",
+        row.createdAt ? new Date(row.createdAt).toLocaleString() : "-",
     },
     {
       key: "actions",
@@ -94,7 +116,24 @@ const DocumentTypeListPage: React.FC = () => {
         </Button>
       </div>
 
-      {isLoading ? (
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <InputField
+            className="w-72"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1); // Reset to first page on search
+            }}
+            placeholder="Search documents…"
+            name="search"
+          />
+        </div>
+      </div>
+
+      {/* Table / Loader / Empty */}
+      {isLoading || isFetching ? (
         <Loader />
       ) : (
         <DynamicTable
@@ -105,6 +144,7 @@ const DocumentTypeListPage: React.FC = () => {
         />
       )}
 
+      {/* Modal */}
       <DocumentTypeModal
         isOpen={modalOpen}
         onClose={() => {
@@ -126,7 +166,7 @@ const DocumentTypeListPage: React.FC = () => {
           setModalOpen(false);
           setEditingDocument(null);
         }}
-        editingDocument={editingDocument}
+        editingDocument={editingDocument as any}
         isSubmitting={creating || updating}
       />
     </div>

@@ -37,29 +37,60 @@ export const getFsaBadgeUrl = (rating: string) => {
   }
 };
 
-export const CreateStoreSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  phone: Yup.string().required("Phone is required"),
-  street: Yup.string().required("Street is required"),
-  city: Yup.string().required("City is required"),
-  postcode: Yup.string().required("Postcode is required"),
-  country: Yup.string().required("Country is required"),
-  storeType: Yup.number().required("Store type is required"),
-  companyName: Yup.string().required("Company Name is required"),
-  companyNumber: Yup.string().required("Company Number is required"),
-  bankDetails: Yup.array().of(
-    Yup.object().shape({
-      bankName: Yup.string().required("Bank name is required"),
-      accountNumber: Yup.string()
-        .matches(/^\d+$/, "Account number must be digits only")
-        .required("Account number is required"),
-      sortCode: Yup.string()
-        .matches(/^\d{6}$/, "Sort code must be 6 digits")
-        .required("Sort code is required"),
-    }),
-  ),
-});
+export const CreateStoreSchema = (documentsList: any[]) =>
+  Yup.object().shape({
+    name: Yup.string().required("Name is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    phone: Yup.string().required("Phone is required"),
+    street: Yup.string().required("Street is required"),
+    city: Yup.string().required("City is required"),
+    postcode: Yup.string().required("Postcode is required"),
+    country: Yup.string().required("Country is required"),
+    storeType: Yup.number().required("Store type is required"),
+    companyName: Yup.string().required("Company Name is required"),
+    companyNumber: Yup.string().required("Company Number is required"),
+    bankDetails: Yup.array().of(
+      Yup.object().shape({
+        bankName: Yup.string().required("Bank name is required"),
+        accountNumber: Yup.string()
+          .matches(/^\d+$/, "Account number must be digits only")
+          .required("Account number is required"),
+        sortCode: Yup.string()
+          .matches(/^\d{6}$/, "Sort code must be 6 digits")
+          .required("Sort code is required"),
+      }),
+    ),
+    documents: Yup.object(
+      documentsList.reduce((acc: any, doc: any) => {
+        acc[doc.id] = Yup.object({
+          fileS3Key: doc.isMandatory
+            ? Yup.string().required(`${doc.name} Document is required`)
+            : Yup.string().nullable(),
+          fileType: Yup.string().when("fileS3Key", {
+            is: (v: string) => !!v,
+            then: (s) => s.required("File type is required"),
+            otherwise: (s) => s.notRequired(),
+          }),
+          expiresAt: Yup.mixed().nullable().optional(),
+          remindBeforeDays: Yup.number()
+            .typeError("Must be a number")
+            .min(0, "Cannot be negative")
+            .optional(),
+        });
+        return acc;
+      }, {})
+    ),
+  });
+
+export const defaultDays = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 export const createStoreInitialValues = {
   name: "",
@@ -79,16 +110,41 @@ export const createStoreInitialValues = {
   companyNumber: "",
   storeType: StoreTypeEnum.SHOP,
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
+  availabilityHour: defaultDays.map((day) => ({
+    day,
+    open: "11:00 am",
+    close: "11:00 pm",
+    closed: false,
+  })),
   lat: "",
   lon: "",
+  storeDocuments: {},
 };
 
-export const defaultDays = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
+export const storeStepFieldKeys = {
+  basic: [
+    "name",
+    "email",
+    "phone",
+    "street",
+    "city",
+    "postcode",
+    "country",
+    "companyName",
+    "companyNumber",
+    "storeType",
+  ],
+  account: ["bankDetails"],
+  availability: ["openingHours"],
+  additional: [
+    "vatNumber",
+    "googlePlaceId",
+    "uberStoreId",
+    "deliverooStoreId",
+    "justEatStoreId",
+    "fsaId",
+    "lat",
+    "lon",
+  ],
+  storeDocuments: ["documents"],
+};

@@ -10,26 +10,39 @@ import { toast } from "react-toastify";
 import Loader from "./Loader";
 import { uploadToS3 } from "../helper";
 import { useGetPresignedStoreDocUrlMutation } from "../services/documentApi";
+import { useGetAllMutation } from "../features/users/services/UsersApi";
 
 interface FileUploaderProps {
+  /** The S3 key */
   value: string;
-  onChange: (key: string) => void;
+  /**
+   * onChange can be used in two ways:
+   *  - onChange(key)
+   *  - onChange(key, fileName)
+   */
+  onChange: (key: string, fileName?: string) => void;
+  /** Type of file to upload */
   type?: "image" | "file" | "all";
+  /** Upload path "menu-categories" | "menu-items" | "menu-banner" | "menu-modifier-options" | "store-documents" | "users-documents" */
   path: string;
+  /** Signed URL (or any URL) to show initial preview for edit mode */
   initialPreview?: string;
+
   error?: string | null;
+  /** e.g., storeId when path === "store-documents" */
   pathId?: string;
 
   /** size preset: 1 = small, 4 = extra large */
   size?: 1 | 2 | 3 | 4;
   fit?: "cover" | "contain";
 }
+
 const SIZE_PRESETS = {
   1: {
     height: "h-20 sm:h-24 md:h-28",
     icon: "w-5 h-5",
     font: "text-xs",
-    padding: "p-10 sm:p-3 md:p-2",
+    padding: "p-2 sm:p-3 md:p-4",
   },
   2: {
     height: "h-32 sm:h-36 md:h-45",
@@ -50,6 +63,7 @@ const SIZE_PRESETS = {
     padding: "p-5",
   },
 } as const;
+
 const FileUploader: React.FC<FileUploaderProps> = ({
   value,
   onChange,
@@ -64,15 +78,20 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
   const [getPresignedUrl] = useGetPresignedUrlMutation();
   const [getPresignedStoreDocUrl] = useGetPresignedStoreDocUrlMutation();
+  const [getPresignedAll] = useGetAllMutation();
+
   const { height, icon, font, padding } = SIZE_PRESETS[size];
+
   const isImageType = (fileType: string) => fileType.startsWith("image/");
 
   const getPreviewSource = () => {
     if (localPreviewUrl) return localPreviewUrl; // new uploaded preview
-    if (initialPreview) return initialPreview; // signed URL passed for edit
+    if (initialPreview) return initialPreview; // passed preview (signed URL)
     return null;
+    // If neither, and value holds a non-image key, we show a doc icon + filename.
   };
 
   const onDrop = useCallback(
@@ -86,6 +105,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       if (isImage) {
         const localUrl = URL.createObjectURL(file);
         setLocalPreviewUrl(localUrl);
+        setFileName(null);
       } else {
         setFileName(file.name);
         setLocalPreviewUrl(null);
@@ -120,6 +140,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({
             }).unwrap();
             break;
 
+          case "users-documents":
+            presigned = await getPresignedAll({
+              fileName: file.name,
+              fileType: file.type,
+            }).unwrap();
+            break;
+
           default:
             throw new Error(`Unsupported path: ${path}`);
         }
@@ -127,36 +154,55 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         await uploadToS3(presigned.url, file);
 
         toast.success("File uploaded successfully");
-        onChange(presigned.key);
+        // Support both onChange signatures: (key) and (key, fileName)
+        onChange(presigned.key, file.name);
       } catch (err) {
         console.error(err);
         setLocalPreviewUrl(null);
         setFileName(null);
-        onChange("");
+        onChange("", "");
       } finally {
         setIsUploading(false);
       }
     },
-    [getPresignedStoreDocUrl, getPresignedUrl, onChange, path, pathId],
+    [
+      getPresignedStoreDocUrl,
+      getPresignedUrl,
+      getPresignedAll,
+      onChange,
+      path,
+      pathId,
+    ]
   );
 
   const removeFile = () => {
     if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
     setLocalPreviewUrl(null);
     setFileName(null);
-    onChange("");
+    onChange("", "");
   };
+
+  // const acceptedTypes: Accept =
+  //   type === "image"
+  //     ? { "image/*": [".jpeg", ".jpg", ".png", ".webp"] }
+  //     : { "*/*": [] };
+
 
   const acceptedTypes: Accept =
     type === "image"
-      ? { "image/*": [".jpeg", ".jpg", ".png", ".webp"] }
-      : { "*/*": [] };
+      ? {
+        "image/jpeg": [".jpeg", ".jpg"],
+        "image/png": [".png"],
+        "image/webp": [".webp"]
+      }
+      : {};
+
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: acceptedTypes,
     maxFiles: 1,
-    maxSize: 10 * 1024 * 1024,
+    maxSize: 10 * 1024 * 1024, // 10MB
   });
 
   const previewSrc = getPreviewSource();
@@ -179,12 +225,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               <div className={`w-full h-full flex items-center gap-2 ${font}`}>
                 <DocumentIcon className={`${icon} text-gray-500`} />
                 <span className="text-gray-700 break-all">
-                  {fileName ||
-                    initialPreview?.split("/").pop() ||
-                    "File uploaded"}
+                  {fileName || initialPreview?.split("/").pop() || "File uploaded"}
                 </span>
               </div>
             )}
+
             <button
               type="button"
               onClick={removeFile}
@@ -196,13 +241,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         ) : (
           <div
             {...getRootProps()}
-            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${
-              error
+            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${error
                 ? "border-red-500 bg-red-50"
                 : isDragActive
                   ? "border-orange-100 bg-orange-05"
                   : "border-gray-300 hover:border-orange-100"
-            }`}
+              }`}
           >
             <input {...getInputProps()} />
             {isUploading ? (
