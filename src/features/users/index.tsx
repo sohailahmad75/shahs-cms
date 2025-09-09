@@ -203,7 +203,7 @@ const UsersTypeListPage: React.FC = () => {
         />
       )}
 
-      <UsersTypeModal
+      {/* <UsersTypeModal
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);
@@ -226,7 +226,22 @@ const UsersTypeListPage: React.FC = () => {
         }}
         editingUsers={editingUser}
         isSubmitting={creating || updating}
+      /> */}
+      <UsersTypeModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingUser(null);
+        }}
+        onSubmit={async () => {
+          refetch();
+          setModalOpen(false);
+          setEditingUser(null);
+        }}
+        editingUsers={editingUser}
+        isSubmitting={creating || updating}
       />
+
     </div>
   );
 };
