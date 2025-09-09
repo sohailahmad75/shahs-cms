@@ -67,13 +67,34 @@ export const userEmptyInitialValues: UserInfoTypes = {
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
 
   openingHours: [
-    { day: "Sunday", open: "09:00", close: "17:00", closed: false },
-    { day: "Monday", open: "09:00", close: "17:00", closed: false },
-    { day: "Tuesday", open: "09:00", close: "17:00", closed: false },
-    { day: "Wednesday", open: "09:00", close: "17:00", closed: false },
-    { day: "Thursday", open: "09:00", close: "17:00", closed: false },
-    { day: "Friday", open: "09:00", close: "17:00", closed: false },
-    { day: "Saturday", open: "09:00", close: "17:00", closed: false },
+    {
+      day: "Sunday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Monday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Tuesday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Wednesday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Thursday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Friday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Saturday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
   ],
   sameAllDays: false,
 

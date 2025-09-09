@@ -131,12 +131,15 @@ const UsersTypeModal = ({
   );
   const [sameAllDays, setSameAllDays] = useState(false);
   useEffect(() => {
-    if (editingUsers?.openingHours?.length) {
+    const source = editingUsers?.availabilityHours || editingUsers?.openingHours;
+
+    if (source?.length) {
       const dayMap = Object.fromEntries(
-        editingUsers.openingHours.map((h) => [h.day, h]),
+        source.map((h: any) => [h.day, h])
       );
 
       const mapped = defaultDays.map((day) => ({
+        id: dayMap[day]?.id || null,
         day,
         open: dayMap[day]?.open || "11:00 am",
         close: dayMap[day]?.close || "11:00 pm",
@@ -144,8 +147,19 @@ const UsersTypeModal = ({
       }));
 
       setOpeningHours(mapped);
+    } else {
+      setOpeningHours(
+        defaultDays.map((day) => ({
+          day,
+          open: "11:00 am",
+          close: "11:00 pm",
+          closed: false,
+        }))
+      );
     }
   }, [editingUsers]);
+
+
 
   const formatDateOnly = (dateString?: string) => {
     if (!dateString) return "";
@@ -186,11 +200,14 @@ const UsersTypeModal = ({
           swiftCode: b.swiftCode || "",
         })) || [],
       userAvailability: (v.openingHours || []).map((o) => ({
+        id: o.id || undefined,
         day: o.day,
         open: o.closed ? null : o.open || null,
         close: o.closed ? null : o.close || null,
         closed: !!o.closed,
+        userId,
       })),
+
       userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
         documentType: docTypeId,
         fileS3Key: doc.fileS3Key || null,
@@ -202,6 +219,12 @@ const UsersTypeModal = ({
       })),
     };
   };
+
+  console.log("editingUsers.documents =>", editingUsers?.documents);
+  console.log("Final documentsList =>", documentsList);
+  console.log("editingUsers.openingHours =>", editingUsers?.openingHours);
+  console.log("Final openingHours =>", openingHours);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -509,7 +532,11 @@ const UsersTypeModal = ({
 
                 <OpeningHoursFormSection
                   openingHours={openingHours}
-                  setOpeningHours={setOpeningHours}
+                  // setOpeningHours={setOpeningHours}
+                  setOpeningHours={(updated) => {
+                    setOpeningHours(updated);
+                    setFieldValue("openingHours", updated);
+                  }}
                   sameAllDays={sameAllDays}
                   setSameAllDays={setSameAllDays}
                 />

@@ -8,6 +8,7 @@ export enum UserRole {
 }
 
 export type OpeningHour = {
+  id: any;
   day: string;
   open: string;
   close: string;
