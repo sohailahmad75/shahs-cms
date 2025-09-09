@@ -96,6 +96,15 @@ const StoreModal = ({
     );
   }, [documentTypes, editingStore]);
 
+  // const [openingHours, setOpeningHours] = useState(
+  //   defaultDays.map((day) => ({
+  //     day,
+  //     open: "11:00 am",
+  //     close: "11:00 pm",
+  //     closed: false,
+  //   }))
+  // );
+
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
       day,
@@ -106,13 +115,33 @@ const StoreModal = ({
   );
   const [sameAllDays, setSameAllDays] = useState(false);
 
+  // useEffect(() => {
+  //   if (editingStore?.availabilityHour?.length) {
+  //     const dayMap = Object.fromEntries(
+  //       editingStore.availabilityHour.map((h) => [h.day, h])
+  //     );
+
+  //     const mapped = defaultDays.map((day) => ({
+  //       day,
+  //       open: dayMap[day]?.open || "11:00 am",
+  //       close: dayMap[day]?.close || "11:00 pm",
+  //       closed: dayMap[day]?.closed ?? false,
+  //     }));
+
+  //     setOpeningHours(mapped);
+  //   }
+  // }, [editingStore]);
+
   useEffect(() => {
-    if (editingStore?.availabilityHour?.length) {
+    const source = editingStore?.availabilityHour;
+
+    if (source?.length) {
       const dayMap = Object.fromEntries(
-        editingStore.availabilityHour.map((h) => [h.day, h])
+        source.map((h: any) => [h.day, h])
       );
 
       const mapped = defaultDays.map((day) => ({
+        id: dayMap[day]?.id || null,
         day,
         open: dayMap[day]?.open || "11:00 am",
         close: dayMap[day]?.close || "11:00 pm",
@@ -120,6 +149,15 @@ const StoreModal = ({
       }));
 
       setOpeningHours(mapped);
+    } else {
+      setOpeningHours(
+        defaultDays.map((day) => ({
+          day,
+          open: "11:00 am",
+          close: "11:00 pm",
+          closed: false,
+        }))
+      );
     }
   }, [editingStore]);
 
@@ -179,7 +217,14 @@ const StoreModal = ({
     }
 
     if (activeStep === 2) {
-      updateData.availabilityHour = openingHours.map((o) => ({
+      // updateData.availabilityHour = openingHours.map((o) => ({
+      //   day: o.day,
+      //   open: o.closed ? null : o.open || null,
+      //   close: o.closed ? null : o.close || null,
+      //   closed: !!o.closed,
+      // }));
+      updateData.availabilityHour = (v.availabilityHour || []).map((o: any) => ({
+        id: o.id || undefined,
         day: o.day,
         open: o.closed ? null : o.open || null,
         close: o.closed ? null : o.close || null,
@@ -494,9 +539,18 @@ const StoreModal = ({
               )}
 
               {current.key === "availability" && (
+                // <OpeningHoursFormSection
+                //   openingHours={openingHours}
+                //   setOpeningHours={setOpeningHours}
+                //   sameAllDays={sameAllDays}
+                //   setSameAllDays={setSameAllDays}
+                // />
                 <OpeningHoursFormSection
                   openingHours={openingHours}
-                  setOpeningHours={setOpeningHours}
+                  setOpeningHours={(updated) => {
+                    setOpeningHours(updated);
+                    setFieldValue("availabilityHour", updated);
+                  }}
                   sameAllDays={sameAllDays}
                   setSameAllDays={setSameAllDays}
                 />
