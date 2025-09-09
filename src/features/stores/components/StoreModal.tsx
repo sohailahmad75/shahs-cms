@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Formik, Form, getIn } from "formik";
-import isEqual from "lodash.isequal";
+import { isEqual } from "lodash";
 
 import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
