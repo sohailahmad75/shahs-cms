@@ -9,6 +9,7 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
 import { UserRole, type UserInfoTypes, type UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
+import { Link } from "react-router-dom";
 
 import {
   useGetUsersQuery,
@@ -16,6 +17,7 @@ import {
   useUpdateUsersMutation,
   useDeleteUsersMutation,
 } from "./services/UsersApi";
+import EyeOpen from "../../assets/styledIcons/EyeOpen";
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
@@ -28,21 +30,95 @@ const UsersTypeListPage: React.FC = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
+  // const handleEdit = (user: UsersType) => {
+  //   const mappedUser: Partial<UserInfoTypes> = {
+  //     ...user,
+  //     dateOfBirth: user.dateOfBirth,
+  //     postcode: (user as any).postCode || user.postcode || "",
+  //     niRate: (user as any).NiRate ?? user.niRate ?? null,
+  //     type: user.role === UserRole.OWNER ? "owner" : "staff",
+  //   };
+
+  //   setEditingUser(mappedUser);
+  //   setModalOpen(true);
+  // };
+
+  // const handleEdit = (user: UsersType) => {
+  //   console.log("📂 Raw user.documents:", user.documents, typeof user.documents);
+
+  //   let mappedDocuments: Record<string, any> = {};
+
+  //   if (Array.isArray(user.documents)) {
+  //     mappedDocuments = user.documents.reduce((acc: any, doc: any) => {
+  //       acc[doc.documentTypeId] = {
+  //         documentType: doc.documentTypeId,
+  //         fileS3Key: doc.fileS3Key,
+  //         signedUrl: doc.signedUrl,
+  //         fileType: doc.fileType || "all",
+  //         name: doc.name,
+  //         expiresAt: doc.expiresAt,
+  //         remindBeforeDays: doc.remindBeforeDays,
+  //       };
+  //       return acc;
+  //     }, {});
+  //   } else if (user.documents && typeof user.documents === "object") {
+  //     mappedDocuments = user.documents;
+  //   } else {
+  //     mappedDocuments = {};
+  //   }
+
+  //   const mappedUser: Partial<UserInfoTypes> = {
+  //     ...user,
+  //     dateOfBirth: user.dateOfBirth,
+  //     postcode: (user as any).postCode || user.postcode || "",
+  //     niRate: (user as any).NiRate ?? user.niRate ?? null,
+  //     type: user.role === UserRole.OWNER ? "owner" : "staff",
+  //     documents: mappedDocuments,
+  //   };
+
+  //   setEditingUser(mappedUser);
+  //   setModalOpen(true);
+  // };
+
+
   const handleEdit = (user: UsersType) => {
+    console.log("📂 Raw user data:", user);
+
+    let mappedDocuments: Record<string, any> = {};
+
+    if (Array.isArray((user as any).userDocuments)) {
+      mappedDocuments = (user as any).userDocuments.reduce((acc: any, doc: any) => {
+        acc[doc.documentTypeId] = {
+          documentType: doc.documentTypeId,
+          fileS3Key: doc.fileS3Key,
+          signedUrl: doc.signedUrl,
+          fileType: doc.fileType || "all",
+          name: doc.name,
+          expiresAt: doc.expiresAt,
+          remindBeforeDays: doc.remindBeforeDays,
+        };
+        return acc;
+      }, {});
+    } else if (user.documents && typeof user.documents === "object") {
+      mappedDocuments = user.documents;
+    } else {
+      mappedDocuments = {};
+    }
+
     const mappedUser: Partial<UserInfoTypes> = {
       ...user,
-      dob: user.dateOfBirth || user.dob || "",
-      dateOfBirth: undefined,
+      dateOfBirth: user.dateOfBirth,
       postcode: (user as any).postCode || user.postcode || "",
       niRate: (user as any).NiRate ?? user.niRate ?? null,
       type: user.role === UserRole.OWNER ? "owner" : "staff",
+      documents: mappedDocuments,
+      bankDetails: (user as any).bankDetails || user.bankDetails || [],
+      availabilityHours: (user as any).availabilityHours || user.availabilityHours || [],
     };
 
     setEditingUser(mappedUser);
     setModalOpen(true);
   };
-
-
   const handleDelete = async (id: string) => {
     try {
       await deleteUser(id).unwrap();
@@ -76,6 +152,13 @@ const UsersTypeListPage: React.FC = () => {
       label: "Actions",
       render: (_, row) => (
         <div className="flex gap-2">
+
+          <Link to={`/users/${row.id}`} className="hover:underline">
+            <ActionIcon
+              className={isDarkMode ? "text-white" : "text-secondary-100"}
+              icon={<EyeOpen size={22} />}
+            />
+          </Link>
           <ActionIcon
             icon={<EditIcon size={22} />}
             onClick={() => handleEdit(row)}
@@ -120,7 +203,7 @@ const UsersTypeListPage: React.FC = () => {
         />
       )}
 
-      <UsersTypeModal
+      {/* <UsersTypeModal
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);
@@ -143,7 +226,22 @@ const UsersTypeListPage: React.FC = () => {
         }}
         editingUsers={editingUser}
         isSubmitting={creating || updating}
+      /> */}
+      <UsersTypeModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingUser(null);
+        }}
+        onSubmit={async () => {
+          refetch();
+          setModalOpen(false);
+          setEditingUser(null);
+        }}
+        editingUsers={editingUser}
+        isSubmitting={creating || updating}
       />
+
     </div>
   );
 };

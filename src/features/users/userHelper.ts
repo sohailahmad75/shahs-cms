@@ -10,7 +10,7 @@ export const userSchema = (documentsList: any[]) =>
     street: Yup.string().required("Street is required"),
     city: Yup.string().required("City is required"),
     postcode: Yup.string().required("Postcode is required"),
-    dob: Yup.mixed().required("Date of birth is required"),
+    dateOfBirth: Yup.mixed().required("Date of birth is required"),
     cashInRate: Yup.number().min(0).required("Cash-in rate is required"),
     niRate: Yup.number().min(0).required("NI rate is required"),
     shareCode: Yup.string().required("Share Code is required"),
@@ -18,9 +18,9 @@ export const userSchema = (documentsList: any[]) =>
 
     bankDetails: Yup.array().of(
       Yup.object({
-        bankName: Yup.string().optional(),
-        accountNumber: Yup.string().optional(),
-        sortCode: Yup.string().optional(),
+        bankName: Yup.string().required("Bank name is required"),
+        accountNumber: Yup.string().required("Account Number is required"),
+        sortCode: Yup.string().required("Sort Code is Required"),
       })
     ),
 
@@ -58,7 +58,7 @@ export const userEmptyInitialValues: UserInfoTypes = {
   street: "",
   city: "",
   postcode: "",
-  dob: "",
+  dateOfBirth: "",
   cashInRate: null,
   niRate: null,
   type: null,
@@ -67,13 +67,34 @@ export const userEmptyInitialValues: UserInfoTypes = {
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
 
   openingHours: [
-    { day: "Sunday", open: "09:00", close: "17:00", closed: false },
-    { day: "Monday", open: "09:00", close: "17:00", closed: false },
-    { day: "Tuesday", open: "09:00", close: "17:00", closed: false },
-    { day: "Wednesday", open: "09:00", close: "17:00", closed: false },
-    { day: "Thursday", open: "09:00", close: "17:00", closed: false },
-    { day: "Friday", open: "09:00", close: "17:00", closed: false },
-    { day: "Saturday", open: "09:00", close: "17:00", closed: false },
+    {
+      day: "Sunday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Monday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Tuesday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Wednesday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Thursday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Friday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
+    {
+      day: "Saturday", open: "09:00", close: "17:00", closed: false,
+      id: undefined
+    },
   ],
   sameAllDays: false,
 
@@ -82,8 +103,8 @@ export const userEmptyInitialValues: UserInfoTypes = {
   expiresAt: "",
   remindBeforeDays: 7,
   role: UserRole.OWNER,
-  dateOfBirth: "",
-  documents: undefined
+  documents: {},
+  availabilityHours: []
 };
 
 
@@ -97,7 +118,7 @@ export const userStepFieldKeys = {
     "street",
     "city",
     "postcode",
-    "dob",
+    "dateOfBirth",
     "cashInRate",
     "niRate",
     "type",

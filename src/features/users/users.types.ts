@@ -8,6 +8,7 @@ export enum UserRole {
 }
 
 export type OpeningHour = {
+  id: any;
   day: string;
   open: string;
   close: string;
@@ -34,6 +35,7 @@ export type DocumentInfo = {
 };
 
 export type UserInfoTypes = {
+  availabilityHours: any[];
   documents: any;
   role: UserRole;
   dateOfBirth: string;
@@ -46,7 +48,6 @@ export type UserInfoTypes = {
   street: string;
   city: string;
   postcode: string;
-  dob: any;
   cashInRate?: number | null;
   niRate?: number | null;
   niNumber?: string | null;
@@ -120,7 +121,7 @@ export const userStepFieldKeys = {
     "street",
     "city",
     "postcode",
-    "dob",
+    "dateOfBirth",
     "cashInRate",
     "niRate",
     "niNumber",
@@ -159,3 +160,41 @@ export type UserDocument = {
   expiresAt?: string | null;
   remindBeforeDays?: number | null;
 };
+
+
+
+
+
+interface AvailabilityHour {
+  day: string;
+  open: string;
+  close: string;
+  closed: boolean;
+}
+
+interface userDocuments {
+  id: number;
+  name: string;
+  documentTypeId: number;
+  expiresAt: string;
+}
+
+export interface Users {
+  id: number;
+  firstName: string;
+  surName: string;
+  email: string;
+  phone: string;
+  street: string;
+  city: string;
+  postCode: string;
+  dateOfBirth: string;
+  cashInRate: string;
+  NiRate: string;
+  shareCode: string;
+  role: string;
+  statusId: string;
+  availabilityHours: AvailabilityHour[];
+  bankDetails: BankDetail[];
+  userDocuments: userDocuments[];
+}
