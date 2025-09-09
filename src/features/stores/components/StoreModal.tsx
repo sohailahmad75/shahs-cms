@@ -281,23 +281,14 @@ const StoreModal = ({
             activeStep >= totalSteps ? totalSteps - 1 : activeStep;
           const current = steps[currentIndex];
 
-          const stepKeysOf = (stepIdx: number) =>
-            storeStepFieldKeys[
-            steps[stepIdx].key as keyof typeof storeStepFieldKeys
-            ];
-
-          const goNext = async () => {
-
-            const getBankFields = (values: any) => {
-              return (
-                values.bankDetails?.flatMap((_, idx) => [
-                  `bankDetails[${idx}].bankName`,
-                  `bankDetails[${idx}].accountNumber`,
-                  `bankDetails[${idx}].sortCode`,
-                ]) || []
-              );
-            };
-
+          const validateAndSaveStep = async (currentKey: string) => {
+            const getBankFields = (values: any) => (
+              values.bankDetails?.flatMap((_, idx) => [
+                `bankDetails[${idx}].bankName`,
+                `bankDetails[${idx}].accountNumber`,
+                `bankDetails[${idx}].sortCode`,
+              ]) || []
+            );
 
             const getDocumentFields = (documentsList: any[]) =>
               documentsList.flatMap((doc) => {
@@ -312,12 +303,13 @@ const StoreModal = ({
                 );
                 return fields;
               });
+
             const stepKeys =
-              current.key === "account"
+              currentKey === "account"
                 ? getBankFields(values)
-                : current.key === "documents"
+                : currentKey === "documents"
                   ? getDocumentFields(documentsList || [])
-                  : storeStepFieldKeys[current.key as keyof typeof storeStepFieldKeys];
+                  : storeStepFieldKeys[currentKey as keyof typeof storeStepFieldKeys];
 
             // ✅ Run validation
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
@@ -331,13 +323,13 @@ const StoreModal = ({
                 `[name="${safe}"], [name="${safe}[]"]`
               ) as HTMLElement | null;
               if (el && "focus" in el) (el as any).focus();
-              return;
+              return false;
             }
 
+            // ✅ Create / Update logic
             let idForPut = storeId || values.id;
 
-            
-            if (current.key === "basic" && !editingStore && !idForPut) {
+            if (currentKey === "basic" && !editingStore && !idForPut) {
               try {
                 const payload = mapCreateDto(values);
                 const res: any = await createStore(payload).unwrap();
@@ -348,23 +340,21 @@ const StoreModal = ({
                   idForPut = newId;
                 } else {
                   console.error("Store create response missing ID", res);
-                  return;
+                  return false;
                 }
               } catch (err) {
                 console.error("Create store failed:", err);
-                return;
+                return false;
               }
             }
 
             if (!idForPut) {
               console.error("No storeId found to update.");
-              return;
+              return false;
             }
 
             try {
-              // 🟡 Step-wise update with shouldUpdate check
-
-              if (current.key === "basic") {
+              if (currentKey === "basic") {
                 const newBasic = mapCreateDto(values).storeBasicInfo;
                 const oldBasic = editingStore
                   ? mapCreateDto(editingStore as Store).storeBasicInfo
@@ -374,11 +364,9 @@ const StoreModal = ({
                 }
               }
 
-              if (current.key === "account") {
+              if (currentKey === "account") {
                 const newBank = mapUpdateDto(values, idForPut).storeBankDetails;
-                const hasData = newBank.some(
-                  (b) => b.accountNumber || b.sortCode || b.bankName
-                );
+                const hasData = newBank.some((b) => b.accountNumber || b.sortCode || b.bankName);
                 const oldBank = editingStore
                   ? mapUpdateDto(editingStore as Store, idForPut).storeBankDetails
                   : null;
@@ -387,7 +375,7 @@ const StoreModal = ({
                 }
               }
 
-              if (current.key === "availability") {
+              if (currentKey === "availability") {
                 const newAvail = mapUpdateDto(values, idForPut).availabilityHour;
                 const oldAvail = editingStore
                   ? mapUpdateDto(editingStore as Store, idForPut).availabilityHour
@@ -397,7 +385,7 @@ const StoreModal = ({
                 }
               }
 
-              if (current.key === "additional") {
+              if (currentKey === "additional") {
                 const newAdd = mapUpdateDto(values, idForPut).storeAdditionalInfo;
                 const oldAdd = editingStore
                   ? mapUpdateDto(editingStore as Store, idForPut).storeAdditionalInfo
@@ -407,7 +395,7 @@ const StoreModal = ({
                 }
               }
 
-              if (current.key === "documents") {
+              if (currentKey === "documents") {
                 const newDocs = mapUpdateDto(values, idForPut).storeDocuments;
                 const oldDocs = editingStore
                   ? mapUpdateDto(editingStore as Store, idForPut).storeDocuments
@@ -418,10 +406,16 @@ const StoreModal = ({
               }
             } catch (err) {
               console.error("Update store failed:", err);
-              return;
+              return false;
             }
 
-            // ✅ Next step navigation
+            return true;
+          };
+
+          const goNext = async () => {
+            const ok = await validateAndSaveStep(current.key);
+            if (!ok) return;
+
             if (currentIndex < totalSteps - 1) {
               setActiveStep((s) => s + 1);
             } else {
@@ -429,27 +423,15 @@ const StoreModal = ({
             }
           };
 
-
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
               setActiveStep(targetIdx);
               return;
             }
 
-            const stepKeys = stepKeysOf(currentIndex);
-            await Promise.all(
-              stepKeys.map((k) => setFieldTouched(k, true, false))
-            );
-
-            const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter(
-              (k) => getIn(allErrors, k) !== undefined
-            );
-
-            if (stepErrors.length === 0) {
+            const ok = await validateAndSaveStep(current.key);
+            if (ok) {
               setActiveStep(targetIdx);
-            } else {
-              console.log("Validation failed, cannot move to next step");
             }
           };
 
@@ -553,7 +535,7 @@ const StoreModal = ({
                             )}
                           </label>
 
-                          <FileUploader
+                          {/* <FileUploader
                             value={
                               values.documents?.[doc.id]?.fileS3Key ||
                               doc.storeDoc?.fileS3Key ||
@@ -588,7 +570,45 @@ const StoreModal = ({
                             path="store-documents"
                             type="all"
                             pathId={doc.id}
+                          /> */}
+
+                          <FileUploader
+                            value={values.documents?.[doc.id]?.fileS3Key || ""}
+                            initialPreview={doc.storeDoc?.signedUrl}
+                            onChange={(fileS3Key, fileName) => {
+                              const prevDocs = values.documents || {};
+
+                              if (!fileS3Key) {
+
+                                const newDocs = { ...prevDocs };
+                                delete newDocs[doc.id];
+                                setFieldValue("documents", newDocs);
+                              } else {
+
+                                setFieldValue("documents", {
+                                  ...prevDocs,
+                                  [doc.id]: {
+                                    ...(prevDocs[doc.id] || {}),
+                                    documentType: doc.id,
+                                    fileS3Key,
+                                    fileType: prevDocs[doc.id]?.fileType || "all",
+                                    name: fileName || doc.name,
+                                  },
+                                });
+                              }
+
+                              if (fileS3Key) {
+                                setTimeout(() => {
+                                  setFieldTouched(`documents.${doc.id}.fileS3Key`, true, true);
+                                  validateForm();
+                                }, 100);
+                              }
+                            }}
+                            path="store-documents"
+                            type="all"
+                            pathId={doc.id}
                           />
+
 
                           {showError && (
                             <div className="text-red-500 text-sm mt-1">
