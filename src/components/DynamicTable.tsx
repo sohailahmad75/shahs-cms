@@ -12,7 +12,7 @@ export interface Column<T> {
   key: keyof T | "actions" | "index";
   label: string;
   render?: (value: T[keyof T], row: T, index?: number) => React.ReactNode;
-  renderHeader?: () => React.ReactNode; // new
+  renderHeader?: () => React.ReactNode; 
   className?: string;
 }
 
