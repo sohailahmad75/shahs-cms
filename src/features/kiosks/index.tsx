@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Button from "../../components/Button";
 import {
   useGetKiosksQuery,
@@ -20,13 +20,31 @@ import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
+import FilterBar from "../../components/FilterBar";
+import { kioskFiltersConfig } from "./helpers/kiosklist"; 
 
 const KioskListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingKioskId, setEditingKioskId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
+
+  // Memoized query params for API call
+  const queryParams = useMemo(() => {
+    const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
+    params.page = page;
+    params.perPage = perPage;
+
+    if (query) params.query = query;
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+
+    return params;
+  }, [page, perPage, query, filters]);
 
   const {
     data: kiosksResp = {
@@ -36,7 +54,9 @@ const KioskListPage: React.FC = () => {
     isLoading,
     isFetching,
     refetch,
-  } = useGetKiosksQuery({ page, perPage, query });
+  } = useGetKiosksQuery(queryParams, {
+    skip: !queryParams,
+  });
 
   const [createKiosk, { isLoading: creatingLoading }] =
     useCreateKioskMutation();
@@ -145,15 +165,30 @@ const KioskListPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={kioskFiltersConfig as any}
+          onApplyFilters={(appliedFilters) => {
+            setFilters(appliedFilters);
+            setPage(1);
+          }}
+          onClearAll={() => {
+            setFilters({});
+            setPage(1);
+          }}
+        />
+      </div>
+
       {/* Table / loader / empty state */}
       {isLoading || isFetching ? (
         <Loader />
       ) : kiosks.length === 0 ? (
         <div className="border border-dashed rounded-lg p-8 text-center text-gray-600 bg-white">
           No kiosks found.
-          {query ? (
+          {query || Object.keys(filters).length > 0 ? (
             <span className="block text-sm text-gray-500 mt-1">
-              Try adjusting your search.
+              Try adjusting your search or filters.
             </span>
           ) : (
             <span className="block text-sm text-gray-500 mt-1">
