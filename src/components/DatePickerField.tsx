@@ -39,11 +39,17 @@ const DatePickerField: React.FC<Props> = ({
   };
 
   // show value in input
+  // const displayValue = isRange
+  //   ? Array.isArray(value)
+  //     ? `${formatDate(value[0])} - ${formatDate(value[1])}`
+  //     : ""
+  //   : formatDate(value as string);
   const displayValue = isRange
-    ? Array.isArray(value)
+    ? Array.isArray(value) && (value[0] || value[1])
       ? `${formatDate(value[0])} - ${formatDate(value[1])}`
       : ""
     : formatDate(value as string);
+
 
   const updateDropdownPosition = () => {
     if (wrapperRef.current) {
@@ -146,11 +152,11 @@ const DatePickerField: React.FC<Props> = ({
                       const newEnd = date;
                       setRangeState((prev) => ({ ...prev, endDate: newEnd }));
                       if (rangeState.startDate) {
-                   
+
                         onChange([formatDate(rangeState.startDate), formatDate(newEnd)]);
-                       
+
                         setRangeState({ startDate: null, endDate: null });
-                     
+
                         setShow(false);
                       }
                     }}
