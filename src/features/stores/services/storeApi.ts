@@ -13,7 +13,8 @@ export const storeApi = baseApi.injectEndpoints({
       { page?: number; perPage?: number; query?: string } | void
     >({
       query: (args) => {
-        const { page = 1, perPage = 10, query = "" } = args ?? {};
+        const params = (args || {}) as { page?: number; perPage?: number; query?: string };
+        const { page = 1, perPage = 10, query = "" } = params;
         return { url: "/stores", params: { page, perPage, query } };
       },
       providesTags: (result) =>

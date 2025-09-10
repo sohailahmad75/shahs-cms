@@ -21,6 +21,7 @@ import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { useTheme } from "../../context/themeContext";
 import FilterBar from "../../components/FilterBar";
+import { storeFiltersConfig } from "./helper/store-list";
 
 const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,38 +39,6 @@ const StoreListPage: React.FC = () => {
     isLoading,
     refetch,
   } = useGetStoresQuery({ page, perPage, query });
-
-  const storeFiltersConfig = [
-    {
-      key: 'createdAt',
-      label: 'Created At',
-      type: 'input',
-    },
-    {
-      key: 'createdBy',
-      label: 'Created By',
-      options: ['John Doe', 'Jane Smith', 'Admin User'],
-      type: 'select',
-    },
-    {
-      key: 'storeType',
-      label: 'Store Type',
-      options: ['Retail', 'Wholesale', 'Online', 'Franchise'],
-      type: 'select',
-    },
-    {
-      key: 'storeOwner',
-      label: 'Store Owner',
-      options: ['Alice Johnson', 'Bob Wilson', 'Carol Taylor'],
-      type: 'select',
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      options: ['Active', 'Inactive', 'Pending', 'Suspended'],
-      type: 'select',
-    },
-  ];
 
   const [createStore, { isLoading: creating }] = useCreateStoreMutation();
   const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
@@ -201,20 +170,6 @@ const StoreListPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="mb-8 mt-8">
-        <FilterBar
-          filtersConfig={storeFiltersConfig as any}
-          onApplyFilters={(applied) => {
-            setFilters(applied);
-            setPage(1);
-          }}
-          onClearAll={() => {
-            setFilters({});
-            setPage(1);
-          }}
-        />
-      </div>
-
       {/* Toolbar */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -229,6 +184,21 @@ const StoreListPage: React.FC = () => {
             name="query"
           />
         </div>
+      </div>
+
+
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={storeFiltersConfig as any}
+          onApplyFilters={(applied) => {
+            setFilters(applied);
+            setPage(1);
+          }}
+          onClearAll={() => {
+            setFilters({});
+            setPage(1);
+          }}
+        />
       </div>
 
       {isLoading ? (
