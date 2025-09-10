@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Button from "../../components/Button";
 import {
   useGetStoresQuery,
@@ -24,6 +24,7 @@ import FilterBar from "../../components/FilterBar";
 import { storeFiltersConfig } from "./helper/store-list";
 
 const StoreListPage: React.FC = () => {
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<Partial<Store> | null>(null);
   const [query, setQuery] = useState("");
@@ -31,14 +32,30 @@ const StoreListPage: React.FC = () => {
   const [perPage, setPerPage] = useState<number>(10);
   const { isDarkMode } = useTheme();
 
+  // ✅ Memoized query params (important for RTK Query)
+  const queryParams = useMemo(() => {
+    const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
+    params.page = page;
+    params.perPage = perPage;
+
+    if (query) params.query = query;
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+
+    return params;
+  }, [page, perPage, query, filters]);
+
   const {
     data: storesResp = {
       data: [],
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
-    refetch,
-  } = useGetStoresQuery({ page, perPage, query });
+  } = useGetStoresQuery(queryParams, {
+    skip: !queryParams, 
+  });
 
   const [createStore, { isLoading: creating }] = useCreateStoreMutation();
   const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
@@ -47,11 +64,8 @@ const StoreListPage: React.FC = () => {
   const stores = storesResp.data;
   const meta = storesResp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
-  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const handleEdit = (store: Store) => {
-    console.log("📂 Raw store.storeDocuments:", store.storeDocuments, typeof store.storeDocuments);
-
     let mappedDocuments: Record<string, any> = {};
 
     if (Array.isArray(store.storeDocuments)) {
@@ -69,8 +83,6 @@ const StoreListPage: React.FC = () => {
       }, {});
     } else if (store.storeDocuments && typeof store.storeDocuments === "object") {
       mappedDocuments = store.storeDocuments;
-    } else {
-      mappedDocuments = {};
     }
 
     const mappedStore: Partial<Store> = {
@@ -86,7 +98,6 @@ const StoreListPage: React.FC = () => {
     try {
       await deleteStore(id).unwrap();
       toast.success("Store deleted successfully");
-      refetch();
     } catch {
       toast.error("Failed to delete store");
     }
@@ -100,26 +111,11 @@ const StoreListPage: React.FC = () => {
         <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
       ),
     },
-    {
-      key: "name",
-      label: "Name",
-    },
-    {
-      key: "email",
-      label: "Email",
-    },
-    {
-      key: "phone",
-      label: "Phone",
-    },
-    {
-      key: "city",
-      label: "City",
-    },
-    {
-      key: "companyName",
-      label: "Company Name",
-    },
+    { key: "name", label: "Name" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "city", label: "City" },
+    { key: "companyName", label: "Company Name" },
     {
       key: "actions",
       label: "Actions",
@@ -186,12 +182,12 @@ const StoreListPage: React.FC = () => {
         </div>
       </div>
 
-
+     
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={storeFiltersConfig as any}
-          onApplyFilters={(applied) => {
-            setFilters(applied);
+          onApplyFilters={(appliedFilters) => {
+            setFilters(appliedFilters);
             setPage(1);
           }}
           onClearAll={() => {
@@ -246,7 +242,6 @@ const StoreListPage: React.FC = () => {
             await createStore(values).unwrap();
             toast.success("Store created");
           }
-          refetch();
           setModalOpen(false);
           setEditingStore(null);
         }}

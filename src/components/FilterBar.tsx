@@ -24,35 +24,60 @@ interface FilterBarProps {
     onClearAll?: () => void;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, onClearAll }) => {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([]);
 
+
     const handleFilterChange = (key: string, value: string) => {
-        setFilters((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
+        setFilters((prev) => {
+            const newFilters = { ...prev, [key]: value };
+
+            // parent ko bhejna
+            onApplyFilters?.(newFilters);
+
+            return newFilters;
+        });
     };
 
+ 
     const applyFilter = (key: string, value: string) => {
         if (!value.trim()) return;
 
-        if (appliedFilters.some((f) => f.key === key && f.value === value)) return;
+        setAppliedFilters((prev) => {
+            const exists = prev.some((f) => f.key === key && f.value === value);
+            if (exists) return prev;
 
-        setAppliedFilters((prev) => [...prev, { key, value }]);
+            return [...prev, { key, value }];
+        });
     };
+
 
     const removeFilter = (index: number) => {
-        setAppliedFilters((prev) => prev.filter((_, i) => i !== index));
+        setAppliedFilters((prev) => {
+            const newApplied = prev.filter((_, i) => i !== index);
+
+  
+            const newFilters = newApplied.reduce<Record<string, string>>((acc, f) => {
+                acc[f.key] = f.value;
+                return acc;
+            }, {});
+            setFilters(newFilters);
+            onApplyFilters?.(newFilters);
+
+            return newApplied;
+        });
     };
 
+  
     const resetFilters = () => {
         setAppliedFilters([]);
         setFilters({});
         onClearAll?.();
+        onApplyFilters?.({});
     };
 
+   
     const renderFilterControl = (filter: FilterOption) => {
         const { key, label, type, options } = filter;
 
@@ -66,7 +91,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
                             handleFilterChange(key, value);
                             applyFilter(key, value);
                         }}
-                        options={options?.map(opt => ({ label: opt, value: opt })) || []}
+                        options={options?.map((opt) => ({ label: opt, value: opt })) || []}
                         placeholder={label}
                         name={key}
                     />
@@ -110,6 +135,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
 
     return (
         <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm">
+            {/* Filter inputs */}
             <div className="flex flex-wrap gap-3 mb-4">
                 {filtersConfig.map(renderFilterControl)}
             </div>
@@ -117,6 +143,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
             {/* Separator line */}
             <hr className="my-3 border-gray-300" />
 
+            {/* Applied filters */}
             <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-gray-600 whitespace-nowrap">
                     Applied Filters:
