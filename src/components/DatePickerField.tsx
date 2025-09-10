@@ -85,7 +85,7 @@ const DatePickerField: React.FC<Props> = ({
 
   return (
     <div className="relative w-full" ref={wrapperRef}>
-      
+
       <input
         readOnly
         name={name}
@@ -108,7 +108,6 @@ const DatePickerField: React.FC<Props> = ({
           >
             {isRange ? (
               <div className="flex gap-4">
-               
                 <div className="flex flex-col">
                   <label className="text-sm text-gray-600 mb-1">From date:</label>
                   <input
@@ -119,16 +118,21 @@ const DatePickerField: React.FC<Props> = ({
                   <Calendar
                     date={rangeState.startDate || new Date()}
                     onChange={(date: Date) => {
-                      setRangeState((prev) => ({ ...prev, startDate: date }));
+                      const newStart = date;
+                      setRangeState((prev) => ({ ...prev, startDate: newStart }));
                       if (rangeState.endDate) {
-                        onChange([formatDate(date), formatDate(rangeState.endDate)]);
+                        // dono dates selected → trigger onChange
+                        onChange([formatDate(newStart), formatDate(rangeState.endDate)]);
+                        // reset internal range state
+                        setRangeState({ startDate: null, endDate: null });
+                        // close calendar
+                        setShow(false);
                       }
                     }}
                     color="#3b82f6"
                   />
                 </div>
 
-            
                 <div className="flex flex-col">
                   <label className="text-sm text-gray-600 mb-1">To date:</label>
                   <input
@@ -139,9 +143,15 @@ const DatePickerField: React.FC<Props> = ({
                   <Calendar
                     date={rangeState.endDate || new Date()}
                     onChange={(date: Date) => {
-                      setRangeState((prev) => ({ ...prev, endDate: date }));
+                      const newEnd = date;
+                      setRangeState((prev) => ({ ...prev, endDate: newEnd }));
                       if (rangeState.startDate) {
-                        onChange([formatDate(rangeState.startDate), formatDate(date)]);
+                   
+                        onChange([formatDate(rangeState.startDate), formatDate(newEnd)]);
+                       
+                        setRangeState({ startDate: null, endDate: null });
+                     
+                        setShow(false);
                       }
                     }}
                     color="#3b82f6"

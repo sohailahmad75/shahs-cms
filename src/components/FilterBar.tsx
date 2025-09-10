@@ -11,7 +11,7 @@ interface FilterOption {
     label: string;
     options?: { label: string; value: string }[];
     type: 'select' | 'input' | 'date';
-    isRange?: boolean; 
+    isRange?: boolean;
 }
 
 interface AppliedFilter {
@@ -91,26 +91,22 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
             );
         }
-
-        if (type === 'date') {
+        if (type === "date") {
             return (
                 <div key={key} className="w-full sm:w-auto">
                     <DatePickerField
-                        isRange={isRange}
-                        value={
-                            isRange
-                                ? (filters[key]?.split(',') as [string, string]) || ['', '']
-                                : filters[key] || ''
-                        }
+                        isRange={true}
+                        value={filters[key] || ["", ""]}
                         onChange={(value) => {
                             if (Array.isArray(value)) {
-                                const joined = value.join(',');
-                                handleFilterChange(key, joined);
-                                applyFilter(key, `${value[0]} → ${value[1]}`);
-                            } else {
-                                const dateValue = value as string;
-                                handleFilterChange(key, dateValue);
-                                applyFilter(key, dateValue);
+                                const [from, to] = value;
+
+                             
+                                handleFilterChange("startDate", from);
+                                handleFilterChange("endDate", to);
+
+                                
+                                applyFilter(key, `${from.split("T")[0]} → ${to.split("T")[0]}`);
                             }
                         }}
                         name={key}
@@ -119,6 +115,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
             );
         }
+
+
 
         return (
             <div key={key} className="w-full sm:w-auto">
@@ -139,7 +137,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
     return (
         <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm">
-           
+
             <div className="flex flex-wrap gap-3 mb-4">
                 {filtersConfig.map(renderFilterControl)}
             </div>

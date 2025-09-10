@@ -3,6 +3,7 @@ export const documentTypeFiltersConfig = [
         key: 'createdAt',
         label: 'Created At',
         type: 'date',
+        isRange: true,
     },
     {
         key: 'role',
