@@ -72,7 +72,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     };
 
     const renderFilterControl = (filter: FilterOption) => {
-        const { key, label, type, options, isRange } = filter;
+        const { key, label, type, options} = filter;
 
         if (type === 'select') {
             return (
@@ -99,14 +99,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         value={filters[key] || ["", ""]}
                         onChange={(value) => {
                             if (Array.isArray(value)) {
+                            
                                 const [from, to] = value;
+                                handleFilterChange("startDate", new Date(from).toISOString());
+                                handleFilterChange("endDate", new Date(to).toISOString());
 
                              
-                                handleFilterChange("startDate", from);
-                                handleFilterChange("endDate", to);
-
-                                
-                                applyFilter(key, `${from.split("T")[0]} → ${to.split("T")[0]}`);
+                                applyFilter(key, `${from} → ${to}`);
+                            } else {
+                            
+                                const dateValue = new Date(value as string).toISOString();
+                                handleFilterChange(key, dateValue);
+                                applyFilter(key, value as string);
                             }
                         }}
                         name={key}
