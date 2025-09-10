@@ -20,6 +20,7 @@ import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { useTheme } from "../../context/themeContext";
+import FilterBar from "../../components/FilterBar";
 
 const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,6 +39,38 @@ const StoreListPage: React.FC = () => {
     refetch,
   } = useGetStoresQuery({ page, perPage, query });
 
+  const storeFiltersConfig = [
+    {
+      key: 'createdAt',
+      label: 'Created At',
+      type: 'input',
+    },
+    {
+      key: 'createdBy',
+      label: 'Created By',
+      options: ['John Doe', 'Jane Smith', 'Admin User'],
+      type: 'select',
+    },
+    {
+      key: 'storeType',
+      label: 'Store Type',
+      options: ['Retail', 'Wholesale', 'Online', 'Franchise'],
+      type: 'select',
+    },
+    {
+      key: 'storeOwner',
+      label: 'Store Owner',
+      options: ['Alice Johnson', 'Bob Wilson', 'Carol Taylor'],
+      type: 'select',
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      options: ['Active', 'Inactive', 'Pending', 'Suspended'],
+      type: 'select',
+    },
+  ];
+
   const [createStore, { isLoading: creating }] = useCreateStoreMutation();
   const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
   const [deleteStore] = useDeleteStoreMutation();
@@ -45,6 +78,7 @@ const StoreListPage: React.FC = () => {
   const stores = storesResp.data;
   const meta = storesResp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const handleEdit = (store: Store) => {
     console.log("📂 Raw store.storeDocuments:", store.storeDocuments, typeof store.storeDocuments);
@@ -155,7 +189,6 @@ const StoreListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Stores</h1>
         <Button
@@ -166,6 +199,20 @@ const StoreListPage: React.FC = () => {
         >
           Add Store
         </Button>
+      </div>
+
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={storeFiltersConfig as any}
+          onApplyFilters={(applied) => {
+            setFilters(applied);
+            setPage(1);
+          }}
+          onClearAll={() => {
+            setFilters({});
+            setPage(1);
+          }}
+        />
       </div>
 
       {/* Toolbar */}
