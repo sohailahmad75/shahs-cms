@@ -16,12 +16,25 @@ export const documentTypeFiltersConfig = [
         ],
     },
     {
-        key: 'status',
-        label: 'Status',
+        key: 'staffKind',
+        label: 'Staff Kind',
         type: 'select',
         options: [
-            { label: 'Active', value: '1' },
-            { label: 'Inactive', value: '2' },
+            { label: "Full-time", value: "full_time" },
+            { label: "Student", value: "student" },
+            { label: "Sponsored", value: "sponsored" },
+            { label: "PSW", value: "psw" },
+            { label: "Asylum", value: "asylum" },
+            { label: "Other", value: "other" },
+        ],
+    },
+    {
+        key: 'isMandatory',
+        label: 'Mandatory',
+        type: 'select',
+        options: [
+            { label: "Required", value: "true" },
+            { label: "Not Required", value: "false" },
         ],
     },
 ];
