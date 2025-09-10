@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+import { RotateCcw } from 'lucide-react';
+import InputField from './InputField';
+import SelectField from './SelectField';
+import DatePickerField from './DatePickerField';
 
 interface FilterOption {
     key: string;
@@ -25,8 +27,6 @@ interface FilterBarProps {
 const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([]);
-    const [showCalendar, setShowCalendar] = useState<string | null>(null);
-    const [dateValue, setDateValue] = useState<Date | null>(null);
 
     const handleFilterChange = (key: string, value: string) => {
         setFilters((prev) => ({
@@ -50,21 +50,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
     const resetFilters = () => {
         setAppliedFilters([]);
         setFilters({});
-        setDateValue(null);
         onClearAll?.();
-    };
-
-    const handleDateChange = (key: string, date: Date) => {
-        const formattedDate = date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-
-        setDateValue(date);
-        handleFilterChange(key, formattedDate);
-        applyFilter(key, formattedDate);
-        setShowCalendar(null);
     };
 
     const renderFilterControl = (filter: FilterOption) => {
@@ -72,64 +58,42 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
 
         if (type === 'select') {
             return (
-                <div key={key} className="relative">
-                    <select
+                <div key={key} className="w-full sm:w-auto">
+                    <SelectField
+                        value={filters[key] || ''}
                         onChange={(e) => {
-                            const value = e.target.value;
+                            const value = e.target.value as string;
                             handleFilterChange(key, value);
                             applyFilter(key, value);
                         }}
-                        className="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        defaultValue=""
-                    >
-                        <option value="">{label}</option>
-                        {options?.map((opt) => (
-                            <option key={opt} value={opt}>
-                                {opt}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                    </div>
+                        options={options?.map(opt => ({ label: opt, value: opt })) || []}
+                        placeholder={label}
+                        name={key}
+                    />
                 </div>
             );
         }
 
         if (type === 'date') {
             return (
-                <div key={key} className="relative">
-                    <input
-                        type="text"
-                        placeholder={label}
+                <div key={key} className="w-full sm:w-auto">
+                    <DatePickerField
                         value={filters[key] || ''}
-                        onClick={() => setShowCalendar(key)}
-                        readOnly
-                        className="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        onChange={(value) => {
+                            const dateValue = value as string;
+                            handleFilterChange(key, dateValue);
+                            applyFilter(key, dateValue);
+                        }}
+                        name={key}
+                        placeholder={label}
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-
-                    {showCalendar === key && (
-                        <div className="absolute z-10 mt-1 bg-white p-2 border border-gray-200 rounded-md shadow-lg">
-                            <Calendar
-                                onChange={(date) => handleDateChange(key, date as Date)}
-                                value={dateValue}
-                            />
-                        </div>
-                    )}
                 </div>
             );
         }
 
         return (
-            <div key={key} className="relative">
-                <input
+            <div key={key} className="w-full sm:w-auto">
+                <InputField
                     type="text"
                     placeholder={label}
                     value={filters[key] || ''}
@@ -138,20 +102,25 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
                         handleFilterChange(key, value);
                         applyFilter(key, value);
                     }}
-                    className="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    name={key}
                 />
             </div>
         );
     };
 
     return (
-        <div className="bg-white border-b border-gray-200 p-4 shadow-sm rounded-md">
+        <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm">
             <div className="flex flex-wrap gap-3 mb-4">
                 {filtersConfig.map(renderFilterControl)}
             </div>
 
+            {/* Separator line */}
+            <hr className="my-3 border-gray-300" />
+
             <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-gray-600 whitespace-nowrap">Applied Filters:</span>
+                <span className="text-sm font-medium text-gray-600 whitespace-nowrap">
+                    Applied Filters:
+                </span>
 
                 {appliedFilters.length === 0 ? (
                     <span className="text-sm text-gray-500 italic">No filters applied</span>
@@ -180,9 +149,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onClearAll }) => {
                         <button
                             type="button"
                             onClick={resetFilters}
-                            className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors underline-offset-2 hover:underline"
+                            className="ml-2 text-gray-600 hover:text-blue-600 transition-colors"
+                            title="Clear All"
                         >
-                            Clear All
+                            <RotateCcw size={20} />
                         </button>
                     </>
                 )}
