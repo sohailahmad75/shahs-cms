@@ -24,28 +24,29 @@ import {
 const DocumentTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  // State for pagination, search and filters
+
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
-  // Memoized query params for API call
+
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
+
   const queryParams = useMemo(() => {
-    const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
-    params.page = page;
-    params.perPage = perPage;
-
+    const params: Record<string, any> = { page, perPage };
     if (query) params.query = query;
-
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params[key] = value;
     });
-
+    if (sortConfig.key && sortConfig.direction) {
+      params.sort = sortConfig.key;
+      params.sortDir = sortConfig.direction.toUpperCase(); // ASC / DESC
+    }
     return params;
-  }, [page, perPage, query, filters]);
+  }, [page, perPage, query, filters, sortConfig]);
 
-  // API call with pagination and filter params
+
   const {
     data: resp = {
       data: [],
@@ -65,6 +66,9 @@ const DocumentTypeListPage: React.FC = () => {
   const [createDocument, { isLoading: creating }] = useCreateDocumentsTypeMutation();
   const [updateDocument, { isLoading: updating }] = useUpdateDocumentsTypeMutation();
   const [deleteDocument] = useDeleteDocumentsTypeMutation();
+
+
+
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState<DocumentType | null>(null);
@@ -124,7 +128,7 @@ const DocumentTypeListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      {/* Header */}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl font-bold">Documents</h1>
         <Button
@@ -137,7 +141,7 @@ const DocumentTypeListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Toolbar */}
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
@@ -145,7 +149,7 @@ const DocumentTypeListPage: React.FC = () => {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setPage(1); // Reset to first page on search
+              setPage(1);
             }}
             placeholder="Search documents…"
             name="query"
@@ -153,7 +157,7 @@ const DocumentTypeListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
+
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={documentTypeFiltersConfig as any}
@@ -168,19 +172,45 @@ const DocumentTypeListPage: React.FC = () => {
         />
       </div>
 
-      {/* Table / Loader / Empty */}
       {isLoading || isFetching ? (
         <Loader />
       ) : (
         <>
+         
           <DynamicTable
-            data={documents}
-            columns={columns}
+            data={documents} 
+            columns={columns.map(col => ({
+              ...col,
+              renderHeader: col.key !== "actions" && col.key !== "index"
+                ? () => (
+                  <div
+                    className="flex items-center gap-1 cursor-pointer"
+                    onClick={() => {
+                      let direction: "asc" | "desc" | null = "asc";
+                      if (sortConfig.key === col.key) {
+                        if (sortConfig.direction === "asc") direction = "desc";
+                        else if (sortConfig.direction === "desc") direction = null; // reset
+                      }
+                      setSortConfig({ key: direction ? (col.key as string) : null, direction });
+                      setPage(1); 
+                    }}
+                  >
+                    {col.label}
+                    <span className="text-xs">
+                      {sortConfig.key === col.key
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : "▲▼"}
+                    </span>
+                  </div>
+                )
+                : undefined
+            }))}
             rowKey="id"
-            tableClassName="bg-white dark:bg-slate-900"
           />
 
-          {/* Pagination */}
+
           <Pagination
             className="mt-4"
             page={page}
@@ -196,7 +226,6 @@ const DocumentTypeListPage: React.FC = () => {
         </>
       )}
 
-      {/* Modal */}
       <DocumentTypeModal
         isOpen={modalOpen}
         onClose={() => {
