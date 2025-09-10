@@ -3,6 +3,7 @@ export const storeFiltersConfig = [
     key: 'createdAt',
     label: 'Created At',
     type: 'date',
+    isRange: true,
   },
   {
     key: 'storeType',

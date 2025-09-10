@@ -9,9 +9,9 @@ import DatePickerField from './DatePickerField';
 interface FilterOption {
     key: string;
     label: string;
-    // options?: readonly string[];
     options?: { label: string; value: string }[];
     type: 'select' | 'input' | 'date';
+    isRange?: boolean; 
 }
 
 interface AppliedFilter {
@@ -25,22 +25,21 @@ interface FilterBarProps {
     onClearAll?: () => void;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, onClearAll }) => {
+const FilterBar: React.FC<FilterBarProps> = ({
+    filtersConfig,
+    onApplyFilters,
+    onClearAll,
+}) => {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([]);
-
 
     const handleFilterChange = (key: string, value: string) => {
         setFilters((prev) => {
             const newFilters = { ...prev, [key]: value };
-
-            // parent ko bhejna
             onApplyFilters?.(newFilters);
-
             return newFilters;
         });
     };
-
 
     const applyFilter = (key: string, value: string) => {
         if (!value.trim()) return;
@@ -48,28 +47,22 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
         setAppliedFilters((prev) => {
             const exists = prev.some((f) => f.key === key && f.value === value);
             if (exists) return prev;
-
             return [...prev, { key, value }];
         });
     };
 
-
     const removeFilter = (index: number) => {
         setAppliedFilters((prev) => {
             const newApplied = prev.filter((_, i) => i !== index);
-
-
             const newFilters = newApplied.reduce<Record<string, string>>((acc, f) => {
                 acc[f.key] = f.value;
                 return acc;
             }, {});
             setFilters(newFilters);
             onApplyFilters?.(newFilters);
-
             return newApplied;
         });
     };
-
 
     const resetFilters = () => {
         setAppliedFilters([]);
@@ -78,9 +71,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
         onApplyFilters?.({});
     };
 
-
     const renderFilterControl = (filter: FilterOption) => {
-        const { key, label, type, options } = filter;
+        const { key, label, type, options, isRange } = filter;
 
         if (type === 'select') {
             return (
@@ -93,7 +85,6 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
                             applyFilter(key, value);
                         }}
                         options={options || []}
-
                         placeholder={label}
                         name={key}
                     />
@@ -105,11 +96,22 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
             return (
                 <div key={key} className="w-full sm:w-auto">
                     <DatePickerField
-                        value={filters[key] || ''}
+                        isRange={isRange}
+                        value={
+                            isRange
+                                ? (filters[key]?.split(',') as [string, string]) || ['', '']
+                                : filters[key] || ''
+                        }
                         onChange={(value) => {
-                            const dateValue = value as string;
-                            handleFilterChange(key, dateValue);
-                            applyFilter(key, dateValue);
+                            if (Array.isArray(value)) {
+                                const joined = value.join(',');
+                                handleFilterChange(key, joined);
+                                applyFilter(key, `${value[0]} → ${value[1]}`);
+                            } else {
+                                const dateValue = value as string;
+                                handleFilterChange(key, dateValue);
+                                applyFilter(key, dateValue);
+                            }
                         }}
                         name={key}
                         placeholder={label}
@@ -137,7 +139,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
 
     return (
         <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm">
-            {/* Filter inputs */}
+           
             <div className="flex flex-wrap gap-3 mb-4">
                 {filtersConfig.map(renderFilterControl)}
             </div>
@@ -152,13 +154,17 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
                 </span>
 
                 {appliedFilters.length === 0 ? (
-                    <span className="text-sm text-gray-500 italic">No filters applied</span>
+                    <span className="text-sm text-gray-500 italic">
+                        No filters applied
+                    </span>
                 ) : (
                     <>
                         {appliedFilters.map((filter, index) => {
                             const optionLabel =
-                                filtersConfig.find((f) => f.key === filter.key)?.options
-                                    ?.find((opt) => opt.value === filter.value)?.label || filter.value
+                                filtersConfig
+                                    .find((f) => f.key === filter.key)
+                                    ?.options?.find((opt) => opt.value === filter.value)?.label ||
+                                filter.value;
 
                             return (
                                 <div
@@ -166,7 +172,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
                                     className="inline-flex items-center bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full text-sm border border-gray-200 shadow-sm"
                                 >
                                     <span className="font-medium">
-                                        {filtersConfig.find((f) => f.key === filter.key)?.label || filter.key}:
+                                        {filtersConfig.find((f) => f.key === filter.key)?.label ||
+                                            filter.key}
+                                        :
                                     </span>
                                     <span className="ml-1">{optionLabel}</span>
                                     <button
@@ -178,7 +186,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
                                         ×
                                     </button>
                                 </div>
-                            )
+                            );
                         })}
 
                         <button

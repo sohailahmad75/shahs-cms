@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { DateRange, Calendar } from "react-date-range";
+import { Calendar } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 
@@ -27,38 +27,23 @@ const DatePickerField: React.FC<Props> = ({
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
   const [rangeState, setRangeState] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
-    key: "selection",
+    startDate: null as Date | null,
+    endDate: null as Date | null,
   });
 
-
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
     if (!date) return "";
     const d = new Date(date);
     if (isNaN(d.getTime())) return "";
     return d.toISOString().split("T")[0];
   };
 
+  // show value in input
   const displayValue = isRange
     ? Array.isArray(value)
       ? `${formatDate(value[0])} - ${formatDate(value[1])}`
       : ""
     : formatDate(value as string);
-
-  const handleRangeChange = (ranges: any) => {
-    const { startDate, endDate } = ranges.selection;
-    setRangeState(ranges.selection);
-    if (startDate && endDate) {
-      onChange([formatDate(startDate), formatDate(endDate)]);
-    }
-  };
-
-  const handleSingleDateChange = (date: Date) => {
-    const formatted = formatDate(date);
-    onChange(formatted);
-    setShow(false);
-  };
 
   const updateDropdownPosition = () => {
     if (wrapperRef.current) {
@@ -100,6 +85,7 @@ const DatePickerField: React.FC<Props> = ({
 
   return (
     <div className="relative w-full" ref={wrapperRef}>
+      
       <input
         readOnly
         name={name}
@@ -114,40 +100,63 @@ const DatePickerField: React.FC<Props> = ({
         createPortal(
           <div
             ref={dropdownRef}
-            className="absolute z-50 mt-2 bg-white shadow-xl rounded-lg"
+            className="absolute z-50 mt-2 bg-white shadow-xl rounded-lg p-3"
             style={{
               top: dropdownPosition.top,
               left: dropdownPosition.left,
             }}
           >
-            <style>
-              {`
-                .rdrDayToday .rdrDayNumber span:after {
-                  background-color: #3b82f6;
-                }
-                .rdrSelected, .rdrInRange, .rdrStartEdge, .rdrEndEdge {
-                  background-color: #3b82f6;
-                }
-                .rdrDayStartPreview, .rdrDayInPreview, .rdrDayEndPreview {
-                  border-color: #3b82f6;
-                }
-              `}
-            </style>
             {isRange ? (
-              <DateRange
-                ranges={[rangeState]}
-                onChange={handleRangeChange}
-                moveRangeOnFirstSelection={false}
-                editableDateInputs
-                rangeColors={["#3b82f6"]}
-                className="w-full"
-              />
+              <div className="flex gap-4">
+               
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">From date:</label>
+                  <input
+                    readOnly
+                    value={rangeState.startDate ? formatDate(rangeState.startDate) : ""}
+                    className="px-3 py-2 border rounded-md cursor-pointer focus:border-blue-500 outline-none"
+                  />
+                  <Calendar
+                    date={rangeState.startDate || new Date()}
+                    onChange={(date: Date) => {
+                      setRangeState((prev) => ({ ...prev, startDate: date }));
+                      if (rangeState.endDate) {
+                        onChange([formatDate(date), formatDate(rangeState.endDate)]);
+                      }
+                    }}
+                    color="#3b82f6"
+                  />
+                </div>
+
+            
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-600 mb-1">To date:</label>
+                  <input
+                    readOnly
+                    value={rangeState.endDate ? formatDate(rangeState.endDate) : ""}
+                    className="px-3 py-2 border rounded-md cursor-pointer focus:border-blue-500 outline-none"
+                  />
+                  <Calendar
+                    date={rangeState.endDate || new Date()}
+                    onChange={(date: Date) => {
+                      setRangeState((prev) => ({ ...prev, endDate: date }));
+                      if (rangeState.startDate) {
+                        onChange([formatDate(rangeState.startDate), formatDate(date)]);
+                      }
+                    }}
+                    color="#3b82f6"
+                  />
+                </div>
+              </div>
             ) : (
               <Calendar
                 date={value ? new Date(value as string) : new Date()}
-                onChange={handleSingleDateChange}
+                onChange={(date: Date) => {
+                  const formatted = formatDate(date);
+                  onChange(formatted);
+                  setShow(false);
+                }}
                 color="#3b82f6"
-                className="w-full"
               />
             )}
           </div>,
