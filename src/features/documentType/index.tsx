@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Button from "../../components/Button";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
@@ -11,6 +11,8 @@ import type { DocumentType } from "./documentTypes.types";
 import { useTheme } from "../../context/themeContext";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
+import FilterBar from "../../components/FilterBar";
+import { documentTypeFiltersConfig } from "./helpers/documentlist";
 
 import {
   useGetDocumentsTypeQuery,
@@ -22,18 +24,39 @@ import {
 const DocumentTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  // State for pagination and search
+  // State for pagination, search and filters
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [search, setSearch] = useState("");
-6
-  // API call with pagination params
+
+  // Memoized query params for API call
+  const queryParams = useMemo(() => {
+    const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
+    params.page = page;
+    params.perPage = perPage;
+
+    if (query) params.query = query;
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+
+    return params;
+  }, [page, perPage, query, filters]);
+
+  // API call with pagination and filter params
   const {
-    data: resp = { data: [], meta: { total: 0, page: 1, perPage: 10, totalPages: 1 } },
+    data: resp = {
+      data: [],
+      meta: { total: 0, page: 1, perPage: 10, totalPages: 1 }
+    },
     isLoading,
     isFetching,
     refetch,
-  } = useGetDocumentsTypeQuery({ page, perPage, search });
+  } = useGetDocumentsTypeQuery(queryParams, {
+    skip: !queryParams,
+  });
 
   const documents = resp.data;
   const meta = resp.meta;
@@ -44,9 +67,7 @@ const DocumentTypeListPage: React.FC = () => {
   const [deleteDocument] = useDeleteDocumentsTypeMutation();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(
-    null,
-  );
+  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(null);
 
   const handleEdit = (doc: DocumentType) => {
     setEditingDocument(doc);
@@ -121,27 +142,58 @@ const DocumentTypeListPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <InputField
             className="w-72"
-            value={search}
+            value={query}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setQuery(e.target.value);
               setPage(1); // Reset to first page on search
             }}
             placeholder="Search documents…"
-            name="search"
+            name="query"
           />
         </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={documentTypeFiltersConfig as any}
+          onApplyFilters={(appliedFilters) => {
+            setFilters(appliedFilters);
+            setPage(1);
+          }}
+          onClearAll={() => {
+            setFilters({});
+            setPage(1);
+          }}
+        />
       </div>
 
       {/* Table / Loader / Empty */}
       {isLoading || isFetching ? (
         <Loader />
       ) : (
-        <DynamicTable
-          data={documents}
-          columns={columns}
-          rowKey="id"
-          tableClassName="bg-white dark:bg-slate-900"
-        />
+        <>
+          <DynamicTable
+            data={documents}
+            columns={columns}
+            rowKey="id"
+            tableClassName="bg-white dark:bg-slate-900"
+          />
+
+          {/* Pagination */}
+          <Pagination
+            className="mt-4"
+            page={page}
+            perPage={perPage}
+            total={meta.total}
+            onPageChange={(p) => setPage(p)}
+            onPerPageChange={(pp) => {
+              setPerPage(pp);
+              setPage(1);
+            }}
+            perPageOptions={[10, 25, 50]}
+          />
+        </>
       )}
 
       {/* Modal */}
