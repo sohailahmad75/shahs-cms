@@ -9,7 +9,8 @@ import DatePickerField from './DatePickerField';
 interface FilterOption {
     key: string;
     label: string;
-    options?: readonly string[];
+    // options?: readonly string[];
+    options?: { label: string; value: string }[];
     type: 'select' | 'input' | 'date';
 }
 
@@ -40,7 +41,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
         });
     };
 
- 
+
     const applyFilter = (key: string, value: string) => {
         if (!value.trim()) return;
 
@@ -57,7 +58,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
         setAppliedFilters((prev) => {
             const newApplied = prev.filter((_, i) => i !== index);
 
-  
+
             const newFilters = newApplied.reduce<Record<string, string>>((acc, f) => {
                 acc[f.key] = f.value;
                 return acc;
@@ -69,7 +70,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
         });
     };
 
-  
+
     const resetFilters = () => {
         setAppliedFilters([]);
         setFilters({});
@@ -77,7 +78,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
         onApplyFilters?.({});
     };
 
-   
+
     const renderFilterControl = (filter: FilterOption) => {
         const { key, label, type, options } = filter;
 
@@ -91,7 +92,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
                             handleFilterChange(key, value);
                             applyFilter(key, value);
                         }}
-                        options={options?.map((opt) => ({ label: opt, value: opt })) || []}
+                        options={options || []}
+
                         placeholder={label}
                         name={key}
                     />
@@ -153,25 +155,31 @@ const FilterBar: React.FC<FilterBarProps> = ({ filtersConfig, onApplyFilters, on
                     <span className="text-sm text-gray-500 italic">No filters applied</span>
                 ) : (
                     <>
-                        {appliedFilters.map((filter, index) => (
-                            <div
-                                key={index}
-                                className="inline-flex items-center bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full text-sm border border-gray-200 shadow-sm"
-                            >
-                                <span className="font-medium">
-                                    {filtersConfig.find((f) => f.key === filter.key)?.label || filter.key}:{" "}
-                                </span>
-                                <span className="ml-1">{filter.value}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => removeFilter(index)}
-                                    className="ml-2 text-gray-500 hover:text-red-500 transition-colors font-bold text-lg"
-                                    aria-label={`Remove ${filter.value} filter`}
+                        {appliedFilters.map((filter, index) => {
+                            const optionLabel =
+                                filtersConfig.find((f) => f.key === filter.key)?.options
+                                    ?.find((opt) => opt.value === filter.value)?.label || filter.value
+
+                            return (
+                                <div
+                                    key={index}
+                                    className="inline-flex items-center bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full text-sm border border-gray-200 shadow-sm"
                                 >
-                                    ×
-                                </button>
-                            </div>
-                        ))}
+                                    <span className="font-medium">
+                                        {filtersConfig.find((f) => f.key === filter.key)?.label || filter.key}:
+                                    </span>
+                                    <span className="ml-1">{optionLabel}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeFilter(index)}
+                                        className="ml-2 text-gray-500 hover:text-red-500 transition-colors font-bold text-lg"
+                                        aria-label={`Remove ${filter.value} filter`}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            )
+                        })}
 
                         <button
                             type="button"
