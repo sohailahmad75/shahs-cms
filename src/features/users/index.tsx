@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Button from "../../components/Button";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
@@ -13,9 +13,12 @@ import { Link } from "react-router-dom";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
+import ConfirmDelete from "../../components/ConfirmDelete";
+import FilterBar from "../../components/FilterBar";
+import { userFiltersConfig } from "./user-list";
 
 import {
-  useGetUsersQuery,
+  useGetNewUsersQuery,
   useCreateUsersMutation,
   useUpdateUsersMutation,
   useDeleteUsersMutation,
@@ -24,57 +27,70 @@ import {
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  // 🔹 Local state for pagination + search (like Stores page)
+  // Filters, search, pagination, and sorting
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null;
+    direction: "asc" | "desc" | null;
+  }>({ key: null, direction: null });
 
-  // 🔹 Fetch with params; default shape if API returns nothing yet
+  const queryParams = useMemo(() => {
+    const params: Record<string, any> = { page, perPage };
+    if (query) params.query = query;
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+
+    if (sortConfig.key && sortConfig.direction) {
+      params.sort = sortConfig.key;
+      params.sortDir = sortConfig.direction.toUpperCase();
+    }
+
+    return params;
+  }, [page, perPage, query, filters, sortConfig]);
+
+  // Fetch users (new API)
   const {
-    data: usersResp = {
+    data: usersResponse = {
       data: [],
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
     refetch,
-  } = useGetUsersQuery({ page, perPage, query });
+  } = useGetNewUsersQuery(queryParams);
 
-  const users = usersResp.data;
-  const meta = usersResp.meta;
+  const users = usersResponse?.data || [];
+  const meta =
+    usersResponse?.meta || ({ total: 0, page: 1, perPage: 10, totalPages: 1 } as const);
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
   const [createUser, { isLoading: creating }] = useCreateUsersMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
   const [deleteUser] = useDeleteUsersMutation();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(
-    null,
-  );
-
   const handleEdit = (user: UsersType) => {
     let mappedDocuments: Record<string, any> = {};
 
     if (Array.isArray((user as any).userDocuments)) {
-      mappedDocuments = (user as any).userDocuments.reduce(
-        (acc: any, doc: any) => {
-          acc[doc.documentTypeId] = {
-            documentType: doc.documentTypeId,
-            fileS3Key: doc.fileS3Key,
-            signedUrl: doc.signedUrl,
-            fileType: doc.fileType || "all",
-            name: doc.name,
-            expiresAt: doc.expiresAt,
-            remindBeforeDays: doc.remindBeforeDays,
-          };
-          return acc;
-        },
-        {},
-      );
-    } else if (
-      (user as any).documents &&
-      typeof (user as any).documents === "object"
-    ) {
+      mappedDocuments = (user as any).userDocuments.reduce((acc: any, doc: any) => {
+        acc[doc.documentTypeId] = {
+          documentType: doc.documentTypeId,
+          fileS3Key: doc.fileS3Key,
+          signedUrl: doc.signedUrl,
+          fileType: doc.fileType || "all",
+          name: doc.name,
+          expiresAt: doc.expiresAt,
+          remindBeforeDays: doc.remindBeforeDays,
+        };
+        return acc;
+      }, {});
+    } else if ((user as any).documents && typeof (user as any).documents === "object") {
       mappedDocuments = (user as any).documents;
     }
 
@@ -86,8 +102,7 @@ const UsersTypeListPage: React.FC = () => {
       type: user.role === UserRole.OWNER ? "owner" : "staff",
       documents: mappedDocuments,
       bankDetails: (user as any).bankDetails || user.bankDetails || [],
-      availabilityHours:
-        (user as any).availabilityHours || user.availabilityHours || [],
+      availabilityHours: (user as any).availabilityHours || user.availabilityHours || [],
     };
 
     setEditingUser(mappedUser);
@@ -140,20 +155,60 @@ const UsersTypeListPage: React.FC = () => {
                 : "text-gray-500 hover:text-gray-700"
             }
           />
-          <ActionIcon
-            className="text-red-500"
-            icon={<TrashIcon size={22} />}
-            onClick={() => row.id && handleDelete(row.id)}
+          <ConfirmDelete
+            onConfirm={async () => row.id && handleDelete(row.id)}
+            renderTrigger={({ open }) => (
+              <ActionIcon
+                className="text-red-500"
+                icon={<TrashIcon size={22} />}
+                onClick={open}
+                title="Delete"
+              />
+            )}
           />
         </div>
       ),
     },
   ];
 
+  // Add sortable headers (excluding index/actions)
+  const sortableColumns: Column<UsersType>[] = columns.map((col) => {
+    if (col.key === "actions" || col.key === "index") return col;
+
+    return {
+      ...col,
+      renderHeader: () => (
+        <div
+          className="flex items-center gap-1 cursor-pointer select-none"
+          onClick={() => {
+            let direction: "asc" | "desc" | null = "asc";
+            if (sortConfig.key === col.key) {
+              if (sortConfig.direction === "asc") direction = "desc";
+              else if (sortConfig.direction === "desc") direction = null;
+            }
+            setSortConfig({
+              key: direction ? (col.key as string) : null,
+              direction,
+            });
+            setPage(1);
+          }}
+        >
+          {col.label}
+          <span className="text-xs">
+            {sortConfig.key === col.key
+              ? sortConfig.direction === "asc"
+                ? "▲"
+                : "▼"
+              : "▲▼"}
+          </span>
+        </div>
+      ),
+    };
+  });
+
   return (
     <div className="p-4">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-bold">Users</h1>
         <Button
           onClick={() => {
@@ -165,7 +220,7 @@ const UsersTypeListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Toolbar (search) */}
+      {/* Search Bar */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
@@ -181,6 +236,21 @@ const UsersTypeListPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={userFiltersConfig as any}
+          onApplyFilters={(appliedFilters) => {
+            setFilters(appliedFilters);
+            setPage(1);
+          }}
+          onClearAll={() => {
+            setFilters({});
+            setPage(1);
+          }}
+        />
+      </div>
+
       {isLoading ? (
         <Loader />
       ) : (
@@ -188,7 +258,7 @@ const UsersTypeListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={users}
-              columns={columns}
+              columns={sortableColumns}
               rowKey="id"
               tableClassName="bg-white"
             />
@@ -216,7 +286,7 @@ const UsersTypeListPage: React.FC = () => {
           setEditingUser(null);
         }}
         onSubmit={async () => {
-          refetch();
+          await refetch();
           setModalOpen(false);
           setEditingUser(null);
         }}

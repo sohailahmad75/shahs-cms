@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Button from "../../components/Button";
 import {
   useGetStoresQuery,
@@ -20,8 +20,11 @@ import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { useTheme } from "../../context/themeContext";
+import FilterBar from "../../components/FilterBar";
+import { storeFiltersConfig } from "./helper/store-list";
 
 const StoreListPage: React.FC = () => {
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<Partial<Store> | null>(null);
   const [query, setQuery] = useState("");
@@ -29,14 +32,45 @@ const StoreListPage: React.FC = () => {
   const [perPage, setPerPage] = useState<number>(10);
   const { isDarkMode } = useTheme();
 
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
+
+
+  // const queryParams = useMemo(() => {
+  //   const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
+  //   params.page = page;
+  //   params.perPage = perPage;
+
+  //   if (query) params.query = query;
+
+  //   Object.entries(filters).forEach(([key, value]) => {
+  //     if (value) params[key] = value;
+  //   });
+
+  //   return params;
+  // }, [page, perPage, query, filters]);
+
+  const queryParams = useMemo(() => {
+    const params: Record<string, any> = { page, perPage };
+    if (query) params.query = query;
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    if (sortConfig.key && sortConfig.direction) {
+      params.sort = sortConfig.key;
+      params.sortDir = sortConfig.direction.toUpperCase();
+    }
+    return params;
+  }, [page, perPage, query, filters, sortConfig]);
+
   const {
     data: storesResp = {
       data: [],
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
-    refetch,
-  } = useGetStoresQuery({ page, perPage, query });
+  } = useGetStoresQuery(queryParams, {
+    skip: !queryParams,
+  });
 
   const [createStore, { isLoading: creating }] = useCreateStoreMutation();
   const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
@@ -47,8 +81,6 @@ const StoreListPage: React.FC = () => {
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
   const handleEdit = (store: Store) => {
-    console.log("📂 Raw store.storeDocuments:", store.storeDocuments, typeof store.storeDocuments);
-
     let mappedDocuments: Record<string, any> = {};
 
     if (Array.isArray(store.storeDocuments)) {
@@ -66,8 +98,6 @@ const StoreListPage: React.FC = () => {
       }, {});
     } else if (store.storeDocuments && typeof store.storeDocuments === "object") {
       mappedDocuments = store.storeDocuments;
-    } else {
-      mappedDocuments = {};
     }
 
     const mappedStore: Partial<Store> = {
@@ -83,7 +113,6 @@ const StoreListPage: React.FC = () => {
     try {
       await deleteStore(id).unwrap();
       toast.success("Store deleted successfully");
-      refetch();
     } catch {
       toast.error("Failed to delete store");
     }
@@ -97,26 +126,11 @@ const StoreListPage: React.FC = () => {
         <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
       ),
     },
-    {
-      key: "name",
-      label: "Name",
-    },
-    {
-      key: "email",
-      label: "Email",
-    },
-    {
-      key: "phone",
-      label: "Phone",
-    },
-    {
-      key: "city",
-      label: "City",
-    },
-    {
-      key: "companyName",
-      label: "Company Name",
-    },
+    { key: "name", label: "Name" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "city", label: "City" },
+    { key: "companyName", label: "Company Name" },
     {
       key: "actions",
       label: "Actions",
@@ -155,7 +169,6 @@ const StoreListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Stores</h1>
         <Button
@@ -168,7 +181,7 @@ const StoreListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Toolbar */}
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
@@ -184,6 +197,21 @@ const StoreListPage: React.FC = () => {
         </div>
       </div>
 
+
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={storeFiltersConfig as any}
+          onApplyFilters={(appliedFilters) => {
+            setFilters(appliedFilters);
+            setPage(1);
+          }}
+          onClearAll={() => {
+            setFilters({});
+            setPage(1);
+          }}
+        />
+      </div>
+
       {isLoading ? (
         <Loader />
       ) : (
@@ -191,7 +219,35 @@ const StoreListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={stores}
-              columns={columns}
+              // columns={columns}
+              columns={columns.map(col => ({
+                ...col,
+                renderHeader: col.key !== "actions" && col.key !== "index"
+                  ? () => (
+                    <div
+                      className="flex items-center gap-1 cursor-pointer"
+                      onClick={() => {
+                        let direction: "asc" | "desc" | null = "asc";
+                        if (sortConfig.key === col.key) {
+                          if (sortConfig.direction === "asc") direction = "desc";
+                          else if (sortConfig.direction === "desc") direction = null;
+                        }
+                        setSortConfig({ key: direction ? (col.key as string) : null, direction });
+                        setPage(1);
+                      }}
+                    >
+                      {col.label}
+                      <span className="text-xs">
+                        {sortConfig.key === col.key
+                          ? sortConfig.direction === "asc"
+                            ? "▲"
+                            : "▼"
+                          : "▲▼"}
+                      </span>
+                    </div>
+                  )
+                  : undefined
+              }))}
               rowKey="id"
               tableClassName="bg-white"
             />
@@ -229,7 +285,6 @@ const StoreListPage: React.FC = () => {
             await createStore(values).unwrap();
             toast.success("Store created");
           }
-          refetch();
           setModalOpen(false);
           setEditingStore(null);
         }}

@@ -7,11 +7,11 @@ export const kiosksApi = baseApi.injectEndpoints({
 
     getKiosks: builder.query<
       KioskListResponse,
-      { page?: number; perPage?: number; query?: string }
+      { page?: number; perPage?: number; query?: string, }
     >({
       query: (args) => {
-        const { page = 1, perPage = 10, query = "" } = args ?? {};
-        return { url: "/kiosks", params: { page, perPage, query } };
+        const { page = 1, perPage = 10, query = "", ...filters } = args ?? {};
+        return { url: "/kiosks", params: { page, perPage, query, ...filters } };
       },
       transformResponse: (resp: any) => {
         if (Array.isArray(resp)) {
@@ -30,14 +30,15 @@ export const kiosksApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map((k) => ({
-                type: "Kiosks" as const,
-                id: k.id,
-              })),
-              { type: "Kiosks" as const, id: "LIST" },
-            ]
+            ...result.data.map((k) => ({
+              type: "Kiosks" as const,
+              id: k.id,
+            })),
+            { type: "Kiosks" as const, id: "LIST" },
+          ]
           : [{ type: "Kiosks" as const, id: "LIST" }],
     }),
+
     createKiosk: builder.mutation<Kiosk, CreateKioskDto>({
       query: (body) => ({
         url: "/kiosks",

@@ -10,11 +10,23 @@ export const storeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getStores: builder.query<
       StoreListResponse,
-      { page?: number; perPage?: number; query?: string } | void
+      { page?: number; perPage?: number; query?: string;[key: string]: any } | void
     >({
       query: (args) => {
-        const { page = 1, perPage = 10, query = "" } = args ?? {};
-        return { url: "/stores", params: { page, perPage, query } };
+        const { page = 1, perPage = 10, query = "", ...filters } =
+          (args || {}) as Record<string, any>
+
+        console.log("🔍 API Params:", { page, perPage, query, ...filters })
+
+        return {
+          url: "/stores",
+          params: {
+            page,
+            perPage,
+            query,
+            ...filters,
+          },
+        }
       },
       providesTags: (result) =>
         result

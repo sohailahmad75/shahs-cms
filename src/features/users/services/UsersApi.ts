@@ -3,21 +3,32 @@ import type { UpdateUsersDto, UsersTypeListResponse, CreateUsersDto, Users } fro
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getUsers: builder.query<
+    getNewUsers: builder.query<
       UsersTypeListResponse,
-      { page?: number; perPage?: number; search?: string } | void
+      { page?: number; perPage?: number; query?: string;[key: string]: any } | void
     >({
       query: (args) => {
-        const params = (args || {}) as { page?: number; perPage?: number; search?: string };
-        const { page = 1, perPage = 10, search = "" } = params;
-        return { url: "/users", params: { page, perPage, search } };
+        const { page = 1, perPage = 10, query = "", ...filters } =
+          (args || {}) as Record<string, any>;
+
+        console.log("🔍 Users API Params:", { page, perPage, query, ...filters });
+
+        return {
+          url: "/users",
+          params: {
+            page,
+            perPage,
+            query,
+            ...filters,
+          },
+        };
       },
       providesTags: (result) =>
         result
           ? [
-            ...result.data.map((doc) => ({
+            ...result.data.map((user) => ({
               type: "Users" as const,
-              id: doc.id!,
+              id: user.id!,
             })),
             { type: "Users" as const, id: "LIST" },
           ]
@@ -74,14 +85,14 @@ export const usersApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      
+
     }),
 
   }),
 });
 
 export const {
-  useGetUsersQuery,
+  useGetNewUsersQuery,
   useCreateUsersMutation,
   useUpdateUsersMutation,
   useDeleteUsersMutation,

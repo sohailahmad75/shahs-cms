@@ -1,12 +1,21 @@
 import React from "react";
 import { useTheme } from "../../src/context/themeContext";
 
+// export interface Column<T> {
+//   key: keyof T | "actions" | "index";
+//   label: string;
+//   render?: (value: T[keyof T], row: T, index?: number) => React.ReactNode;
+//   className?: string;
+// }
+
 export interface Column<T> {
   key: keyof T | "actions" | "index";
   label: string;
   render?: (value: T[keyof T], row: T, index?: number) => React.ReactNode;
+  renderHeader?: () => React.ReactNode; 
   className?: string;
 }
+
 
 interface DynamicTableProps<T> {
   data: T[];
@@ -73,7 +82,8 @@ export function DynamicTable<T>({
                   className={`px-4 py-3 text-left text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-600"
                     } ${col.className || ""}`}
                 >
-                  {col.label}
+                  {col.renderHeader ? col.renderHeader() : col.label}
+
                 </th>
               ))}
             </tr>

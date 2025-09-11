@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Button from "../../components/Button";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
@@ -11,6 +11,8 @@ import type { DocumentType } from "./documentTypes.types";
 import { useTheme } from "../../context/themeContext";
 import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
+import FilterBar from "../../components/FilterBar";
+import { documentTypeFiltersConfig } from "./helpers/documentlist";
 
 import {
   useGetDocumentsTypeQuery,
@@ -22,18 +24,40 @@ import {
 const DocumentTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  // State for pagination and search
+
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [search, setSearch] = useState("");
-6
-  // API call with pagination params
+
+
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
+
+  const queryParams = useMemo(() => {
+    const params: Record<string, any> = { page, perPage };
+    if (query) params.query = query;
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    if (sortConfig.key && sortConfig.direction) {
+      params.sort = sortConfig.key;
+      params.sortDir = sortConfig.direction.toUpperCase();
+    }
+    return params;
+  }, [page, perPage, query, filters, sortConfig]);
+
+
   const {
-    data: resp = { data: [], meta: { total: 0, page: 1, perPage: 10, totalPages: 1 } },
+    data: resp = {
+      data: [],
+      meta: { total: 0, page: 1, perPage: 10, totalPages: 1 }
+    },
     isLoading,
     isFetching,
     refetch,
-  } = useGetDocumentsTypeQuery({ page, perPage, search });
+  } = useGetDocumentsTypeQuery(queryParams, {
+    skip: !queryParams,
+  });
 
   const documents = resp.data;
   const meta = resp.meta;
@@ -43,10 +67,11 @@ const DocumentTypeListPage: React.FC = () => {
   const [updateDocument, { isLoading: updating }] = useUpdateDocumentsTypeMutation();
   const [deleteDocument] = useDeleteDocumentsTypeMutation();
 
+
+
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(
-    null,
-  );
+  const [editingDocument, setEditingDocument] = useState<DocumentType | null>(null);
 
   const handleEdit = (doc: DocumentType) => {
     setEditingDocument(doc);
@@ -103,7 +128,7 @@ const DocumentTypeListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      {/* Header */}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl font-bold">Documents</h1>
         <Button
@@ -116,35 +141,91 @@ const DocumentTypeListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Toolbar */}
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
             className="w-72"
-            value={search}
+            value={query}
             onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1); // Reset to first page on search
+              setQuery(e.target.value);
+              setPage(1);
             }}
             placeholder="Search documents…"
-            name="search"
+            name="query"
           />
         </div>
       </div>
 
-      {/* Table / Loader / Empty */}
+
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={documentTypeFiltersConfig as any}
+          onApplyFilters={(appliedFilters) => {
+            setFilters(appliedFilters);
+            setPage(1);
+          }}
+          onClearAll={() => {
+            setFilters({});
+            setPage(1);
+          }}
+        />
+      </div>
+
       {isLoading || isFetching ? (
         <Loader />
       ) : (
-        <DynamicTable
-          data={documents}
-          columns={columns}
-          rowKey="id"
-          tableClassName="bg-white dark:bg-slate-900"
-        />
+        <>
+         
+          <DynamicTable
+            data={documents} 
+            columns={columns.map(col => ({
+              ...col,
+              renderHeader: col.key !== "actions" && col.key !== "index"
+                ? () => (
+                  <div
+                    className="flex items-center gap-1 cursor-pointer"
+                    onClick={() => {
+                      let direction: "asc" | "desc" | null = "asc";
+                      if (sortConfig.key === col.key) {
+                        if (sortConfig.direction === "asc") direction = "desc";
+                        else if (sortConfig.direction === "desc") direction = null;
+                      }
+                      setSortConfig({ key: direction ? (col.key as string) : null, direction });
+                      setPage(1); 
+                    }}
+                  >
+                    {col.label}
+                    <span className="text-xs">
+                      {sortConfig.key === col.key
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : "▲▼"}
+                    </span>
+                  </div>
+                )
+                : undefined
+            }))}
+            rowKey="id"
+          />
+
+
+          <Pagination
+            className="mt-4"
+            page={page}
+            perPage={perPage}
+            total={meta.total}
+            onPageChange={(p) => setPage(p)}
+            onPerPageChange={(pp) => {
+              setPerPage(pp);
+              setPage(1);
+            }}
+            perPageOptions={[10, 25, 50]}
+          />
+        </>
       )}
 
-      {/* Modal */}
       <DocumentTypeModal
         isOpen={modalOpen}
         onClose={() => {

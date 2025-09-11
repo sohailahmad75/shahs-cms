@@ -292,10 +292,10 @@ const UsersTypeModal = ({
             activeStep >= totalSteps ? totalSteps - 1 : activeStep;
           const current = steps[currentIndex];
 
-          const stepKeysOf = (stepIdx: number) =>
-            userStepFieldKeys[
-            steps[stepIdx].key as keyof typeof userStepFieldKeys
-            ];
+          // const stepKeysOf = (stepIdx: number) =>
+          //   userStepFieldKeys[
+          //   steps[stepIdx].key as keyof typeof userStepFieldKeys
+          //   ];
 
 
           const goNext = async () => {
@@ -445,29 +445,142 @@ const UsersTypeModal = ({
             }
           };
 
+          // const goToStep = async (targetIdx: number) => {
+          //   if (targetIdx <= currentIndex) {
+
+          //     setActiveStep(targetIdx);
+          //     return;
+          //   }
+
+
+          //   const stepKeys = stepKeysOf(currentIndex);
+          //   await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
+
+          //   const allErrors = await validateForm();
+          //   const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+          //   if (stepErrors.length === 0) {
+          //     setActiveStep(targetIdx);
+          //   } else {
+          //     console.log("Validation failed, cannot move to next step");
+          //   }
+          // };
+
+
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
-
               setActiveStep(targetIdx);
               return;
             }
 
+            // --- same logic like goNext ---
+            const getBankFields = (values: UserInfoTypes) => {
+              return (
+                values.bankDetails?.flatMap((_, idx) => [
+                  `bankDetails[${idx}].bankName`,
+                  `bankDetails[${idx}].accountNumber`,
+                  `bankDetails[${idx}].sortCode`,
+                ]) || []
+              );
+            };
 
-            const stepKeys = stepKeysOf(currentIndex);
-            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
+            const getDocumentFields = (documentsList: any[]) =>
+              documentsList.flatMap((doc) => {
+                const fields: string[] = [];
+                if (doc.isMandatory) {
+                  fields.push(`documents.${doc.id}.fileS3Key`);
+                }
+                fields.push(
+                  `documents.${doc.id}.fileType`,
+                  `documents.${doc.id}.expiresAt`,
+                  `documents.${doc.id}.remindBeforeDays`
+                );
+                return fields;
+              });
 
+            const stepKeys =
+              current.key === "account"
+                ? getBankFields(values)
+                : current.key === "documents"
+                  ? getDocumentFields(documentsList || [])
+                  : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
+
+            await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
             const allErrors = await validateForm();
             const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
 
-            if (stepErrors.length === 0) {
-              setActiveStep(targetIdx);
-            } else {
-              console.log("Validation failed, cannot move to next step");
+            if (stepErrors.length) {
+              const first = stepErrors[0];
+              const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
+              const el = document.querySelector(
+                `[name="${safe}"], [name="${safe}[]"]`
+              ) as HTMLElement | null;
+              if (el && "focus" in el) (el as any).focus();
+              return;
             }
+
+            let idForPut = userId || values.id;
+
+            if (current.key === "basic" && !editingUsers && !idForPut) {
+              try {
+                const payload = mapCreateDto(values);
+                const res: any = await createUser(payload).unwrap();
+                const newId = res.user?.id || res.id || res.data?.id;
+                if (newId) {
+                  setUserId(newId);
+                  await setFieldValue("id", newId);
+                  idForPut = newId;
+                } else {
+                  console.error("User create response missing ID", res);
+                  return;
+                }
+              } catch (err) {
+                console.error("Create user failed:", err);
+                return;
+              }
+            }
+
+            if (!idForPut) {
+              console.error("No userId found to update.");
+              return;
+            }
+
+            try {
+              if (current.key === "basic") {
+                const newBasic = mapCreateDto(values).basicInfo;
+                const oldBasic = editingUsers
+                  ? mapCreateDto(editingUsers as UserInfoTypes).basicInfo
+                  : null;
+                if (!oldBasic || shouldUpdate(oldBasic, newBasic)) {
+                  await updateUser({ id: idForPut, data: { basicInfo: newBasic } }).unwrap();
+                }
+              }
+
+              if (current.key === "account") {
+                const newBank = mapUpdateDto(values, idForPut).userBankDetails;
+                const hasData = newBank.some(
+                  (b) =>
+                    b.accountNumber ||
+                    b.sortCode ||
+                    b.bankName ||
+                    b.accountHolderName ||
+                    b.iban ||
+                    b.swiftCode
+                );
+                const oldBank = editingUsers
+                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
+                  : null;
+                if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
+                  await updateUser({ id: idForPut, data: { userBankDetails: newBank } }).unwrap();
+                }
+              }
+            } catch (err) {
+              console.error("Update user failed:", err);
+              return;
+            }
+
+            setActiveStep(targetIdx);
           };
-
-
-
 
           const isSaving =
             isSubmitting || createStatus.isLoading || updateStatus.isLoading;
@@ -560,7 +673,7 @@ const UsersTypeModal = ({
                             {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
                           </label>
 
-                          <FileUploader
+                          {/* <FileUploader
                             value={
                               values.documents?.[doc.id]?.fileS3Key ||
                               doc.userDoc?.fileS3Key ||
@@ -580,6 +693,43 @@ const UsersTypeModal = ({
                                 },
                               });
 
+
+                              if (fileS3Key) {
+                                setTimeout(() => {
+                                  setFieldTouched(`documents.${doc.id}.fileS3Key`, true, true);
+                                  validateForm();
+                                }, 100);
+                              }
+                            }}
+                            path="users-documents"
+                            type="all"
+                            pathId={doc.id}
+                          /> */}
+
+                          <FileUploader
+                            value={values.documents?.[doc.id]?.fileS3Key || ""}
+                            initialPreview={doc.userDoc?.signedUrl}
+                            onChange={(fileS3Key, fileName) => {
+                              const prevDocs = values.documents || {};
+
+                              if (!fileS3Key) {
+                              
+                                const newDocs = { ...prevDocs };
+                                delete newDocs[doc.id];
+                                setFieldValue("documents", newDocs);
+                              } else {
+                              
+                                setFieldValue("documents", {
+                                  ...prevDocs,
+                                  [doc.id]: {
+                                    ...(prevDocs[doc.id] || {}),
+                                    documentType: doc.id,
+                                    fileS3Key,
+                                    fileType: prevDocs[doc.id]?.fileType || "all",
+                                    name: fileName || doc.name, 
+                                  },
+                                });
+                              }
 
                               if (fileS3Key) {
                                 setTimeout(() => {
