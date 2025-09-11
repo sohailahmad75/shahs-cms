@@ -21,7 +21,7 @@ import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import FilterBar from "../../components/FilterBar";
-import { kioskFiltersConfig } from "./helpers/kiosklist"; 
+import { kioskFiltersConfig } from "./helpers/kiosklist";
 
 const KioskListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,20 +31,36 @@ const KioskListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
 
-  // Memoized query params for API call
+
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
+
   const queryParams = useMemo(() => {
-    const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
-    params.page = page;
-    params.perPage = perPage;
-
+    const params: Record<string, any> = { page, perPage };
     if (query) params.query = query;
-
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params[key] = value;
     });
-
+    if (sortConfig.key && sortConfig.direction) {
+      params.sort = sortConfig.key;
+      params.sortDir = sortConfig.direction.toUpperCase();
+    }
     return params;
-  }, [page, perPage, query, filters]);
+  }, [page, perPage, query, filters, sortConfig]);
+
+
+  // const queryParams = useMemo(() => {
+  //   const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
+  //   params.page = page;
+  //   params.perPage = perPage;
+
+  //   if (query) params.query = query;
+
+  //   Object.entries(filters).forEach(([key, value]) => {
+  //     if (value) params[key] = value;
+  //   });
+
+  //   return params;
+  // }, [page, perPage, query, filters]);
 
   const {
     data: kiosksResp = {
@@ -136,7 +152,7 @@ const KioskListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      {/* Header */}
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Kiosks</h1>
         <Button
@@ -201,7 +217,35 @@ const KioskListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={kiosks}
-              columns={columns}
+              // columns={columns}
+              columns={columns.map(col => ({
+                ...col,
+                renderHeader: col.key !== "actions" && col.key !== "index"
+                  ? () => (
+                    <div
+                      className="flex items-center gap-1 cursor-pointer"
+                      onClick={() => {
+                        let direction: "asc" | "desc" | null = "asc";
+                        if (sortConfig.key === col.key) {
+                          if (sortConfig.direction === "asc") direction = "desc";
+                          else if (sortConfig.direction === "desc") direction = null;
+                        }
+                        setSortConfig({ key: direction ? (col.key as string) : null, direction });
+                        setPage(1);
+                      }}
+                    >
+                      {col.label}
+                      <span className="text-xs">
+                        {sortConfig.key === col.key
+                          ? sortConfig.direction === "asc"
+                            ? "▲"
+                            : "▼"
+                          : "▲▼"}
+                      </span>
+                    </div>
+                  )
+                  : undefined
+              }))}
               rowKey="id"
               tableClassName="bg-white"
             />
