@@ -32,20 +32,35 @@ const StoreListPage: React.FC = () => {
   const [perPage, setPerPage] = useState<number>(10);
   const { isDarkMode } = useTheme();
 
-  // ✅ Memoized query params (important for RTK Query)
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
+
+
+  // const queryParams = useMemo(() => {
+  //   const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
+  //   params.page = page;
+  //   params.perPage = perPage;
+
+  //   if (query) params.query = query;
+
+  //   Object.entries(filters).forEach(([key, value]) => {
+  //     if (value) params[key] = value;
+  //   });
+
+  //   return params;
+  // }, [page, perPage, query, filters]);
+
   const queryParams = useMemo(() => {
-    const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
-    params.page = page;
-    params.perPage = perPage;
-
+    const params: Record<string, any> = { page, perPage };
     if (query) params.query = query;
-
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params[key] = value;
     });
-
+    if (sortConfig.key && sortConfig.direction) {
+      params.sort = sortConfig.key;
+      params.sortDir = sortConfig.direction.toUpperCase();
+    }
     return params;
-  }, [page, perPage, query, filters]);
+  }, [page, perPage, query, filters, sortConfig]);
 
   const {
     data: storesResp = {
@@ -54,7 +69,7 @@ const StoreListPage: React.FC = () => {
     },
     isLoading,
   } = useGetStoresQuery(queryParams, {
-    skip: !queryParams, 
+    skip: !queryParams,
   });
 
   const [createStore, { isLoading: creating }] = useCreateStoreMutation();
@@ -166,7 +181,7 @@ const StoreListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Toolbar */}
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
@@ -182,7 +197,7 @@ const StoreListPage: React.FC = () => {
         </div>
       </div>
 
-     
+
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={storeFiltersConfig as any}
@@ -204,7 +219,35 @@ const StoreListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={stores}
-              columns={columns}
+              // columns={columns}
+              columns={columns.map(col => ({
+                ...col,
+                renderHeader: col.key !== "actions" && col.key !== "index"
+                  ? () => (
+                    <div
+                      className="flex items-center gap-1 cursor-pointer"
+                      onClick={() => {
+                        let direction: "asc" | "desc" | null = "asc";
+                        if (sortConfig.key === col.key) {
+                          if (sortConfig.direction === "asc") direction = "desc";
+                          else if (sortConfig.direction === "desc") direction = null;
+                        }
+                        setSortConfig({ key: direction ? (col.key as string) : null, direction });
+                        setPage(1);
+                      }}
+                    >
+                      {col.label}
+                      <span className="text-xs">
+                        {sortConfig.key === col.key
+                          ? sortConfig.direction === "asc"
+                            ? "▲"
+                            : "▼"
+                          : "▲▼"}
+                      </span>
+                    </div>
+                  )
+                  : undefined
+              }))}
               rowKey="id"
               tableClassName="bg-white"
             />

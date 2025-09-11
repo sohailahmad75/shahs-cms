@@ -41,7 +41,7 @@ const DocumentTypeListPage: React.FC = () => {
     });
     if (sortConfig.key && sortConfig.direction) {
       params.sort = sortConfig.key;
-      params.sortDir = sortConfig.direction.toUpperCase(); // ASC / DESC
+      params.sortDir = sortConfig.direction.toUpperCase();
     }
     return params;
   }, [page, perPage, query, filters, sortConfig]);
@@ -189,7 +189,7 @@ const DocumentTypeListPage: React.FC = () => {
                       let direction: "asc" | "desc" | null = "asc";
                       if (sortConfig.key === col.key) {
                         if (sortConfig.direction === "asc") direction = "desc";
-                        else if (sortConfig.direction === "desc") direction = null; // reset
+                        else if (sortConfig.direction === "desc") direction = null;
                       }
                       setSortConfig({ key: direction ? (col.key as string) : null, direction });
                       setPage(1); 
