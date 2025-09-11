@@ -5,7 +5,7 @@ import Modal from "../../../components/Modal";
 import InputField from "../../../components/InputField";
 import DatePickerField from "../../../components/DatePickerField";
 import Button from "../../../components/Button";
-// import FileUploader from "../../../components/FileUploader"; // Uncomment and wire up if you want uploads here
+import FileUploader from "../../../components/FileUploader";
 
 import BankDetailsFields from "../../stores/components/BankDetailsFields";
 import OpeningHoursFormSection from "../../stores/components/OpeningHoursFormSection";
@@ -32,9 +32,6 @@ import { useGetDocumentsTypeQuery } from "../../documentType/services/documentTy
 import { defaultDays } from "../../stores/helper/store-helper";
 import { useTheme } from "../../../context/themeContext";
 
-// ---------------------------------------------
-// Types
-// ---------------------------------------------
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -56,17 +53,36 @@ const UsersTypeModal = ({
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
 
+
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
 
+
   const [documentsList, setDocumentsList] = useState<any[]>([]);
-  const [role, setRole] = useState<UserInfoTypes["type"]>(
-    editingUsers?.type || "staff",
-  );
+  const [role, setRole] = useState<UserInfoTypes["type"]>(editingUsers?.type || "staff");
 
   const { data: documentTypes } = useGetDocumentsTypeQuery(
     { role },
-    { skip: !role },
+    { skip: !role }
   );
+
+  // useEffect(() => {
+  //   if (!documentTypes?.data) {
+  //     setDocumentsList([]);
+  //     return;
+  //   }
+
+  //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
+  //     acc[doc.documentTypeId] = doc;
+  //     return acc;
+  //   }, {});
+
+  //   setDocumentsList(
+  //     documentTypes.data.map((docType: any) => ({
+  //       ...docType,
+  //       userDoc: userDocsMap[docType.id] || null,
+  //     }))
+  //   );
+  // }, [documentTypes, editingUsers]);
 
   useEffect(() => {
     if (!documentTypes?.data) {
@@ -74,21 +90,36 @@ const UsersTypeModal = ({
       return;
     }
 
-    const userDocsMap = (editingUsers?.documents || []).reduce(
-      (acc: any, doc: any) => {
+    let docs = editingUsers?.documents;
+    if (typeof docs === "string") {
+      try {
+        docs = JSON.parse(docs);
+      } catch {
+        docs = [];
+      }
+    }
+
+    let userDocsMap: Record<string, any> = {};
+
+    if (Array.isArray(docs)) {
+
+      userDocsMap = docs.reduce((acc: any, doc: any) => {
         acc[doc.documentTypeId] = doc;
         return acc;
-      },
-      {},
-    );
+      }, {});
+    } else if (docs && typeof docs === "object") {
+      userDocsMap = docs;
+    }
 
     setDocumentsList(
       documentTypes.data.map((docType: any) => ({
         ...docType,
         userDoc: userDocsMap[docType.id] || null,
-      })),
+      }))
     );
   }, [documentTypes, editingUsers]);
+
+
 
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
@@ -99,12 +130,13 @@ const UsersTypeModal = ({
     })),
   );
   const [sameAllDays, setSameAllDays] = useState(false);
-
   useEffect(() => {
     const source = editingUsers?.availabilityHours || editingUsers?.openingHours;
 
     if (source?.length) {
-      const dayMap = Object.fromEntries(source.map((h: any) => [h.day, h]));
+      const dayMap = Object.fromEntries(
+        source.map((h: any) => [h.day, h])
+      );
 
       const mapped = defaultDays.map((day) => ({
         id: dayMap[day]?.id || null,
@@ -122,16 +154,19 @@ const UsersTypeModal = ({
           open: "11:00 am",
           close: "11:00 pm",
           closed: false,
-        })),
+        }))
       );
     }
   }, [editingUsers]);
+
+
 
   const formatDateOnly = (dateString?: string) => {
     if (!dateString) return "";
     return new Date(dateString).toISOString().split("T")[0];
   };
   const { isDarkMode } = useTheme();
+
 
   const mapCreateDto = (v: UserInfoTypes): CreateUsersDto => {
     return {
@@ -165,27 +200,31 @@ const UsersTypeModal = ({
           swiftCode: b.swiftCode || "",
         })) || [],
       userAvailability: (v.openingHours || []).map((o) => ({
-        id: (o as any).id || undefined,
+        id: o.id || undefined,
         day: o.day,
         open: o.closed ? null : o.open || null,
         close: o.closed ? null : o.close || null,
         closed: !!o.closed,
         userId,
       })),
-      userDocuments: Object.entries(v.documents || {}).map(
-        ([docTypeId, doc]: [string, any]) => ({
-          documentType: docTypeId, // backend expects doc type id here
-          fileS3Key: doc.fileS3Key || null,
-          fileType: doc.fileType || null,
-          name: doc.name || null,
-          expiresAt: doc.expiresAt || null,
-          remindBeforeDays: doc.remindBeforeDays
-            ? Number(doc.remindBeforeDays)
-            : null,
-        }),
-      ),
+
+      userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
+        documentType: docTypeId,
+        fileS3Key: doc.fileS3Key || null,
+        fileType: doc.fileType || null,
+        name: doc.name || null,
+        expiresAt: doc.expiresAt || null,
+        remindBeforeDays: doc.remindBeforeDays ? Number(doc.remindBeforeDays) : null,
+        signedUrl: doc.signedUrl || null,
+      })),
     };
   };
+
+  console.log("editingUsers.documents =>", editingUsers?.documents);
+  console.log("Final documentsList =>", documentsList);
+  console.log("editingUsers.openingHours =>", editingUsers?.openingHours);
+  console.log("Final openingHours =>", openingHours);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -205,7 +244,7 @@ const UsersTypeModal = ({
       { key: "availability", label: "Availability" },
       { key: "documents", label: "Documents" },
     ],
-    [],
+    []
   );
 
   const getVisibleSteps = (type: UserInfoTypes["type"]) =>
@@ -237,51 +276,64 @@ const UsersTypeModal = ({
           touched,
           setFieldTouched,
           validateForm,
+
         }) => {
+
           useEffect(() => {
             if (values.type && values.type !== role) {
               setRole(values.type);
             }
           }, [values.type]);
 
+
           const steps = getVisibleSteps(values.type);
           const totalSteps = steps.length;
-          const currentIndex = activeStep >= totalSteps ? totalSteps - 1 : activeStep;
+          const currentIndex =
+            activeStep >= totalSteps ? totalSteps - 1 : activeStep;
           const current = steps[currentIndex];
 
           const stepKeysOf = (stepIdx: number) =>
-            userStepFieldKeys[steps[stepIdx].key as keyof typeof userStepFieldKeys];
+            userStepFieldKeys[
+            steps[stepIdx].key as keyof typeof userStepFieldKeys
+            ];
+
 
           const goNext = async () => {
-            // Build step-specific keys (validate only the visible fields of the step)
-            const getBankFields = (vals: UserInfoTypes) =>
-              vals.bankDetails?.flatMap((_, idx) => [
-                `bankDetails[${idx}].bankName`,
-                `bankDetails[${idx}].accountNumber`,
-                `bankDetails[${idx}].sortCode`,
-              ]) || [];
 
-            const getDocumentFields = (docs: any[]) =>
-              docs.flatMap((doc) => {
+            const getBankFields = (values: UserInfoTypes) => {
+              return (
+                values.bankDetails?.flatMap((_, idx) => [
+                  `bankDetails[${idx}].bankName`,
+                  `bankDetails[${idx}].accountNumber`,
+                  `bankDetails[${idx}].sortCode`,
+                ]) || []
+              );
+            };
+
+
+            const getDocumentFields = (documentsList: any[]) =>
+              documentsList.flatMap((doc) => {
                 const fields: string[] = [];
-                if (doc.isMandatory) fields.push(`documents.${doc.id}.fileS3Key`);
+                if (doc.isMandatory) {
+                  fields.push(`documents.${doc.id}.fileS3Key`);
+                }
                 fields.push(
                   `documents.${doc.id}.fileType`,
                   `documents.${doc.id}.expiresAt`,
-                  `documents.${doc.id}.remindBeforeDays`,
+                  `documents.${doc.id}.remindBeforeDays`
                 );
                 return fields;
               });
+
 
             const stepKeys =
               current.key === "account"
                 ? getBankFields(values)
                 : current.key === "documents"
-                ? getDocumentFields(documentsList || [])
-                : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
+                  ? getDocumentFields(documentsList || [])
+                  : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
-
             const allErrors = await validateForm();
             const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
 
@@ -289,13 +341,13 @@ const UsersTypeModal = ({
               const first = stepErrors[0];
               const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
               const el = document.querySelector(
-                `[name="${safe}"], [name="${safe}[]"]`,
+                `[name="${safe}"], [name="${safe}[]"]`
               ) as HTMLElement | null;
               if (el && "focus" in el) (el as any).focus();
               return;
             }
 
-            // Ensure we have an ID (create on first step for new users)
+
             let idForPut = userId || values.id;
 
             if (current.key === "basic" && !editingUsers && !idForPut) {
@@ -323,6 +375,7 @@ const UsersTypeModal = ({
             }
 
             try {
+
               if (current.key === "basic") {
                 const newBasic = mapCreateDto(values).basicInfo;
                 const oldBasic = editingUsers
@@ -333,6 +386,7 @@ const UsersTypeModal = ({
                 }
               }
 
+
               if (current.key === "account") {
                 const newBank = mapUpdateDto(values, idForPut).userBankDetails;
                 const hasData = newBank.some(
@@ -342,16 +396,16 @@ const UsersTypeModal = ({
                     b.bankName ||
                     b.accountHolderName ||
                     b.iban ||
-                    b.swiftCode,
+                    b.swiftCode
                 );
                 const oldBank = editingUsers
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
                   : null;
-
                 if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
                   await updateUser({ id: idForPut, data: { userBankDetails: newBank } }).unwrap();
                 }
               }
+
 
               if (current.key === "availability") {
                 const newAvail = mapUpdateDto(values, idForPut).userAvailability;
@@ -359,9 +413,13 @@ const UsersTypeModal = ({
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userAvailability
                   : null;
                 if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
-                  await updateUser({ id: idForPut, data: { userAvailability: newAvail } }).unwrap();
+                  await updateUser({
+                    id: idForPut,
+                    data: { userAvailability: newAvail },
+                  }).unwrap();
                 }
               }
+
 
               if (current.key === "documents") {
                 const newDocs = mapUpdateDto(values, idForPut).userDocuments;
@@ -369,7 +427,10 @@ const UsersTypeModal = ({
                   ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
                   : null;
                 if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-                  await updateUser({ id: idForPut, data: { userDocuments: newDocs } }).unwrap();
+                  await updateUser({
+                    id: idForPut,
+                    data: { userDocuments: newDocs },
+                  }).unwrap();
                 }
               }
             } catch (err) {
@@ -386,9 +447,11 @@ const UsersTypeModal = ({
 
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
+
               setActiveStep(targetIdx);
               return;
             }
+
 
             const stepKeys = stepKeysOf(currentIndex);
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
@@ -403,22 +466,28 @@ const UsersTypeModal = ({
             }
           };
 
-          const isSaving = isSubmitting || createStatus.isLoading || updateStatus.isLoading;
+
+
+
+          const isSaving =
+            isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 
           return (
             <Form className="space-y-6">
+
               <div className="flex items-center justify-between">
                 {steps.map((s, idx) => {
                   const isActive = idx === currentIndex;
                   const isDone = idx < currentIndex;
 
+
                   const pillBase =
                     "flex items-center gap-2 px-3 py-2 rounded-full border text-sm cursor-pointer select-none transition";
                   const pillState = isActive
-                    ? "border-orange-400 text-orange-600"
+                    ? `border-orange-400 ${isDarkMode ? "border-slate-500 text-white" : "border-orange-400 text-orange-600"} text-orange-600`
                     : isDone
-                    ? "border-green-400 text-green-600"
-                    : "border-gray-300 text-gray-600";
+                      ? "border-green-400 text-green-600"
+                      : "border-gray-300 text-gray-600";
 
                   return (
                     <div key={s.key} className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}>
@@ -429,7 +498,9 @@ const UsersTypeModal = ({
                         onClick={() => goToStep(idx)}
                       >
                         <span>{idx + 1}</span>
-                        <span className="font-medium whitespace-nowrap">{s.label}</span>
+                        <span className="font-medium whitespace-nowrap">
+                          {s.label}
+                        </span>
                       </div>
                       {idx < steps.length - 1 && <div className="h-px flex-1 bg-gray-200 mx-2" />}
                     </div>
@@ -441,7 +512,8 @@ const UsersTypeModal = ({
                 <BasicInfoForm
                   onTypeChange={(nextType) => {
                     const visible = getVisibleSteps(nextType);
-                    if (currentIndex >= visible.length) setActiveStep(visible.length - 1);
+                    if (currentIndex >= visible.length)
+                      setActiveStep(visible.length - 1);
                   }}
                 />
               )}
@@ -457,8 +529,10 @@ const UsersTypeModal = ({
               )}
 
               {current.key === "availability" && values.type === "staff" && (
+
                 <OpeningHoursFormSection
                   openingHours={openingHours}
+                  // setOpeningHours={setOpeningHours}
                   setOpeningHours={(updated) => {
                     setOpeningHours(updated);
                     setFieldValue("openingHours", updated);
@@ -476,63 +550,86 @@ const UsersTypeModal = ({
                     </div>
                   ) : (
                     documentsList.map((doc) => {
-                      const hasFile = Boolean(
-                        (values as any).documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key,
-                      );
+                      const documentError = getIn(errors, `documents.${doc.id}.fileS3Key`);
+                      const documentTouched = getIn(touched, `documents.${doc.id}.fileS3Key`);
+                      const showError = documentError && documentTouched;
+
                       return (
                         <div key={doc.id} className="md:col-span-2 pb-4">
                           <label className="text-sm font-medium text-gray-700 mb-1 block">
                             {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
                           </label>
 
-                          {/* File key (string). If you have a FileUploader, wire it here and set fileS3Key/fileType/name */}
-                          <InputField
-                            placeholder="File S3 Key"
-                            name={`documents.${doc.id}.fileS3Key`}
+                          <FileUploader
                             value={
-                              (values as any).documents?.[doc.id]?.fileS3Key ?? doc.userDoc?.fileS3Key ?? ""
+                              values.documents?.[doc.id]?.fileS3Key ||
+                              doc.userDoc?.fileS3Key ||
+                              ""
                             }
-                            onChange={handleChange}
+                            initialPreview={doc.userDoc?.signedUrl}
+                            onChange={(fileS3Key) => {
+                              const prevDocs = values.documents || {};
+                              setFieldValue("documents", {
+                                ...prevDocs,
+                                [doc.id]: {
+                                  ...(prevDocs[doc.id] || {}),
+                                  documentType: doc.id,
+                                  fileS3Key,
+                                  fileType: prevDocs[doc.id]?.fileType || "all",
+                                  name: doc.name,
+                                },
+                              });
+
+
+                              if (fileS3Key) {
+                                setTimeout(() => {
+                                  setFieldTouched(`documents.${doc.id}.fileS3Key`, true, true);
+                                  validateForm();
+                                }, 100);
+                              }
+                            }}
+                            path="users-documents"
+                            type="all"
+                            pathId={doc.id}
                           />
 
-                          {/* Optional: name & fileType */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                            <InputField
-                              placeholder="Document Name (optional)"
-                              name={`documents.${doc.id}.name`}
-                              value={(values as any).documents?.[doc.id]?.name ?? doc.userDoc?.name ?? ""}
-                              onChange={handleChange}
-                            />
-                            <InputField
-                              placeholder="File Type (e.g., pdf)"
-                              name={`documents.${doc.id}.fileType`}
-                              value={(values as any).documents?.[doc.id]?.fileType ?? doc.userDoc?.fileType ?? ""}
-                              onChange={handleChange}
-                            />
-                          </div>
 
-                          {hasFile && (
+                          {showError && (
+                            <div className="text-red-500 text-sm mt-1">
+                              {documentError}
+                            </div>
+                          )}
+
+                          {(values.documents?.[doc.id]?.fileS3Key || doc.userDoc?.fileS3Key) && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                               <div>
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Expiry Date</label>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                  Expiry Date
+                                </label>
                                 <DatePickerField
                                   name={`documents.${doc.id}.expiresAt`}
                                   value={formatDateOnly(
-                                    (values as any).documents?.[doc.id]?.expiresAt || doc.userDoc?.expiresAt,
+                                    values.documents?.[doc.id]?.expiresAt ||
+                                    doc.userDoc?.expiresAt
                                   )}
-                                  onChange={(v: any) => setFieldValue(`documents.${doc.id}.expiresAt`, v)}
+                                  onChange={(v: any) =>
+                                    setFieldValue(`documents.${doc.id}.expiresAt`, v)
+                                  }
                                 />
                               </div>
+
                               <div>
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Remind Before (days)</label>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                  Remind Before (days)
+                                </label>
                                 <InputField
                                   placeholder="Remind Before (days)"
                                   name={`documents.${doc.id}.remindBeforeDays`}
                                   type="number"
                                   value={String(
-                                    (values as any).documents?.[doc.id]?.remindBeforeDays ??
-                                      doc.userDoc?.remindBeforeDays ??
-                                      "",
+                                    values.documents?.[doc.id]?.remindBeforeDays ??
+                                    doc.userDoc?.remindBeforeDays ??
+                                    ""
                                   )}
                                   onChange={handleChange}
                                 />

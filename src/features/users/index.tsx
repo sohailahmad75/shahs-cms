@@ -10,6 +10,9 @@ import ActionIcon from "../../components/ActionIcon";
 import { UserRole, type UserInfoTypes, type UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
 import { Link } from "react-router-dom";
+import InputField from "../../components/InputField";
+import Pagination from "../../components/Pagination";
+import EyeOpen from "../../assets/styledIcons/EyeOpen";
 
 import {
   useGetUsersQuery,
@@ -17,92 +20,62 @@ import {
   useUpdateUsersMutation,
   useDeleteUsersMutation,
 } from "./services/UsersApi";
-import EyeOpen from "../../assets/styledIcons/EyeOpen";
+
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
-  const { data: usersResponse, isLoading, refetch } = useGetUsersQuery();
-  const users = usersResponse?.data || [];
+  // 🔹 Local state for pagination + search (like Stores page)
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState<number>(10);
+
+  // 🔹 Fetch with params; default shape if API returns nothing yet
+  const {
+    data: usersResp = {
+      data: [],
+      meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
+    },
+    isLoading,
+    refetch,
+  } = useGetUsersQuery({ page, perPage, query });
+
+  const users = usersResp.data;
+  const meta = usersResp.meta;
+  const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
   const [createUser, { isLoading: creating }] = useCreateUsersMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
   const [deleteUser] = useDeleteUsersMutation();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
-  // const handleEdit = (user: UsersType) => {
-  //   const mappedUser: Partial<UserInfoTypes> = {
-  //     ...user,
-  //     dateOfBirth: user.dateOfBirth,
-  //     postcode: (user as any).postCode || user.postcode || "",
-  //     niRate: (user as any).NiRate ?? user.niRate ?? null,
-  //     type: user.role === UserRole.OWNER ? "owner" : "staff",
-  //   };
-
-  //   setEditingUser(mappedUser);
-  //   setModalOpen(true);
-  // };
-
-  // const handleEdit = (user: UsersType) => {
-  //   console.log("📂 Raw user.documents:", user.documents, typeof user.documents);
-
-  //   let mappedDocuments: Record<string, any> = {};
-
-  //   if (Array.isArray(user.documents)) {
-  //     mappedDocuments = user.documents.reduce((acc: any, doc: any) => {
-  //       acc[doc.documentTypeId] = {
-  //         documentType: doc.documentTypeId,
-  //         fileS3Key: doc.fileS3Key,
-  //         signedUrl: doc.signedUrl,
-  //         fileType: doc.fileType || "all",
-  //         name: doc.name,
-  //         expiresAt: doc.expiresAt,
-  //         remindBeforeDays: doc.remindBeforeDays,
-  //       };
-  //       return acc;
-  //     }, {});
-  //   } else if (user.documents && typeof user.documents === "object") {
-  //     mappedDocuments = user.documents;
-  //   } else {
-  //     mappedDocuments = {};
-  //   }
-
-  //   const mappedUser: Partial<UserInfoTypes> = {
-  //     ...user,
-  //     dateOfBirth: user.dateOfBirth,
-  //     postcode: (user as any).postCode || user.postcode || "",
-  //     niRate: (user as any).NiRate ?? user.niRate ?? null,
-  //     type: user.role === UserRole.OWNER ? "owner" : "staff",
-  //     documents: mappedDocuments,
-  //   };
-
-  //   setEditingUser(mappedUser);
-  //   setModalOpen(true);
-  // };
-
+  const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(
+    null,
+  );
 
   const handleEdit = (user: UsersType) => {
-    console.log("📂 Raw user data:", user);
-
     let mappedDocuments: Record<string, any> = {};
 
     if (Array.isArray((user as any).userDocuments)) {
-      mappedDocuments = (user as any).userDocuments.reduce((acc: any, doc: any) => {
-        acc[doc.documentTypeId] = {
-          documentType: doc.documentTypeId,
-          fileS3Key: doc.fileS3Key,
-          signedUrl: doc.signedUrl,
-          fileType: doc.fileType || "all",
-          name: doc.name,
-          expiresAt: doc.expiresAt,
-          remindBeforeDays: doc.remindBeforeDays,
-        };
-        return acc;
-      }, {});
-    } else if (user.documents && typeof user.documents === "object") {
-      mappedDocuments = user.documents;
-    } else {
-      mappedDocuments = {};
+      mappedDocuments = (user as any).userDocuments.reduce(
+        (acc: any, doc: any) => {
+          acc[doc.documentTypeId] = {
+            documentType: doc.documentTypeId,
+            fileS3Key: doc.fileS3Key,
+            signedUrl: doc.signedUrl,
+            fileType: doc.fileType || "all",
+            name: doc.name,
+            expiresAt: doc.expiresAt,
+            remindBeforeDays: doc.remindBeforeDays,
+          };
+          return acc;
+        },
+        {},
+      );
+    } else if (
+      (user as any).documents &&
+      typeof (user as any).documents === "object"
+    ) {
+      mappedDocuments = (user as any).documents;
     }
 
     const mappedUser: Partial<UserInfoTypes> = {
@@ -113,12 +86,14 @@ const UsersTypeListPage: React.FC = () => {
       type: user.role === UserRole.OWNER ? "owner" : "staff",
       documents: mappedDocuments,
       bankDetails: (user as any).bankDetails || user.bankDetails || [],
-      availabilityHours: (user as any).availabilityHours || user.availabilityHours || [],
+      availabilityHours:
+        (user as any).availabilityHours || user.availabilityHours || [],
     };
 
     setEditingUser(mappedUser);
     setModalOpen(true);
   };
+
   const handleDelete = async (id: string) => {
     try {
       await deleteUser(id).unwrap();
@@ -131,28 +106,25 @@ const UsersTypeListPage: React.FC = () => {
 
   const columns: Column<UsersType>[] = [
     {
+      key: "index",
+      label: "#",
+      render: (_v: unknown, _row: UsersType, index?: number) => (
+        <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
+      ),
+    },
+    {
       key: "firstName",
       label: "Name",
-      render: (_, row) => `${row.firstName} ${row.surName || ''}`.trim(),
+      render: (_, row) => `${row.firstName} ${row.surName || ""}`.trim(),
     },
-    {
-      key: "email",
-      label: "Email",
-    },
-    {
-      key: "phone",
-      label: "Phone",
-    },
-    {
-      key: "city",
-      label: "City",
-    },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "city", label: "City" },
     {
       key: "actions",
       label: "Actions",
       render: (_, row) => (
         <div className="flex gap-2">
-
           <Link to={`/users/${row.id}`} className="hover:underline">
             <ActionIcon
               className={isDarkMode ? "text-white" : "text-secondary-100"}
@@ -178,10 +150,10 @@ const UsersTypeListPage: React.FC = () => {
     },
   ];
 
-
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Users</h1>
         <Button
           onClick={() => {
@@ -193,40 +165,50 @@ const UsersTypeListPage: React.FC = () => {
         </Button>
       </div>
 
+      {/* Toolbar (search) */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <InputField
+            className="w-72"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search users…"
+            name="query"
+          />
+        </div>
+      </div>
+
       {isLoading ? (
         <Loader />
       ) : (
-        <DynamicTable
-          data={users}
-          columns={columns}
-          rowKey="id"
-        />
+        <>
+          <div className="rounded-lg shadow-sm">
+            <DynamicTable
+              data={users}
+              columns={columns}
+              rowKey="id"
+              tableClassName="bg-white"
+            />
+          </div>
+
+          <Pagination
+            className="mt-4"
+            page={page}
+            perPage={perPage}
+            total={meta.total}
+            onPageChange={(p) => setPage(p)}
+            onPerPageChange={(pp) => {
+              setPerPage(pp);
+              setPage(1);
+            }}
+            perPageOptions={[10, 25, 50]}
+          />
+        </>
       )}
 
-      {/* <UsersTypeModal
-        isOpen={modalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          setEditingUser(null);
-        }}
-        onSubmit={async (values: any) => {
-          if (editingUser) {
-            await updateUser({
-              id: editingUser.id,
-              data: values,
-            }).unwrap();
-            toast.success("User updated");
-          } else {
-            await createUser(values).unwrap();
-            toast.success("User created");
-          }
-          refetch();
-          setModalOpen(false);
-          setEditingUser(null);
-        }}
-        editingUsers={editingUser}
-        isSubmitting={creating || updating}
-      /> */}
       <UsersTypeModal
         isOpen={modalOpen}
         onClose={() => {
@@ -241,7 +223,6 @@ const UsersTypeListPage: React.FC = () => {
         editingUsers={editingUser}
         isSubmitting={creating || updating}
       />
-
     </div>
   );
 };
