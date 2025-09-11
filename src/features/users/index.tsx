@@ -33,21 +33,34 @@ const UsersTypeListPage: React.FC = () => {
   const [perPage, setPerPage] = useState<number>(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
 
 
+  // const queryParams = useMemo(() => {
+  //   const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
+  //   params.page = page;
+  //   params.perPage = perPage;
+
+  //   if (query) params.query = query;
+
+  //   Object.entries(filters).forEach(([key, value]) => {
+  //     if (value) params[key] = value;
+  //   });
+
+  //   return params;
+  // }, [page, perPage, query, filters]);
   const queryParams = useMemo(() => {
-    const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
-    params.page = page;
-    params.perPage = perPage;
-
+    const params: Record<string, any> = { page, perPage };
     if (query) params.query = query;
-
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params[key] = value;
     });
-
+    if (sortConfig.key && sortConfig.direction) {
+      params.sort = sortConfig.key;
+      params.sortDir = sortConfig.direction.toUpperCase();
+    }
     return params;
-  }, [page, perPage, query, filters]);
+  }, [page, perPage, query, filters, sortConfig]);
 
   // const { data: usersResponse, isLoading, refetch } = useGetUsersQuery(queryParams);
   const {
@@ -231,7 +244,35 @@ const UsersTypeListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={users}
-              columns={columns}
+              // columns={columns}
+              columns={columns.map(col => ({
+                ...col,
+                renderHeader: col.key !== "actions" && col.key !== "index"
+                  ? () => (
+                    <div
+                      className="flex items-center gap-1 cursor-pointer"
+                      onClick={() => {
+                        let direction: "asc" | "desc" | null = "asc";
+                        if (sortConfig.key === col.key) {
+                          if (sortConfig.direction === "asc") direction = "desc";
+                          else if (sortConfig.direction === "desc") direction = null;
+                        }
+                        setSortConfig({ key: direction ? (col.key as string) : null, direction });
+                        setPage(1);
+                      }}
+                    >
+                      {col.label}
+                      <span className="text-xs">
+                        {sortConfig.key === col.key
+                          ? sortConfig.direction === "asc"
+                            ? "▲"
+                            : "▼"
+                          : "▲▼"}
+                      </span>
+                    </div>
+                  )
+                  : undefined
+              }))}
               rowKey="id"
               tableClassName="bg-white"
             />
