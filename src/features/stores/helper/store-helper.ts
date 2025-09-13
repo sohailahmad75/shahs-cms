@@ -110,7 +110,7 @@ export const createStoreInitialValues = {
   companyNumber: "",
   storeType: StoreTypeEnum.SHOP,
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
-  availabilityHour: defaultDays.map((day) => ({
+  storeAvailability: defaultDays.map((day) => ({
     day,
     open: "11:00 am",
     close: "11:00 pm",

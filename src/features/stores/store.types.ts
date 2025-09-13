@@ -57,7 +57,7 @@ export interface UpdateStoreDto {
     lat?: number;
     lon?: number;
   };
-  availabilityHour?: OpeningHour[];
+  storeAvailability?: OpeningHour[];
   storeDocuments?: StoreDocument[];
 }
 
@@ -75,7 +75,7 @@ export interface Store {
   companyNumber: string;
   storeType: number;
   bankDetails: BankDetail[];
-  availabilityHour: OpeningHour[];
+  storeAvailability: OpeningHour[];
   storeDocuments?: StoreDocument[] | Record<string, StoreDocument>;
 }
 
