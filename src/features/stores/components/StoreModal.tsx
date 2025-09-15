@@ -133,7 +133,7 @@ const StoreModal = ({
   // }, [editingStore]);
 
   useEffect(() => {
-    const source = editingStore?.availabilityHour;
+    const source = editingStore?.storeAvailability;
 
     if (source?.length) {
       const dayMap = Object.fromEntries(
@@ -223,7 +223,7 @@ const StoreModal = ({
       //   close: o.closed ? null : o.close || null,
       //   closed: !!o.closed,
       // }));
-      updateData.availabilityHour = (v.availabilityHour || []).map((o: any) => ({
+      updateData.storeAvailability = (v.storeAvailability || []).map((o: any) => ({
         id: o.id || undefined,
         day: o.day,
         open: o.closed ? null : o.open || null,
@@ -421,12 +421,12 @@ const StoreModal = ({
               }
 
               if (currentKey === "availability") {
-                const newAvail = mapUpdateDto(values, idForPut).availabilityHour;
+                const newAvail = mapUpdateDto(values, idForPut).storeAvailability;
                 const oldAvail = editingStore
-                  ? mapUpdateDto(editingStore as Store, idForPut).availabilityHour
+                  ? mapUpdateDto(editingStore as Store, idForPut).storeAvailability
                   : null;
                 if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
-                  await updateStore({ id: idForPut, data: { availabilityHour: newAvail } }).unwrap();
+                  await updateStore({ id: idForPut, data: { storeAvailability: newAvail } }).unwrap();
                 }
               }
 
@@ -549,7 +549,7 @@ const StoreModal = ({
                   openingHours={openingHours}
                   setOpeningHours={(updated) => {
                     setOpeningHours(updated);
-                    setFieldValue("availabilityHour", updated);
+                    setFieldValue("storeAvailability", updated);
                   }}
                   sameAllDays={sameAllDays}
                   setSameAllDays={setSameAllDays}

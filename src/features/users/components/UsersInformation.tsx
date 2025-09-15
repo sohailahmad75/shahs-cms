@@ -44,7 +44,7 @@ const UsersInformation = () => {
                                 ["NI Rate", Users.NiRate],
                                 ["Share Code", Users.shareCode],
                                 ["Role", String(Users.role)],
-                                ["Status", String(Users.statusId)],
+                                // ["Status", String(Users.statusId)],
                             ]}
                             isDarkMode={isDarkMode}
                         />
