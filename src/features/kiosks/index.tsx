@@ -7,7 +7,11 @@ import {
   useDeleteKioskMutation,
   useGetKioskByIdQuery,
 } from "./services/kiosksApi";
-import { type Column, DynamicTable } from "../../components/DynamicTable";
+import {
+  type Column,
+  DynamicTable,
+  SortDir,
+} from "../../components/DynamicTable";
 import { toast } from "react-toastify";
 import type { Kiosk, CreateKioskDto, UpdateKioskDto } from "./kiosks.types";
 import Loader from "../../components/Loader";
@@ -26,41 +30,33 @@ import { kioskFiltersConfig } from "./helpers/kiosklist";
 const KioskListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingKioskId, setEditingKioskId] = useState<string | null>(null);
+
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
 
-
-  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
+  // unified sort state for DynamicTable + API
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null;
+    direction: SortDir;
+  }>({
+    key: null,
+    direction: null,
+  });
 
   const queryParams = useMemo(() => {
     const params: Record<string, any> = { page, perPage };
     if (query) params.query = query;
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params[key] = value;
-    });
+    Object.entries(filters).forEach(
+      ([key, value]) => value && (params[key] = value),
+    );
     if (sortConfig.key && sortConfig.direction) {
       params.sort = sortConfig.key;
-      params.sortDir = sortConfig.direction.toUpperCase();
+      params.sortDir = sortConfig.direction.toUpperCase(); // "ASC" | "DESC"
     }
     return params;
   }, [page, perPage, query, filters, sortConfig]);
-
-
-  // const queryParams = useMemo(() => {
-  //   const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
-  //   params.page = page;
-  //   params.perPage = perPage;
-
-  //   if (query) params.query = query;
-
-  //   Object.entries(filters).forEach(([key, value]) => {
-  //     if (value) params[key] = value;
-  //   });
-
-  //   return params;
-  // }, [page, perPage, query, filters]);
 
   const {
     data: kiosksResp = {
@@ -70,9 +66,7 @@ const KioskListPage: React.FC = () => {
     isLoading,
     isFetching,
     refetch,
-  } = useGetKiosksQuery(queryParams, {
-    skip: !queryParams,
-  });
+  } = useGetKiosksQuery(queryParams, { skip: !queryParams });
 
   const [createKiosk, { isLoading: creatingLoading }] =
     useCreateKioskMutation();
@@ -108,15 +102,19 @@ const KioskListPage: React.FC = () => {
         <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
       ),
     },
-    { key: "deviceId", label: "Device ID" },
+    { key: "deviceId", label: "Device ID", sortable: true },
     {
       key: "deviceType",
       label: "Type",
+      sortable: true,
       render: (v) => <span>{deviceTypeLabel(Number(v ?? 1))}</span>,
     },
     {
       key: "store",
       label: "Store",
+      // use the field your API expects for sorting (e.g., "storeName" or "store.name")
+      sortable: true,
+      sortKey: "storeName",
       render: (_v, row) => <span>{row.store?.name ?? "—"}</span>,
     },
     {
@@ -152,7 +150,6 @@ const KioskListPage: React.FC = () => {
 
   return (
     <div className="p-4">
-
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Kiosks</h1>
         <Button
@@ -165,7 +162,7 @@ const KioskListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Toolbar */}
+      {/* Search */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
@@ -181,12 +178,12 @@ const KioskListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* Filters */}
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={kioskFiltersConfig as any}
-          onApplyFilters={(appliedFilters) => {
-            setFilters(appliedFilters);
+          onApplyFilters={(applied) => {
+            setFilters(applied);
             setPage(1);
           }}
           onClearAll={() => {
@@ -196,7 +193,6 @@ const KioskListPage: React.FC = () => {
         />
       </div>
 
-      {/* Table / loader / empty state */}
       {isLoading || isFetching ? (
         <Loader />
       ) : kiosks.length === 0 ? (
@@ -217,37 +213,14 @@ const KioskListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={kiosks}
-              // columns={columns}
-              columns={columns.map(col => ({
-                ...col,
-                renderHeader: col.key !== "actions" && col.key !== "index"
-                  ? () => (
-                    <div
-                      className="flex items-center gap-1 cursor-pointer"
-                      onClick={() => {
-                        let direction: "asc" | "desc" | null = "asc";
-                        if (sortConfig.key === col.key) {
-                          if (sortConfig.direction === "asc") direction = "desc";
-                          else if (sortConfig.direction === "desc") direction = null;
-                        }
-                        setSortConfig({ key: direction ? (col.key as string) : null, direction });
-                        setPage(1);
-                      }}
-                    >
-                      {col.label}
-                      <span className="text-xs">
-                        {sortConfig.key === col.key
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : "▲▼"}
-                      </span>
-                    </div>
-                  )
-                  : undefined
-              }))}
+              columns={columns}
               rowKey="id"
               tableClassName="bg-white"
+              sort={sortConfig}
+              onSortChange={(next) => {
+                setSortConfig(next);
+                setPage(1);
+              }}
             />
           </div>
 

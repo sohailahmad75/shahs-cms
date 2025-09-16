@@ -8,7 +8,7 @@ const kioskRoutes = [
     element: <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} />,
     children: [
       {
-        path: "/products/add",
+        path: "/inventory/products",
         element: (
           <MainLayout>
             <ProductForm />

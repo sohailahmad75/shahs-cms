@@ -1,6 +1,10 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState } from "react";
 import Button from "../../components/Button";
-import { type Column, DynamicTable } from "../../components/DynamicTable";
+import {
+  type Column,
+  DynamicTable,
+  SortDir,
+} from "../../components/DynamicTable";
 import Loader from "../../components/Loader";
 import ProductModal from "./components/ProductModal";
 import { Link } from "react-router-dom";
@@ -14,7 +18,6 @@ import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import FilterBar from "../../components/FilterBar";
 import { useTheme } from "../../context/themeContext";
-
 import { productFiltersConfig } from "./helper/product-list";
 import type { Product } from "./product.types";
 import {
@@ -23,35 +26,6 @@ import {
   useUpdateProductsMutation,
   useDeleteProductMutation,
 } from "./services/productApi";
-
-type SortDir = "asc" | "desc" | null;
-
-const useTableSort = () => {
-  const [sort, setSort] = useState<{ key: string | null; direction: SortDir }>({
-    key: null,
-    direction: null,
-  });
-  const toggle = useCallback((key: string) => {
-    setSort((prev) => {
-      let direction: SortDir = "asc";
-      if (prev.key === key) {
-        direction =
-          prev.direction === "asc"
-            ? "desc"
-            : prev.direction === "desc"
-              ? null
-              : "asc";
-      }
-      return { key: direction ? key : null, direction };
-    });
-  }, []);
-  const indicator = useCallback(
-    (key: string) =>
-      sort.key === key ? (sort.direction === "asc" ? "▲" : "▼") : "▲▼",
-    [sort],
-  );
-  return { sort, toggle, indicator };
-};
 
 const ProductListPage: React.FC = () => {
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -63,7 +37,12 @@ const ProductListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
   const { isDarkMode } = useTheme();
-  const { sort, toggle, indicator } = useTableSort();
+
+  // unified sort state for DynamicTable + API
+  const [sort, setSort] = useState<{ key: string | null; direction: SortDir }>({
+    key: null,
+    direction: null,
+  });
 
   const queryParams = useMemo(() => {
     const params: Record<string, any> = { page, perPage };
@@ -112,22 +91,25 @@ const ProductListPage: React.FC = () => {
       label: "#",
       render: (_v, _r, i) => <span>{apiPageIndexBase + (i ?? 0) + 1}</span>,
     },
-    { key: "sku", label: "SKU" },
-    { key: "name", label: "Name" },
+    { key: "sku", label: "SKU", sortable: true },
+    { key: "name", label: "Name", sortable: true },
     {
       key: "salesPrice",
       label: "Price",
+      sortable: true,
       render: (v) => (typeof v === "number" ? `£${Number(v).toFixed(2)}` : "-"),
     },
-    { key: "unit", label: "Unit" },
+    { key: "unit", label: "Unit", sortable: true },
     {
       key: "isInventoryItem",
       label: "Type",
+      sortable: true,
       render: (v) => (v ? "Stock" : "Service"),
     },
     {
       key: "isActive",
       label: "Status",
+      sortable: true,
       render: (v) => (v ? "Active" : "Inactive"),
     },
     {
@@ -180,6 +162,7 @@ const ProductListPage: React.FC = () => {
         </Button>
       </div>
 
+      {/* Search */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
@@ -195,6 +178,7 @@ const ProductListPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Filters */}
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={productFiltersConfig as any}
@@ -216,25 +200,14 @@ const ProductListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={products}
-              columns={columns.map((col) => ({
-                ...col,
-                renderHeader:
-                  col.key !== "actions" && col.key !== "index"
-                    ? () => (
-                        <div
-                          className="flex items-center gap-1 cursor-pointer"
-                          onClick={() => toggle(col.key as string)}
-                        >
-                          {col.label}
-                          <span className="text-xs">
-                            {indicator(col.key as string)}
-                          </span>
-                        </div>
-                      )
-                    : undefined,
-              }))}
+              columns={columns}
               rowKey="id"
               tableClassName="bg-white"
+              sort={sort}
+              onSortChange={(next) => {
+                setSort(next);
+                setPage(1);
+              }}
             />
           </div>
           <Pagination
