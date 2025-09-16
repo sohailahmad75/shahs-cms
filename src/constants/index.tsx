@@ -43,6 +43,13 @@ export const sidebarMenuList: {
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
   {
+    id: "products",
+    name: "Products",
+    icon: <TransactionIcon />,
+    link: "/products/add",
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
     id: "menu-manager",
     name: "Menu Manager",
     icon: <MenuManagerIcon />,
@@ -127,13 +134,42 @@ export const inviovesidebarMenuList: {
     link: "/invoices",
     roles: [ROLES.SUPER_ADMIN],
   },
+  // {
+  //   id: "add-product",
+  //   name: "Add Product",
+  //   icon: <InvoiceIcon />,
+  //   link: "/invoice/add",
+  //   roles: [ROLES.SUPER_ADMIN],
+  // },
+];
+
+export const inventorySidebarMenuList: {
+  id: string;
+  name: string;
+  icon: JSX.Element;
+  link?: string;
+  children?: {
+    id: string;
+    name: string;
+    link: string;
+    roles: UserRole[];
+  }[];
+  roles: UserRole[];
+}[] = [
   {
-    id: "add-product",
-    name: "Add Product",
+    id: "invoices",
+    name: "Invoices",
     icon: <InvoiceIcon />,
-    link: "/invoice/add",
+    link: "/invoices",
     roles: [ROLES.SUPER_ADMIN],
   },
+  // {
+  //   id: "add-product",
+  //   name: "Add Product",
+  //   icon: <InvoiceIcon />,
+  //   link: "/invoice/add",
+  //   roles: [ROLES.SUPER_ADMIN],
+  // },
 ];
 
 export const transcationsidebarMenuList: {

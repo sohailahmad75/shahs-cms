@@ -1,12 +1,17 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import SettingsPanel from "../components/storeSettingSideBar";
-import { inviovesidebarMenuList, settingsidebarMenuList, transcationsidebarMenuList } from "../constants";
+import {
+  inventorySidebarMenuList,
+  inviovesidebarMenuList,
+  settingsidebarMenuList,
+  transcationsidebarMenuList,
+} from "../constants";
 import SettingIcon from "../assets/styledIcons/SettingIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
-import TransactionIcon from "../assets/styledIcons/TransactionIcon"; 
+import TransactionIcon from "../assets/styledIcons/TransactionIcon";
 import { useTheme } from "../context/themeContext";
 import { useNavigate } from "react-router-dom";
 
@@ -21,57 +26,88 @@ export default function MainLayout({ children }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelType>(null);
-   const { isDarkMode } = useTheme();
-   const navigate = useNavigate();
 
-  const openSettingsPanel = () => {
-    setActivePanel(prev => (prev === "settings" ? null : "settings"));
-    if (isMobile) setIsSidebarOpen(true);
-  };
+  const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
 
-  const openInvoicesPanel = () => {
-    setActivePanel(prev => (prev === "invoice" ? null : "invoice"));
-    if (isMobile) setIsSidebarOpen(true);
-  };
+  // Central config for side panels
+  const PANEL_CONFIG = useMemo(
+    () => ({
+      settings: {
+        menu: settingsidebarMenuList,
+        title: "Settings",
+        icon: <SettingIcon />,
+      },
+      invoice: {
+        menu: inviovesidebarMenuList,
+        title: "Invoices",
+        icon: <InvoiceIcon />,
+      },
+      inventory: {
+        menu: inventorySidebarMenuList,
+        title: "Inventory",
+        icon: <InvoiceIcon />,
+      },
+      transactions: {
+        menu: transcationsidebarMenuList,
+        title: "Transactions",
+        icon: <TransactionIcon />,
+      },
+    }),
+    [],
+  );
 
-  const openTransactionsPanel = () => {
-    setActivePanel(prev => (prev === "transactions" ? null : "transactions"));
-    if (isMobile) setIsSidebarOpen(true);
-  };
+  // Single handler to toggle any panel
+  const handlePanelToggle = useCallback(
+    (panel: Exclude<PanelType, null>) => {
+      setActivePanel((prev) => (prev === panel ? null : panel));
+      if (isMobile) setIsSidebarOpen(true);
+    },
+    [isMobile],
+  );
 
+  // Pass these to Sidebar
+  const openSettingsPanel = useCallback(
+    () => handlePanelToggle("settings"),
+    [handlePanelToggle],
+  );
+  const openInvoicesPanel = useCallback(
+    () => handlePanelToggle("invoice"),
+    [handlePanelToggle],
+  );
+  const openTransactionsPanel = useCallback(
+    () => handlePanelToggle("transactions"),
+    [handlePanelToggle],
+  );
+
+  // Responsive behavior
   useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      setIsMobile(width < 768);
-      if (width >= 768 && width < 1024) {
-        setIsCollapsed(true);
-      } else if (width >= 1024) {
-        setIsCollapsed(false);
-      }
+    const applySize = () => {
+      const w = window.innerWidth;
+      const mobile = w < 768;
+      setIsMobile(mobile);
+      // Tablet collapsed, desktop expanded
+      setIsCollapsed(!mobile && w < 1024);
     };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    applySize();
+    window.addEventListener("resize", applySize);
+    return () => window.removeEventListener("resize", applySize);
   }, []);
 
-   useEffect(() => {
-    if (isSidebarOpen && activePanel) {
-      let menu: typeof settingsidebarMenuList | null = null;
+  // Auto-navigate to the first item of the active panel
+  useEffect(() => {
+    if (!isSidebarOpen || !activePanel) return;
+    const cfg = PANEL_CONFIG[activePanel];
+    const first = cfg?.menu?.[0];
+    const defaultLink = first?.link ?? first?.children?.[0]?.link;
+    if (defaultLink) navigate(defaultLink);
+  }, [activePanel, isSidebarOpen, navigate, PANEL_CONFIG]);
 
-      if (activePanel === "settings") menu = settingsidebarMenuList;
-      if (activePanel === "invoice") menu = inviovesidebarMenuList;
-      if (activePanel === "transactions") menu = transcationsidebarMenuList;
+  const mainClasses = `flex-1 overflow-y-auto p-4 ${
+    isDarkMode ? "bg-slate-950 text-white" : "bg-gray-100 text-black"
+  }`;
 
-      if (menu && menu.length > 0) {
-        const firstItem = menu[0];
-        const defaultLink = firstItem.link ?? firstItem.children?.[0]?.link;
-        if (defaultLink) {
-          navigate(defaultLink);
-        }
-      }
-    }
-  }, [activePanel, isSidebarOpen, navigate]);
+  const activeCfg = activePanel ? PANEL_CONFIG[activePanel] : null;
 
   return (
     <div className="flex h-screen">
@@ -89,42 +125,16 @@ export default function MainLayout({ children }: Props) {
           setActivePanel={setActivePanel}
         />
 
-        {activePanel === "settings" && (
+        {activeCfg && (
           <SettingsPanel
             isOpen={isSidebarOpen}
             setIsOpen={setIsSidebarOpen}
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
             isMobile={isMobile}
-            menuItems={settingsidebarMenuList}
-            panelTitle="Settings"
-            panelIcon={<SettingIcon />}
-          />
-        )}
-
-        {activePanel === "invoice" && (
-          <SettingsPanel
-            isOpen={isSidebarOpen}
-            setIsOpen={setIsSidebarOpen}
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            isMobile={isMobile}
-            menuItems={inviovesidebarMenuList}
-            panelTitle="Invoices"
-            panelIcon={<InvoiceIcon />}
-          />
-        )}
-
-        {activePanel === "transactions" && (
-          <SettingsPanel
-            isOpen={isSidebarOpen}
-            setIsOpen={setIsSidebarOpen}
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            isMobile={isMobile}
-            menuItems={transcationsidebarMenuList} 
-            panelTitle="Transactions"
-            panelIcon={<TransactionIcon />}
+            menuItems={activeCfg.menu}
+            panelTitle={activeCfg.title}
+            panelIcon={activeCfg.icon}
           />
         )}
       </div>
@@ -134,7 +144,7 @@ export default function MainLayout({ children }: Props) {
           isMobile={isMobile}
           openSidebar={() => setIsSidebarOpen(true)}
         />
-        <main className={`flex-1 overflow-y-auto p-4 ${isDarkMode ? 'bg-slate-950' : 'bg-gary-900' } ${isDarkMode ? 'text-white' : 'text-black' } `}>{children}</main>
+        <main className={mainClasses}>{children}</main>
       </div>
     </div>
   );
