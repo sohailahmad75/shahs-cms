@@ -18,7 +18,10 @@ export const baseApi = createApi({
     "Category",
     "Item",
     "MenuItem",
-    "DocumentsType"
+    "DocumentsType",
+
+    "Products",
+    "Product",
   ],
   endpoints: () => ({}),
 });

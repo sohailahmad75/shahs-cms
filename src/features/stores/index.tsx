@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import Button from "../../components/Button";
 import {
   useGetStoresQuery,
@@ -7,7 +7,6 @@ import {
   useDeleteStoreMutation,
 } from "./services/storeApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
-import { toast } from "react-toastify";
 import type { Store } from "./store.types";
 import Loader from "../../components/Loader";
 import StoreModal from "./components/StoreModal";
@@ -22,45 +21,24 @@ import ConfirmDelete from "../../components/ConfirmDelete";
 import { useTheme } from "../../context/themeContext";
 import FilterBar from "../../components/FilterBar";
 import { storeFiltersConfig } from "./helper/store-list";
+import { useServerTable } from "../../hooks/useServerTable";
+import { toast } from "react-toastify";
 
 const StoreListPage: React.FC = () => {
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingStore, setEditingStore] = useState<Partial<Store> | null>(null);
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState<number>(10);
   const { isDarkMode } = useTheme();
-
-  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
-
-
-  // const queryParams = useMemo(() => {
-  //   const params: { page?: number; perPage?: number; query?: string;[key: string]: any } = {};
-  //   params.page = page;
-  //   params.perPage = perPage;
-
-  //   if (query) params.query = query;
-
-  //   Object.entries(filters).forEach(([key, value]) => {
-  //     if (value) params[key] = value;
-  //   });
-
-  //   return params;
-  // }, [page, perPage, query, filters]);
-
-  const queryParams = useMemo(() => {
-    const params: Record<string, any> = { page, perPage };
-    if (query) params.query = query;
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params[key] = value;
-    });
-    if (sortConfig.key && sortConfig.direction) {
-      params.sort = sortConfig.key;
-      params.sortDir = sortConfig.direction.toUpperCase();
-    }
-    return params;
-  }, [page, perPage, query, filters, sortConfig]);
+  const {
+    query,
+    setQuery,
+    setPage,
+    setFilters,
+    clearFilters,
+    page,
+    perPage,
+    onPerPageChange,
+    sort,
+    setSort,
+    queryParams,
+  } = useServerTable();
 
   const {
     data: storesResp = {
@@ -68,9 +46,7 @@ const StoreListPage: React.FC = () => {
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
-  } = useGetStoresQuery(queryParams, {
-    skip: !queryParams,
-  });
+  } = useGetStoresQuery(queryParams);
 
   const [createStore, { isLoading: creating }] = useCreateStoreMutation();
   const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
@@ -80,9 +56,11 @@ const StoreListPage: React.FC = () => {
   const meta = storesResp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingStore, setEditingStore] = useState<Partial<Store> | null>(null);
+
   const handleEdit = (store: Store) => {
     let mappedDocuments: Record<string, any> = {};
-
     if (Array.isArray(store.storeDocuments)) {
       mappedDocuments = store.storeDocuments.reduce((acc: any, doc: any) => {
         acc[doc.documentTypeId] = {
@@ -96,16 +74,13 @@ const StoreListPage: React.FC = () => {
         };
         return acc;
       }, {});
-    } else if (store.storeDocuments && typeof store.storeDocuments === "object") {
+    } else if (
+      store.storeDocuments &&
+      typeof store.storeDocuments === "object"
+    ) {
       mappedDocuments = store.storeDocuments;
     }
-
-    const mappedStore: Partial<Store> = {
-      ...store,
-      storeDocuments: mappedDocuments,
-    };
-
-    setEditingStore(mappedStore);
+    setEditingStore({ ...store, storeDocuments: mappedDocuments });
     setModalOpen(true);
   };
 
@@ -122,18 +97,19 @@ const StoreListPage: React.FC = () => {
     {
       key: "index",
       label: "#",
-      render: (_v: unknown, _row: Store, index?: number) => (
+      render: (_v, _row, index) => (
         <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
       ),
     },
-    { key: "name", label: "Name" },
-    { key: "email", label: "Email" },
-    { key: "phone", label: "Phone" },
-    { key: "city", label: "City" },
-    { key: "companyName", label: "Company Name" },
+    { key: "name", label: "Name", sortable: true },
+    { key: "email", label: "Email", sortable: true },
+    { key: "phone", label: "Phone", sortable: true },
+    { key: "city", label: "City", sortable: true },
+    { key: "companyName", label: "Company Name", sortable: true },
     {
       key: "actions",
       label: "Actions",
+      sortable: false,
       render: (_, row) => (
         <div className="flex gap-2">
           <Link to={`/stores/${row.id}`} className="hover:underline">
@@ -181,34 +157,21 @@ const StoreListPage: React.FC = () => {
         </Button>
       </div>
 
-
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <InputField
-            className="w-72"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search stores…"
-            name="query"
-          />
-        </div>
+        <InputField
+          className="w-72"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search stores…"
+          name="query"
+        />
       </div>
-
 
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={storeFiltersConfig as any}
-          onApplyFilters={(appliedFilters) => {
-            setFilters(appliedFilters);
-            setPage(1);
-          }}
-          onClearAll={() => {
-            setFilters({});
-            setPage(1);
-          }}
+          onApplyFilters={setFilters}
+          onClearAll={clearFilters}
         />
       </div>
 
@@ -219,37 +182,11 @@ const StoreListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={stores}
-              // columns={columns}
-              columns={columns.map(col => ({
-                ...col,
-                renderHeader: col.key !== "actions" && col.key !== "index"
-                  ? () => (
-                    <div
-                      className="flex items-center gap-1 cursor-pointer"
-                      onClick={() => {
-                        let direction: "asc" | "desc" | null = "asc";
-                        if (sortConfig.key === col.key) {
-                          if (sortConfig.direction === "asc") direction = "desc";
-                          else if (sortConfig.direction === "desc") direction = null;
-                        }
-                        setSortConfig({ key: direction ? (col.key as string) : null, direction });
-                        setPage(1);
-                      }}
-                    >
-                      {col.label}
-                      <span className="text-xs">
-                        {sortConfig.key === col.key
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : "▲▼"}
-                      </span>
-                    </div>
-                  )
-                  : undefined
-              }))}
+              columns={columns}
               rowKey="id"
               tableClassName="bg-white"
+              sort={sort}
+              onSortChange={setSort}
             />
           </div>
 
@@ -258,11 +195,8 @@ const StoreListPage: React.FC = () => {
             page={page}
             perPage={perPage}
             total={meta.total}
-            onPageChange={(p) => setPage(p)}
-            onPerPageChange={(pp) => {
-              setPerPage(pp);
-              setPage(1);
-            }}
+            onPageChange={setPage}
+            onPerPageChange={onPerPageChange}
             perPageOptions={[10, 25, 50]}
           />
         </>
@@ -276,10 +210,7 @@ const StoreListPage: React.FC = () => {
         }}
         onSubmit={async (values: any) => {
           if (editingStore) {
-            await updateStore({
-              id: editingStore.id,
-              data: values,
-            }).unwrap();
+            await updateStore({ id: editingStore.id, data: values }).unwrap();
             toast.success("Store updated");
           } else {
             await createStore(values).unwrap();

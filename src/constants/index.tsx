@@ -1,28 +1,36 @@
 import DashboardIcon from "../assets/styledIcons/Dashboad";
-import { ROLES, type UserRole } from "../helper";
 import TransactionIcon from "../assets/styledIcons/TransactionIcon";
 import MenuManagerIcon from "../assets/styledIcons/MenuManagerIcon";
-import type { JSX } from "react";
 import HouseCheckIcon from "../assets/styledIcons/HouseCheckIcon";
 import InvoiceIcon from "../assets/styledIcons/InvoiceIcon";
 import KioskIcon from "../assets/styledIcons/KioskIcon";
 import SettingIcon from "../assets/styledIcons/SettingIcon";
 import DocumentIcon from "../assets/styledIcons/DocumentIcon";
 import UserIcon from "../assets/styledIcons/UserIcon";
+import { ROLES, type UserRole } from "../helper";
+import type { JSX } from "react";
+import InventoryIcon from "../assets/styledIcons/InventoryIcon";
+import ProductsIcon from "../assets/styledIcons/ProductsIcon";
 
-export const sidebarMenuList: {
+export type SidebarMenuItem = {
   id: string;
   name: string;
   icon: JSX.Element;
   link?: string;
-  children?: {
-    id: string;
-    name: string;
-    link: string;
-    roles: UserRole[];
-  }[];
   roles: UserRole[];
-}[] = [
+  panel?: {
+    title: string;
+    children: {
+      id: string;
+      name: string;
+      link: string;
+      roles: UserRole[];
+      icon?: JSX.Element;
+    }[];
+  };
+};
+
+export const sidebarMenu: SidebarMenuItem[] = [
   {
     id: "dashboard",
     name: "Dashboard",
@@ -35,12 +43,68 @@ export const sidebarMenuList: {
     name: "Invoice",
     icon: <InvoiceIcon />,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    panel: {
+      title: "Invoices",
+      children: [
+        {
+          id: "invoices",
+          name: "Invoices",
+          link: "/invoices",
+          roles: [ROLES.SUPER_ADMIN],
+          icon: <InvoiceIcon />,
+        },
+      ],
+    },
   },
   {
     id: "transactions",
     name: "Transactions",
     icon: <TransactionIcon />,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    panel: {
+      title: "Transactions",
+      children: [
+        {
+          id: "bank-transactions",
+          name: "Bank Transactions",
+          link: "/transactions/bank-transactions",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <TransactionIcon />,
+        },
+        {
+          id: "app-transactions",
+          name: "App Transactions",
+          link: "/transactions/app-transactions",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <TransactionIcon />,
+        },
+      ],
+    },
+  },
+  {
+    id: "inventory",
+    name: "Inventory",
+    icon: <InventoryIcon />,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    panel: {
+      title: "Inventory",
+      children: [
+        {
+          id: "products",
+          name: "Products",
+          link: "/inventory/products",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <ProductsIcon />,
+        },
+        {
+          id: "product-categories",
+          name: "Product Categories",
+          link: "/inventory/product-categories",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <ProductsIcon />,
+        },
+      ],
+    },
   },
   {
     id: "menu-manager",
@@ -70,298 +134,22 @@ export const sidebarMenuList: {
     link: "/kiosks",
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
-
-  // {
-  //   id: "sales",
-  //   name: "Sales",
-  //   icon: <DashboardIcon />,
-  //   link: "/sales",
-  //   roles: [ROLES.SUPER_ADMIN],
-  // },
   {
-    id: "setting",
+    id: "settings",
     name: "Settings",
     icon: <SettingIcon />,
     roles: [ROLES.SUPER_ADMIN],
-  },
-];
-export const settingsidebarMenuList: {
-  id: string;
-  name: string;
-  icon: JSX.Element;
-  link?: string;
-  children?: {
-    id: string;
-    name: string;
-    link: string;
-    roles: UserRole[];
-  }[];
-  roles: UserRole[];
-}[] = [
-  {
-    id: "document-type",
-    name: "Document Type",
-    icon: <DocumentIcon />,
-    link: "/setting/document-type",
-    roles: [ROLES.SUPER_ADMIN],
-  },
-];
-
-export const inviovesidebarMenuList: {
-  id: string;
-  name: string;
-  icon: JSX.Element;
-  link?: string;
-  children?: {
-    id: string;
-    name: string;
-    link: string;
-    roles: UserRole[];
-  }[];
-  roles: UserRole[];
-}[] = [
-  {
-    id: "invoices",
-    name: "Invoices",
-    icon: <InvoiceIcon />,
-    link: "/invoices",
-    roles: [ROLES.SUPER_ADMIN],
-  },
-  {
-    id: "add-product",
-    name: "Add Product",
-    icon: <InvoiceIcon />,
-    link: "/invoice/add",
-    roles: [ROLES.SUPER_ADMIN],
-  },
-];
-
-export const transcationsidebarMenuList: {
-  id: string;
-  name: string;
-  icon: JSX.Element;
-  link?: string;
-  children?: {
-    id: string;
-    name: string;
-    link: string;
-    roles: UserRole[];
-  }[];
-  roles: UserRole[];
-}[] = [
-  {
-    id: "bank-transactions",
-    name: "Bank Transactions",
-    icon: <TransactionIcon />,
-    link: "/transactions/bank-transactions",
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
-  {
-    id: "app-transactions",
-    name: "App Transactions",
-    icon: <TransactionIcon />,
-    link: "/transactions/app-transactions",
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
-];
-export const ProfileImage: string =
-  "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250";
-
-export const ProductImage: string =
-  "https://media2.dev.to/dynamic/image/width=800%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fwww.gravatar.com%2Favatar%2F2c7d99fe281ecd3bcd65ab915bac6dd5%3Fs%3D250";
-
-export const overviewData = [
-  {
-    name: "Jan",
-    total: 1500,
-  },
-  {
-    name: "Feb",
-    total: 2000,
-  },
-  {
-    name: "Mar",
-    total: 1000,
-  },
-  {
-    name: "Apr",
-    total: 5000,
-  },
-  {
-    name: "May",
-    total: 2000,
-  },
-  {
-    name: "Jun",
-    total: 5900,
-  },
-  {
-    name: "Jul",
-    total: 2000,
-  },
-  {
-    name: "Aug",
-    total: 5500,
-  },
-  {
-    name: "Sep",
-    total: 2000,
-  },
-  {
-    name: "Oct",
-    total: 4000,
-  },
-  {
-    name: "Nov",
-    total: 1500,
-  },
-  {
-    name: "Dec",
-    total: 2500,
-  },
-];
-
-export const recentSalesData = [
-  {
-    id: 1,
-    name: "Olivia Martin",
-    email: "olivia.martin@email.com",
-    image: ProfileImage,
-    total: 1500,
-  },
-  {
-    id: 2,
-    name: "James Smith",
-    email: "james.smith@email.com",
-    image: ProfileImage,
-    total: 2000,
-  },
-  {
-    id: 3,
-    name: "Sophia Brown",
-    email: "sophia.brown@email.com",
-    image: ProfileImage,
-    total: 4000,
-  },
-  {
-    id: 4,
-    name: "Noah Wilson",
-    email: "noah.wilson@email.com",
-    image: ProfileImage,
-    total: 3000,
-  },
-  {
-    id: 5,
-    name: "Emma Jones",
-    email: "emma.jones@email.com",
-    image: ProfileImage,
-    total: 2500,
-  },
-  {
-    id: 6,
-    name: "William Taylor",
-    email: "william.taylor@email.com",
-    image: ProfileImage,
-    total: 4500,
-  },
-  {
-    id: 7,
-    name: "Isabella Johnson",
-    email: "isabella.johnson@email.com",
-    image: ProfileImage,
-    total: 5300,
-  },
-];
-
-export const topProducts = [
-  {
-    number: 1,
-    name: "Wireless Headphones",
-    image: ProductImage,
-    description: "High-quality noise-canceling wireless headphones.",
-    price: 99.99,
-    status: "In Stock",
-    rating: 4.5,
-  },
-  {
-    number: 2,
-    name: "Smartphone",
-    image: ProductImage,
-    description: "Latest 5G smartphone with excellent camera features.",
-    price: 799.99,
-    status: "In Stock",
-    rating: 4.7,
-  },
-  {
-    number: 3,
-    name: "Gaming Laptop",
-    image: ProductImage,
-    description: "Powerful gaming laptop with high-end graphics.",
-    price: 1299.99,
-    status: "In Stock",
-    rating: 4.8,
-  },
-  {
-    number: 4,
-    name: "Smartwatch",
-    image: ProductImage,
-    description: "Stylish smartwatch with fitness tracking features.",
-    price: 199.99,
-    status: "Out of Stock",
-    rating: 4.4,
-  },
-  {
-    number: 5,
-    name: "Bluetooth Speaker",
-    image: ProductImage,
-    description: "Portable Bluetooth speaker with deep bass sound.",
-    price: 59.99,
-    status: "In Stock",
-    rating: 4.3,
-  },
-  {
-    number: 6,
-    name: "4K Monitor",
-    image: ProductImage,
-    description: "Ultra HD 4K monitor with stunning color accuracy.",
-    price: 399.99,
-    status: "In Stock",
-    rating: 4.6,
-  },
-  {
-    number: 7,
-    name: "Mechanical Keyboard",
-    image: ProductImage,
-    description: "Mechanical keyboard with customizable RGB lighting.",
-    price: 89.99,
-    status: "In Stock",
-    rating: 4.7,
-  },
-  {
-    number: 8,
-    name: "Wireless Mouse",
-    image: ProductImage,
-    description: "Ergonomic wireless mouse with precision tracking.",
-    price: 49.99,
-    status: "In Stock",
-    rating: 4.5,
-  },
-  {
-    number: 9,
-    name: "Action Camera",
-    image: ProductImage,
-    description: "Waterproof action camera with 4K video recording.",
-    price: 249.99,
-    status: "In Stock",
-    rating: 4.8,
-  },
-  {
-    number: 10,
-    name: "External Hard Drive",
-    image: ProductImage,
-    description: "Portable 2TB external hard drive for data storage.",
-    price: 79.99,
-    status: "Out of Stock",
-    rating: 4.5,
+    panel: {
+      title: "Settings",
+      children: [
+        {
+          id: "document-type",
+          name: "Document Type",
+          link: "/setting/document-type",
+          roles: [ROLES.SUPER_ADMIN],
+          icon: <DocumentIcon />,
+        },
+      ],
+    },
   },
 ];

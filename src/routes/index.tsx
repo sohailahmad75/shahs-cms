@@ -10,6 +10,7 @@ import storeRoutes from "./storesRoutes";
 import kioskRoutes from "./kioskRoutes";
 import documentRoutes from "./documentTypeRoutes";
 import usersRoutes from "./usersRoutes";
+import inventoryRoutes from "./inventoryRoutes";
 
 const router = createBrowserRouter([
   ...authRoutes,
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
   ...transactionsRoutes,
   ...reportRoutes,
   ...invoiceRoutes,
+  ...inventoryRoutes,
   ...menuManagerRoutes,
   ...storeRoutes,
   ...kioskRoutes,

@@ -5,6 +5,7 @@ import { RotateCcw } from 'lucide-react';
 import InputField from './InputField';
 import SelectField from './SelectField';
 import DatePickerField from './DatePickerField';
+import { useTheme } from "../../src/context/themeContext";
 
 interface FilterOption {
     key: string;
@@ -70,6 +71,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         onClearAll?.();
         onApplyFilters?.({});
     };
+     const { isDarkMode } = useTheme();
 
     const renderFilterControl = (filter: FilterOption) => {
         const { key, label, type, options} = filter;
@@ -140,7 +142,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     };
 
     return (
-        <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm">
+        <div className={`${isDarkMode ? "bg-slate-900" : "bg-white"} ${isDarkMode ? "border border-slate-800" : "border border-gray-200 -white"}border border-gray-200 p-4 rounded-md shadow-sm`}>
 
             <div className="flex flex-wrap gap-3 mb-4">
                 {filtersConfig.map(renderFilterControl)}
@@ -151,7 +153,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
             {/* Applied filters */}
             <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-gray-600 whitespace-nowrap">
+                <span className={`${isDarkMode ? "text-slate-200" : "text-gray-600"} text-sm font-medium text-gray-600 whitespace-nowrap`}>
                     Applied Filters:
                 </span>
 

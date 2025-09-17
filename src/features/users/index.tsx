@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Button from "../../components/Button";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
-import { toast } from "react-toastify";
 import Loader from "../../components/Loader";
 import UsersTypeModal from "./components/UsersModal";
 import EditIcon from "../../assets/styledIcons/EditIcon";
@@ -16,6 +15,8 @@ import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import FilterBar from "../../components/FilterBar";
 import { userFiltersConfig } from "./user-list";
+import { useServerTable } from "../../hooks/useServerTable";
+import { toast } from "react-toastify";
 
 import {
   useGetNewUsersQuery,
@@ -26,36 +27,20 @@ import {
 
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const {
+    query,
+    setQuery,
+    setPage,
+    setFilters,
+    clearFilters,
+    page,
+    perPage,
+    onPerPageChange,
+    sort,
+    setSort,
+    queryParams,
+  } = useServerTable();
 
-  // Filters, search, pagination, and sorting
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState<number>(10);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(null);
-  const [sortConfig, setSortConfig] = useState<{
-    key: string | null;
-    direction: "asc" | "desc" | null;
-  }>({ key: null, direction: null });
-
-  const queryParams = useMemo(() => {
-    const params: Record<string, any> = { page, perPage };
-    if (query) params.query = query;
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params[key] = value;
-    });
-
-    if (sortConfig.key && sortConfig.direction) {
-      params.sort = sortConfig.key;
-      params.sortDir = sortConfig.direction.toUpperCase();
-    }
-
-    return params;
-  }, [page, perPage, query, filters, sortConfig]);
-
-  // Fetch users (new API)
   const {
     data: usersResponse = {
       data: [],
@@ -66,34 +51,46 @@ const UsersTypeListPage: React.FC = () => {
   } = useGetNewUsersQuery(queryParams);
 
   const users = usersResponse?.data || [];
-  const meta =
-    usersResponse?.meta || ({ total: 0, page: 1, perPage: 10, totalPages: 1 } as const);
+  const meta = usersResponse?.meta || {
+    total: 0,
+    page: 1,
+    perPage: 10,
+    totalPages: 1,
+  };
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(
+    null,
+  );
   const [createUser, { isLoading: creating }] = useCreateUsersMutation();
   const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
   const [deleteUser] = useDeleteUsersMutation();
 
   const handleEdit = (user: UsersType) => {
     let mappedDocuments: Record<string, any> = {};
-
     if (Array.isArray((user as any).userDocuments)) {
-      mappedDocuments = (user as any).userDocuments.reduce((acc: any, doc: any) => {
-        acc[doc.documentTypeId] = {
-          documentType: doc.documentTypeId,
-          fileS3Key: doc.fileS3Key,
-          signedUrl: doc.signedUrl,
-          fileType: doc.fileType || "all",
-          name: doc.name,
-          expiresAt: doc.expiresAt,
-          remindBeforeDays: doc.remindBeforeDays,
-        };
-        return acc;
-      }, {});
-    } else if ((user as any).documents && typeof (user as any).documents === "object") {
+      mappedDocuments = (user as any).userDocuments.reduce(
+        (acc: any, doc: any) => {
+          acc[doc.documentTypeId] = {
+            documentType: doc.documentTypeId,
+            fileS3Key: doc.fileS3Key,
+            signedUrl: doc.signedUrl,
+            fileType: doc.fileType || "all",
+            name: doc.name,
+            expiresAt: doc.expiresAt,
+            remindBeforeDays: doc.remindBeforeDays,
+          };
+          return acc;
+        },
+        {},
+      );
+    } else if (
+      (user as any).documents &&
+      typeof (user as any).documents === "object"
+    ) {
       mappedDocuments = (user as any).documents;
     }
-
     const mappedUser: Partial<UserInfoTypes> = {
       ...user,
       dateOfBirth: user.dateOfBirth,
@@ -102,9 +99,9 @@ const UsersTypeListPage: React.FC = () => {
       type: user.role === UserRole.OWNER ? "owner" : "staff",
       documents: mappedDocuments,
       bankDetails: (user as any).bankDetails || user.bankDetails || [],
-      availabilityHours: (user as any).availabilityHours || user.availabilityHours || [],
+      availabilityHours:
+        (user as any).availabilityHours || user.availabilityHours || [],
     };
-
     setEditingUser(mappedUser);
     setModalOpen(true);
   };
@@ -123,21 +120,23 @@ const UsersTypeListPage: React.FC = () => {
     {
       key: "index",
       label: "#",
-      render: (_v: unknown, _row: UsersType, index?: number) => (
+      render: (_v, _row, index) => (
         <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
       ),
     },
     {
       key: "firstName",
       label: "Name",
+      sortable: true,
       render: (_, row) => `${row.firstName} ${row.surName || ""}`.trim(),
     },
-    { key: "email", label: "Email" },
-    { key: "phone", label: "Phone" },
-    { key: "city", label: "City" },
+    { key: "email", label: "Email", sortable: true },
+    { key: "phone", label: "Phone", sortable: true },
+    { key: "city", label: "City", sortable: true },
     {
       key: "actions",
       label: "Actions",
+      sortable: false,
       render: (_, row) => (
         <div className="flex gap-2">
           <Link to={`/users/${row.id}`} className="hover:underline">
@@ -171,41 +170,6 @@ const UsersTypeListPage: React.FC = () => {
     },
   ];
 
-  // Add sortable headers (excluding index/actions)
-  const sortableColumns: Column<UsersType>[] = columns.map((col) => {
-    if (col.key === "actions" || col.key === "index") return col;
-
-    return {
-      ...col,
-      renderHeader: () => (
-        <div
-          className="flex items-center gap-1 cursor-pointer select-none"
-          onClick={() => {
-            let direction: "asc" | "desc" | null = "asc";
-            if (sortConfig.key === col.key) {
-              if (sortConfig.direction === "asc") direction = "desc";
-              else if (sortConfig.direction === "desc") direction = null;
-            }
-            setSortConfig({
-              key: direction ? (col.key as string) : null,
-              direction,
-            });
-            setPage(1);
-          }}
-        >
-          {col.label}
-          <span className="text-xs">
-            {sortConfig.key === col.key
-              ? sortConfig.direction === "asc"
-                ? "▲"
-                : "▼"
-              : "▲▼"}
-          </span>
-        </div>
-      ),
-    };
-  });
-
   return (
     <div className="p-4">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -220,34 +184,21 @@ const UsersTypeListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search Bar */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <InputField
-            className="w-72"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search users…"
-            name="query"
-          />
-        </div>
+        <InputField
+          className="w-72"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search users…"
+          name="query"
+        />
       </div>
 
-      {/* Filter Bar */}
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={userFiltersConfig as any}
-          onApplyFilters={(appliedFilters) => {
-            setFilters(appliedFilters);
-            setPage(1);
-          }}
-          onClearAll={() => {
-            setFilters({});
-            setPage(1);
-          }}
+          onApplyFilters={setFilters}
+          onClearAll={clearFilters}
         />
       </div>
 
@@ -258,9 +209,11 @@ const UsersTypeListPage: React.FC = () => {
           <div className="rounded-lg shadow-sm">
             <DynamicTable
               data={users}
-              columns={sortableColumns}
+              columns={columns}
               rowKey="id"
               tableClassName="bg-white"
+              sort={sort}
+              onSortChange={setSort}
             />
           </div>
 
@@ -269,11 +222,8 @@ const UsersTypeListPage: React.FC = () => {
             page={page}
             perPage={perPage}
             total={meta.total}
-            onPageChange={(p) => setPage(p)}
-            onPerPageChange={(pp) => {
-              setPerPage(pp);
-              setPage(1);
-            }}
+            onPageChange={setPage}
+            onPerPageChange={onPerPageChange}
             perPageOptions={[10, 25, 50]}
           />
         </>
