@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import Loader from "../../../components/Loader";
 import { useTheme } from "../../../context/themeContext";
 import { useGetUsersByIdQuery } from "../services/UsersApi";
-import { XMarkIcon, DocumentIcon } from "@heroicons/react/24/solid";
+import { DocumentIcon } from "@heroicons/react/24/solid";
 import Button from "../../../components/Button";
 import Modal from "../../../components/Modal";
 
