@@ -5,6 +5,7 @@ import { useTheme } from "../../../context/themeContext";
 import { useGetUsersByIdQuery } from "../services/UsersApi";
 import { XMarkIcon, DocumentIcon } from "@heroicons/react/24/solid";
 import Button from "../../../components/Button";
+import Modal from "../../../components/Modal";
 
 interface Document {
     id: string;
@@ -72,25 +73,16 @@ const UserDocuments = () => {
 
 
             {previewDocUrl && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-                    <div className="relative bg-white dark:bg-slate-800 rounded-xl shadow-xl w-[90%] max-w-4xl h-[80%] flex flex-col">
-                        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700">
-                            <h3 className="text-lg font-semibold">Document Preview</h3>
-                            <button
-                                onClick={() => setPreviewDocUrl(null)}
-                                className="p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition"
-                            >
-                                <XMarkIcon className="w-6 h-6 text-gray-600 dark:text-gray-200" />
-                            </button>
+                <Modal isOpen={!!previewDocUrl} onClose={() => setPreviewDocUrl(null)} title="Document Preview" isDarkMode={isDarkMode}>
+                    {previewDocUrl && (
+                        <div className="flex items-center justify-center w-full h-full">
+                            <img src={previewDocUrl} alt="Document Preview" className="max-w-full max-h-[70vh] object-contain" />
                         </div>
-                        <iframe
-                            src={previewDocUrl}
-                            title="Document Preview"
-                            className="flex-1 w-full border-none rounded-b-xl"
-                        />
-                    </div>
-                </div>
+                    )}
+                </Modal>
             )}
+
+
         </div>
     );
 };
