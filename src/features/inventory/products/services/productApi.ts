@@ -1,5 +1,5 @@
 import type { Product, PaginatedResponse } from "../product.types";
-import { baseApi } from "../../../services/baseApi";
+import { baseApi } from "../../../../services/baseApi";
 
 type SortDir = "ASC" | "DESC";
 

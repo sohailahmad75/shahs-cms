@@ -220,7 +220,7 @@ const Sidebar = ({
                   <li key={c.id}>
                     <Link
                       to={c.link}
-                      className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"}
+                      className={`flex items-center text-sm ${isCollapsed ? "justify-center" : "gap-1 px-4"}
                         py-2 rounded-md transition-all
                         ${
                           activeChild

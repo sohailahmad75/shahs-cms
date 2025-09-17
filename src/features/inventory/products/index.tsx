@@ -1,23 +1,23 @@
 import React, { useMemo, useState } from "react";
-import Button from "../../components/Button";
+import Button from "../../../components/Button";
 import {
   type Column,
   DynamicTable,
   SortDir,
-} from "../../components/DynamicTable";
-import Loader from "../../components/Loader";
+} from "../../../components/DynamicTable";
+import Loader from "../../../components/Loader";
 import ProductModal from "./components/ProductModal";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import EditIcon from "../../assets/styledIcons/EditIcon";
-import TrashIcon from "../../assets/styledIcons/TrashIcon";
-import EyeOpen from "../../assets/styledIcons/EyeOpen";
-import ActionIcon from "../../components/ActionIcon";
-import InputField from "../../components/InputField";
-import Pagination from "../../components/Pagination";
-import ConfirmDelete from "../../components/ConfirmDelete";
-import FilterBar from "../../components/FilterBar";
-import { useTheme } from "../../context/themeContext";
+import EditIcon from "../../../assets/styledIcons/EditIcon";
+import TrashIcon from "../../../assets/styledIcons/TrashIcon";
+import EyeOpen from "../../../assets/styledIcons/EyeOpen";
+import ActionIcon from "../../../components/ActionIcon";
+import InputField from "../../../components/InputField";
+import Pagination from "../../../components/Pagination";
+import ConfirmDelete from "../../../components/ConfirmDelete";
+import FilterBar from "../../../components/FilterBar";
+import { useTheme } from "../../../context/themeContext";
 import { productFiltersConfig } from "./helper/product-list";
 import type { Product } from "./product.types";
 import {

@@ -96,6 +96,13 @@ export const sidebarMenu: SidebarMenuItem[] = [
           roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
           icon: <ProductsIcon />,
         },
+        {
+          id: "product-categories",
+          name: "Product Categories",
+          link: "/inventory/product-categories",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <ProductsIcon />,
+        },
       ],
     },
   },

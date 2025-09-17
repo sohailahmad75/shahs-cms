@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import Modal from "../../../components/Modal";
-import InputField from "../../../components/InputField";
-import Button from "../../../components/Button";
-import DatePickerField from "../../../components/DatePickerField";
+import Modal from "../../../../components/Modal";
+import InputField from "../../../../components/InputField";
+import Button from "../../../../components/Button";
+import DatePickerField from "../../../../components/DatePickerField";
 import type { Product } from "../product.types";
-import { useTheme } from "../../../context/themeContext";
+import { useTheme } from "../../../../context/themeContext";
 
 type Props = {
   isOpen: boolean;
