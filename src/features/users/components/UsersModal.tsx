@@ -209,6 +209,7 @@ const UsersTypeModal = ({
       })),
 
       userDocuments: Object.entries(v.documents || {}).map(([docTypeId, doc]: [string, any]) => ({
+        id: doc.id || undefined,
         documentType: docTypeId,
         fileS3Key: doc.fileS3Key || null,
         fileType: doc.fileType || null,
@@ -713,12 +714,12 @@ const UsersTypeModal = ({
                               const prevDocs = values.documents || {};
 
                               if (!fileS3Key) {
-                              
+
                                 const newDocs = { ...prevDocs };
                                 delete newDocs[doc.id];
                                 setFieldValue("documents", newDocs);
                               } else {
-                              
+
                                 setFieldValue("documents", {
                                   ...prevDocs,
                                   [doc.id]: {
@@ -726,7 +727,7 @@ const UsersTypeModal = ({
                                     documentType: doc.id,
                                     fileS3Key,
                                     fileType: prevDocs[doc.id]?.fileType || "all",
-                                    name: fileName || doc.name, 
+                                    name: fileName || doc.name,
                                   },
                                 });
                               }
