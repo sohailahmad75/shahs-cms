@@ -67,7 +67,16 @@ const OrderListPage: React.FC = () => {
         },
         { key: "provider", label: "Provider", sortable: true },
         { key: "totalAmount", label: "Total Amount", sortable: true },
-        { key: "createdAt", label: "Order Date", sortable: true },
+        {
+            key: "createdAt",
+            label: "Order Date",
+            sortable: true,
+            render: (value) =>
+                typeof value === "string"
+                    ? new Date(value).toLocaleDateString("en-CA") 
+                    : ""
+        },
+
         {
             key: "actions",
             label: "Actions",
