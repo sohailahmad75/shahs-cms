@@ -110,7 +110,8 @@ const StoreListPage: React.FC = () => {
 
     setEditingStore({
       ...store,
-      openingHours: store.availabilityHour || store.storeAvailability || []
+      storeDocuments: mappedDocuments,
+      openingHours: store.availabilityHour || store.storeAvailability || [] 
     } as any);
 
     setModalOpen(true);

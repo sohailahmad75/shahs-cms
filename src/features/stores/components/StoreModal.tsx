@@ -188,7 +188,7 @@ const StoreModal = ({
   const mapUpdateDto = (v: any, storeId: string): Partial<UpdateStoreDto> => {
     const updateData: Partial<UpdateStoreDto> = { id: storeId };
 
-
+    
     if (activeStep === 0) {
       updateData.storeBasicInfo = {
         name: v.name,
@@ -295,16 +295,11 @@ const StoreModal = ({
         initialValues={{
           ...createStoreInitialValues,
           ...(editingStore || {}),
-          storeAvailability: editingStore?.availabilityHour || editingStore?.storeAvailability || defaultDays.map(d => ({
-            day: d,
-            open: "11:00 am",
-            close: "11:00 pm",
-            closed: false
-          })),
+          
           storeType: editingStore?.storeType !== undefined
             ? Number(editingStore.storeType)
             : StoreTypeEnum.SHOP,
-
+         
           documents: editingStore?.storeDocuments
             ? (Array.isArray(editingStore.storeDocuments)
               ? editingStore.storeDocuments.reduce((acc: any, doc: any) => {
