@@ -11,7 +11,7 @@ import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import { useTheme } from "../../context/themeContext";
 import FilterBar from "../../components/FilterBar";
-// import { orderFiltersConfig } from "./helper/order-list";
+import { orderFiltersConfig } from "./helpers/ordersFilters";
 import { useServerTable } from "../../hooks/useServerTable";
 import ActionIcon from "../../components/ActionIcon";
 
@@ -113,11 +113,11 @@ const OrderListPage: React.FC = () => {
             </div>
 
             <div className="mb-8 mt-8">
-                {/* <FilterBar
+                <FilterBar
                     filtersConfig={orderFiltersConfig as any}
                     onApplyFilters={setFilters}
                     onClearAll={clearFilters}
-                /> */}
+                />
             </div>
 
             {isLoading ? (
