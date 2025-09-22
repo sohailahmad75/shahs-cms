@@ -26,6 +26,10 @@ import {
   useUpdateProductsMutation,
   useDeleteProductMutation,
 } from "./services/productApi";
+import StockOut from "../../../assets/styledIcons/StockOut";
+import LowStockIcon from "../../../assets/styledIcons/LowStockIcon";
+import CloseIcon from "../../../assets/styledIcons/CloseIcon";
+import { StockStatsHeader } from "./components/StatItem";
 
 const ProductListPage: React.FC = () => {
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -74,6 +78,22 @@ const ProductListPage: React.FC = () => {
   const handleEdit = (p: Product) => {
     setEditingProduct(p);
     setModalOpen(true);
+  };
+
+  const [activeStat, setActiveStat] = useState<"LOW" | "OUT" | null>(null);
+
+  // When the active stat changes, update your filters (optional)
+  const handleChange = (next: "LOW" | "OUT" | null) => {
+    setActiveStat(next);
+    if (next === "LOW") {
+      setFilters((f) => ({ ...f, stockStatus: "LOW" })); // adjust key
+      setPage(1);
+    } else if (next === "OUT") {
+      setFilters((f) => ({ ...f, stockStatus: "OUT" }));
+      setPage(1);
+    } else {
+      setFilters(({ stockStatus, ...rest }) => rest); // clear
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -161,6 +181,14 @@ const ProductListPage: React.FC = () => {
           Add Product
         </Button>
       </div>
+      {/* Inventory badges header */}
+
+      <StockStatsHeader
+        lowCount={21}
+        outCount={32}
+        activeStat={activeStat}
+        onChange={handleChange}
+      />
 
       {/* Search */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

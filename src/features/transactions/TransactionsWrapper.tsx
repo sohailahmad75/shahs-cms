@@ -4,6 +4,7 @@ import TabbedPageLayout from "../../components/TabbedPageLayout";
 const transactionTabs = [
   { label: "Bank transactions", path: "/transactions/bank-transactions" },
   { label: "App transactions", path: "/transactions/app-transactions" },
+  { label: "Chart of accounts", path: "/transactions/chart-of-accounts" },
 ];
 
 const TransactionsWrapper = ({ children }: PropsWithChildren) => {

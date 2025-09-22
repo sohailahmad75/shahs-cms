@@ -15,6 +15,11 @@ type Props = {
 };
 
 const Schema = Yup.object({
+  sku: Yup.string()
+    .trim()
+    .min(2, "Too short")
+    .max(160, "Too long")
+    .required("Name is required"),
   name: Yup.string()
     .trim()
     .min(2, "Too short")
@@ -36,7 +41,10 @@ export default function ProductCategoryModal({
       title={editingCategory?.id ? "Edit Category" : "Add Category"}
     >
       <Formik
-        initialValues={{ name: editingCategory?.name ?? "" }}
+        initialValues={{
+          name: editingCategory?.name ?? "",
+          sku: editingCategory?.sku ?? "",
+        }}
         validationSchema={Schema}
         onSubmit={async (vals) => {
           await onSubmit(vals);
@@ -45,6 +53,14 @@ export default function ProductCategoryModal({
       >
         {({ values, handleChange, handleSubmit, errors, touched }) => (
           <Form className="space-y-4" onSubmit={handleSubmit}>
+            <InputField
+              label="SKU"
+              name="sku"
+              value={values.name}
+              onChange={handleChange}
+              error={touched.sku ? (errors.sku as string) : undefined}
+              placeholder="e.g., Wraps"
+            />
             <InputField
               label="Category Name"
               name="name"

@@ -1,20 +1,23 @@
-// src/routes/inventoryRoutes.tsx
+// src/routes/salesRoutes.tsx
 import { Outlet } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import { ROLES } from "../helper";
-import ProductListPage from "../features/inventory/products";
-import ProductCategoryListPage from "../features/inventory/productCategories/ProductCategoryListPage";
+import ProductListPage from "../features/sales/products";
+import ProductCategoryListPage from "../features/sales/productCategories/ProductCategoryListPage";
+import ProductsWrapper from "../features/sales/products/ProductsWrapper";
 
-const inventoryRoutes = [
+const salesRoutes = [
   {
     element: <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} />,
     children: [
       {
-        path: "/inventory",
+        path: "/sales",
         element: (
           <MainLayout>
-            <Outlet />
+            <ProductsWrapper>
+              <Outlet />
+            </ProductsWrapper>
           </MainLayout>
         ),
         children: [
@@ -27,4 +30,4 @@ const inventoryRoutes = [
   },
 ];
 
-export default inventoryRoutes;
+export default salesRoutes;

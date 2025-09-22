@@ -4,6 +4,7 @@ import BankConnected from "../features/dashboard/BankConnected";
 import BankTransactions from "../features/transactions";
 import TransactionsWrapper from "../features/transactions/TransactionsWrapper";
 import { ROLES } from "../helper";
+import AccountsPage from "../features/finance/AccountsPage";
 
 const transactionsRoutes = [
   {
@@ -33,6 +34,16 @@ const transactionsRoutes = [
           <MainLayout>
             <TransactionsWrapper>
               <BankTransactions />
+            </TransactionsWrapper>
+          </MainLayout>
+        ),
+      },
+      {
+        path: "/transactions/chart-of-accounts",
+        element: (
+          <MainLayout>
+            <TransactionsWrapper>
+              <AccountsPage />
             </TransactionsWrapper>
           </MainLayout>
         ),
