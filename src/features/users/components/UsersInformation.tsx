@@ -20,6 +20,17 @@ const UsersInformation = () => {
                 Users not found.
             </div>
         );
+    const getRoleName = (role: number) => {
+        switch (role) {
+            case 1:
+                return "Owner"
+            case 3:
+                return "Staff"
+            default:
+                return "Unknown"
+        }
+    }
+
 
     return (
         <div className={`mx-auto ${isDarkMode ? "bg-slate-950" : "bg-white"}`}>
@@ -43,7 +54,7 @@ const UsersInformation = () => {
                                 ["Cash In Rate", Users.cashInRate],
                                 ["NI Rate", Users.NiRate],
                                 ["Share Code", Users.shareCode],
-                                ["Role", String(Users.role)],
+                                ["Role", getRoleName(Number(Users.role))],
                                 // ["Status", String(Users.statusId)],
                             ]}
                             isDarkMode={isDarkMode}
