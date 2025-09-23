@@ -11,6 +11,7 @@ import kioskRoutes from "./kioskRoutes";
 import documentRoutes from "./documentTypeRoutes";
 import usersRoutes from "./usersRoutes";
 import salesRoutes from "./salesRoutes";
+import ordersRoutes from "./ordersRoutes";
 
 const router = createBrowserRouter([
   ...authRoutes,
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
   ...kioskRoutes,
   ...documentRoutes,
   ...usersRoutes,
+  ...ordersRoutes,
   {
     path: "*",
     element: <Navigate to="/dashboard" />,

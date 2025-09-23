@@ -73,6 +73,7 @@ const UsersTypeListPage: React.FC = () => {
       mappedDocuments = (user as any).userDocuments.reduce(
         (acc: any, doc: any) => {
           acc[doc.documentTypeId] = {
+            id: doc.id,
             documentType: doc.documentTypeId,
             fileS3Key: doc.fileS3Key,
             signedUrl: doc.signedUrl,

@@ -131,65 +131,6 @@ const UsersInformation = () => {
                             </ul>
                         )}
                     </Card>
-
-                    {/* Documents */}
-                    <Card isDarkMode={isDarkMode}>
-                        <h2
-                            className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
-                                }`}
-                        >
-                            Documents
-                        </h2>
-                        {Users.userDocuments?.length === 0 ? (
-                            <p
-                                className={isDarkMode ? "text-slate-400" : "text-gray-500"}
-                            >
-                                No documents uploaded.
-                            </p>
-                        ) : (
-                            <ul className="space-y-3">
-                                {Users.userDocuments.map((doc: any) => (
-                                    <li
-                                        key={doc.id}
-                                        className={`border rounded-lg p-3 ${isDarkMode
-                                            ? "bg-slate-700 border-slate-600"
-                                            : "bg-slate-50 border-gray-200"
-                                            }`}
-                                    >
-                                        <Detail
-                                            label="Name"
-                                            value={doc.name}
-                                            isDarkMode={isDarkMode}
-                                        />
-                                        <Detail
-                                            label="Type ID"
-                                            value={doc.documentTypeId}
-                                            isDarkMode={isDarkMode}
-                                        />
-                                        <Detail
-                                            label="Expires At"
-                                            value={doc.expiresAt ? new Date(
-                                                doc.expiresAt
-                                            ).toLocaleDateString() : "N/A"}
-                                            isDarkMode={isDarkMode}
-                                        />
-                                        {doc.signedUrl && (
-                                            <div className="mt-2">
-                                                <a
-                                                    href={doc.signedUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-500 hover:text-blue-700 underline"
-                                                >
-                                                    View Document
-                                                </a>
-                                            </div>
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </Card>
                 </div>
             </div>
         </div>

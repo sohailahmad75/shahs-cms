@@ -76,6 +76,7 @@ export interface Store {
   storeType: number;
   bankDetails: BankDetail[];
   storeAvailability: OpeningHour[];
+  availabilityHour?: OpeningHour[];
   storeDocuments?: StoreDocument[] | Record<string, StoreDocument>;
 }
 

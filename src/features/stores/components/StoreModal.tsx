@@ -133,7 +133,7 @@ const StoreModal = ({
   // }, [editingStore]);
 
   useEffect(() => {
-    const source = editingStore?.storeAvailability;
+    const source = editingStore?.availabilityHour || editingStore?.storeAvailability;
 
     if (source?.length) {
       const dayMap = Object.fromEntries(
@@ -188,7 +188,7 @@ const StoreModal = ({
   const mapUpdateDto = (v: any, storeId: string): Partial<UpdateStoreDto> => {
     const updateData: Partial<UpdateStoreDto> = { id: storeId };
 
-    // Only include fields that are relevant to the current step
+    
     if (activeStep === 0) {
       updateData.storeBasicInfo = {
         name: v.name,
@@ -295,10 +295,11 @@ const StoreModal = ({
         initialValues={{
           ...createStoreInitialValues,
           ...(editingStore || {}),
+          
           storeType: editingStore?.storeType !== undefined
             ? Number(editingStore.storeType)
             : StoreTypeEnum.SHOP,
-          // Initialize documents properly
+         
           documents: editingStore?.storeDocuments
             ? (Array.isArray(editingStore.storeDocuments)
               ? editingStore.storeDocuments.reduce((acc: any, doc: any) => {

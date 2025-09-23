@@ -59,8 +59,38 @@ const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<Partial<Store> | null>(null);
 
+  // const handleEdit = (store: Store) => {
+  //   let mappedDocuments: Record<string, any> = {};
+  //   if (Array.isArray(store.storeDocuments)) {
+  //     mappedDocuments = store.storeDocuments.reduce((acc: any, doc: any) => {
+  //       acc[doc.documentTypeId] = {
+  //         documentType: doc.documentTypeId,
+  //         fileS3Key: doc.fileS3Key,
+  //         signedUrl: doc.signedUrl,
+  //         fileType: doc.fileType || "all",
+  //         name: doc.name,
+  //         expiresAt: doc.expiresAt,
+  //         remindBeforeDays: doc.remindBeforeDays,
+  //       };
+  //       return acc;
+  //     }, {});
+  //   } else if (
+  //     store.storeDocuments &&
+  //     typeof store.storeDocuments === "object"
+  //   ) {
+  //     mappedDocuments = store.storeDocuments;
+  //   }
+  //   setEditingStore({ ...store, storeDocuments: mappedDocuments });
+  //   setEditingStore({
+  //     ...store,
+  //     storeDocuments: mappedDocuments,
+  //     storeAvailability: store.availabilityHour || store.storeAvailability || []
+  //   });
+  //   setModalOpen(true);
+  // };
   const handleEdit = (store: Store) => {
     let mappedDocuments: Record<string, any> = {};
+
     if (Array.isArray(store.storeDocuments)) {
       mappedDocuments = store.storeDocuments.reduce((acc: any, doc: any) => {
         acc[doc.documentTypeId] = {
@@ -74,13 +104,16 @@ const StoreListPage: React.FC = () => {
         };
         return acc;
       }, {});
-    } else if (
-      store.storeDocuments &&
-      typeof store.storeDocuments === "object"
-    ) {
+    } else if (store.storeDocuments && typeof store.storeDocuments === "object") {
       mappedDocuments = store.storeDocuments;
     }
-    setEditingStore({ ...store, storeDocuments: mappedDocuments });
+
+    setEditingStore({
+      ...store,
+      storeDocuments: mappedDocuments,
+      openingHours: store.availabilityHour || store.storeAvailability || [] 
+    } as any);
+
     setModalOpen(true);
   };
 
@@ -208,17 +241,35 @@ const StoreListPage: React.FC = () => {
           setModalOpen(false);
           setEditingStore(null);
         }}
+        // onSubmit={async (values: any) => {
+        //   if (editingStore) {
+        //     await updateStore({ id: editingStore.id, data: values }).unwrap();
+        //     toast.success("Store updated");
+        //   } else {
+        //     await createStore(values).unwrap();
+        //     toast.success("Store created");
+        //   }
+        //   setModalOpen(false);
+        //   setEditingStore(null);
+        // }}
         onSubmit={async (values: any) => {
+          const payload = {
+            ...values,
+            storeAvailability: values.openingHours,
+          };
+
           if (editingStore) {
-            await updateStore({ id: editingStore.id, data: values }).unwrap();
+            await updateStore({ id: editingStore.id, data: payload }).unwrap();
             toast.success("Store updated");
           } else {
-            await createStore(values).unwrap();
+            await createStore(payload).unwrap();
             toast.success("Store created");
           }
+
           setModalOpen(false);
           setEditingStore(null);
         }}
+
         editingStore={editingStore}
         isSubmitting={creating || updating}
       />
