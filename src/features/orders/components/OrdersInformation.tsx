@@ -23,6 +23,10 @@ const OrderInformation = () => {
             currency: "GBP",
         }).format(amount);
     };
+
+    const capitalizeFirst = (str: string) =>
+        str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
     return (
         <div className={`mx-auto ${isDarkMode ? "bg-slate-950" : "bg-white"}`}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -51,7 +55,7 @@ const OrderInformation = () => {
                         />
                     </Card>
 
-                    <Card isDarkMode={isDarkMode}>
+                    `<Card isDarkMode={isDarkMode}>
                         <h2
                             className={`font-semibold text-lg mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
                                 }`}
@@ -92,14 +96,13 @@ const OrderInformation = () => {
                                                     <div key={mod.modifierId} className="ml-3 mt-1">
                                                         <Detail
                                                             label="Modifier"
-                                                            value={`${mod.modifierName} (${mod.modifierType})`}
+                                                            value={`${capitalizeFirst(mod.modifierType)}`}
                                                             isDarkMode={isDarkMode}
                                                         />
                                                         <ul className="list-disc list-inside ml-4">
                                                             {mod.modifierOptions.map((opt) => (
                                                                 <li key={opt.optionId}>
-                                                                    {opt.optionName} - Qty: {opt.quantity} - $
-                                                                    {opt.totalPrice}
+                                                                    Qty: {opt.quantity} - {formatCurrency(opt.totalPrice)}
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -117,7 +120,7 @@ const OrderInformation = () => {
                                 No cart items available.
                             </p>
                         )}
-                    </Card>
+                    </Card>`
 
                 </div>
             </div>
@@ -143,36 +146,36 @@ const Card = ({
 );
 
 const GridDetail = ({
-  data,
-  isDarkMode,
+    data,
+    isDarkMode,
 }: {
-  data: [string, React.ReactNode][]; 
-  isDarkMode: boolean;
+    data: [string, React.ReactNode][];
+    isDarkMode: boolean;
 }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-    {data.map(([label, value]) => (
-      <Detail key={label} label={label} value={value} isDarkMode={isDarkMode} />
-    ))}
-  </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        {data.map(([label, value]) => (
+            <Detail key={label} label={label} value={value} isDarkMode={isDarkMode} />
+        ))}
+    </div>
 );
 
 const Detail = ({
-  label,
-  value,
-  isDarkMode,
+    label,
+    value,
+    isDarkMode,
 }: {
-  label: string;
-  value?: React.ReactNode; 
-  isDarkMode: boolean;
+    label: string;
+    value?: React.ReactNode;
+    isDarkMode: boolean;
 }) => (
-  <div>
-    <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>
-      {label}:
-    </strong>{" "}
-    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>
-      {value}
-    </span>
-  </div>
+    <div>
+        <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>
+            {label}:
+        </strong>{" "}
+        <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>
+            {value}
+        </span>
+    </div>
 );
 
 
