@@ -1,5 +1,5 @@
 // FILE: src/features/finance/components/AccountModal.tsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Button from "../../../components/Button";
 import InputField from "../../../components/InputField";
 import SelectField from "../../../components/SelectField";
@@ -24,14 +24,34 @@ interface Props {
   editing?: FinanceAccount | null;
 }
 
-// helper to normalize SelectField values (string or {value,label})
-const pickValue = (v: any) => (typeof v === "string" ? v : (v?.value ?? ""));
-
 const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
-  const [form, setForm] = useState<Partial<FinanceAccount>>(
-    editing ?? { account_type: "current_assets" as any },
-  );
+  // Normalize initial form state (keep select values as strings)
+  const initialForm: Partial<FinanceAccount> = editing
+    ? {
+        ...editing,
+        // ensure string values for selects
+        account_type: String((editing as any).account_type) as any,
+        detail_type: editing.detail_type
+          ? String(editing.detail_type)
+          : undefined,
+        default_vat_code: editing.default_vat_code
+          ? String(editing.default_vat_code)
+          : undefined,
+        parent_id: editing.parent_id ? String(editing.parent_id) : undefined,
+      }
+    : { account_type: "current_assets" as any };
+
+  const [form, setForm] = useState<Partial<FinanceAccount>>(initialForm);
   const [isSub, setIsSub] = useState<boolean>(!!editing?.parent_id);
+
+  // Reset form when modal re-opens with a different record
+  useEffect(() => {
+    if (isOpen) {
+      setForm(initialForm);
+      setIsSub(!!editing?.parent_id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, editing?.id]);
 
   const [createAccount, { isLoading: creating }] = useCreateAccountMutation();
   const [updateAccount, { isLoading: updating }] = useUpdateAccountMutation();
@@ -39,34 +59,46 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
   // Parent list (same account_type only)
   const { data: parentCandidates = [] } = useGetAccountsQuery(
     form.account_type
-      ? { account_type: pickValue(form.account_type) as any }
+      ? { account_type: String(form.account_type) as any }
       : undefined,
   );
 
   // Detail types based on selected account type
   const detailOptions = useMemo(
     () =>
-      DETAIL_TYPES_BY_TYPE[pickValue(form.account_type) || "current_assets"] ??
-      [],
+      DETAIL_TYPES_BY_TYPE[String(form.account_type || "current_assets")] ?? [],
     [form.account_type],
   );
+
+  // Build parent select options (ids as strings)
+  const parentOptions = parentCandidates
+    .filter((a) => a.id !== editing?.id)
+    .map((a) => ({
+      value: String(a.id),
+      label: `${a.name}${a.code ? ` (${a.code})` : ""}`,
+    }));
 
   const submit = async () => {
     const payload = {
       code: form.code || undefined,
       name: form.name || "",
-      account_type: pickValue(form.account_type) as any,
-      detail_type: pickValue(form.detail_type),
-      default_vat_code: pickValue(form.default_vat_code) || undefined,
-      parent_id: isSub ? (form.parent_id as string | undefined) : undefined,
+      account_type: String(form.account_type) as any,
+      detail_type: form.detail_type ? String(form.detail_type) : "",
+      default_vat_code: form.default_vat_code
+        ? String(form.default_vat_code)
+        : undefined,
+      // Cast to number here only if your backend expects numeric ids.
+      parent_id: isSub
+        ? form.parent_id
+          ? String(form.parent_id)
+          : undefined
+        : undefined,
       opening_balance:
         form.opening_balance !== undefined && form.opening_balance !== null
           ? Number(form.opening_balance)
           : undefined,
       opening_balance_date: form.opening_balance
-        ? typeof form.opening_balance_date === "string"
-          ? form.opening_balance_date
-          : (form.opening_balance_date as any) || undefined
+        ? (form.opening_balance_date as any) || undefined
         : undefined,
       description: form.description || undefined,
     };
@@ -108,66 +140,97 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <SelectField
-              label="Account type"
-              options={ACCOUNT_TYPE_OPTIONS}
-              // keep only the primitive in state
-              value={pickValue(form.account_type)}
-              onChange={(v: any) =>
-                setForm((s) => ({
-                  ...s,
-                  account_type: pickValue(v) as any,
-                  detail_type: undefined,
-                  parent_id: undefined,
-                }))
-              }
-            />
-            <SelectField
-              label="Detail type"
-              options={detailOptions}
-              value={pickValue(form.detail_type)}
-              onChange={(v: any) =>
-                setForm((s) => ({ ...s, detail_type: pickValue(v) }))
-              }
-            />
+            {/* Account type */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Account type
+              </label>
+              <SelectField
+                name="account_type"
+                value={String(form.account_type ?? "current_assets")}
+                onChange={(e: any) =>
+                  setForm((s) => ({
+                    ...s,
+                    account_type: String(e.target.value) as any,
+                    // reset dependent fields
+                    detail_type: undefined,
+                    parent_id: undefined,
+                  }))
+                }
+                options={ACCOUNT_TYPE_OPTIONS}
+              />
+            </div>
+
+            {/* Detail type */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Detail type
+              </label>
+              <SelectField
+                name="detail_type"
+                value={String(form.detail_type ?? "")}
+                onChange={(e: any) =>
+                  setForm((s) => ({
+                    ...s,
+                    detail_type: e.target.value ? String(e.target.value) : "",
+                  }))
+                }
+                options={detailOptions}
+              />
+            </div>
           </div>
 
           <CheckboxField
             label="Make this a subaccount"
             checked={isSub}
             onChange={(checked) => {
-              setIsSub(checked);
-              if (!checked) setForm((s) => ({ ...s, parent_id: undefined }));
+              setIsSub(checked.target.checked);
+              if (!checked.target.checked)
+                setForm((s) => ({ ...s, parent_id: undefined }));
             }}
           />
 
           {isSub && (
-            <SelectField
-              label="Parent account"
-              options={parentCandidates
-                .filter((a) => a.id !== editing?.id)
-                .map((a) => ({
-                  value: a.id,
-                  label: `${a.name}${a.code ? ` (${a.code})` : ""}`,
-                }))}
-              value={(form.parent_id as string) ?? ""}
-              onChange={(v: any) =>
-                setForm((s) => ({ ...s, parent_id: pickValue(v) }))
-              }
-            />
+            <div>
+              {console.log("form.parent_id", form.parent_id)}
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Parent account
+              </label>
+              <SelectField
+                name="parent_id"
+                value={String(form.parent_id ?? "")}
+                onChange={(e: any) =>
+                  setForm((s) => ({
+                    ...s,
+                    parent_id: e.target.value
+                      ? String(e.target.value)
+                      : undefined,
+                  }))
+                }
+                options={parentOptions}
+              />
+            </div>
           )}
 
-          <SelectField
-            label="Default VAT Code"
-            options={[{ value: "", label: "—" }, ...VAT_OPTIONS]}
-            value={pickValue(form.default_vat_code)}
-            onChange={(v: any) =>
-              setForm((s) => ({
-                ...s,
-                default_vat_code: pickValue(v) || undefined,
-              }))
-            }
-          />
+          {/* VAT code */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">
+              Default VAT Code
+            </label>
+            <SelectField
+              name="default_vat_code"
+              value={String(form.default_vat_code ?? "")}
+              onChange={(e: any) =>
+                setForm((s) => ({
+                  ...s,
+                  default_vat_code: e.target.value
+                    ? String(e.target.value)
+                    : undefined,
+                }))
+              }
+              options={[{ value: "", label: "—" }, ...VAT_OPTIONS]}
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <InputField
@@ -210,8 +273,8 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
             onClick={submit}
             disabled={
               !form.name ||
-              !pickValue(form.account_type) ||
-              !pickValue(form.detail_type)
+              !String(form.account_type) ||
+              !String(form.detail_type || "")
             }
             loading={creating || updating}
           >

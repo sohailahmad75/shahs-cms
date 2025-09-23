@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from "react";
 import TabbedPageLayout from "../../components/TabbedPageLayout";
+import { Outlet } from "react-router-dom";
 
 const transactionTabs = [
   { label: "Bank transactions", path: "/transactions/bank-transactions" },
@@ -7,10 +7,10 @@ const transactionTabs = [
   { label: "Chart of accounts", path: "/transactions/chart-of-accounts" },
 ];
 
-const TransactionsWrapper = ({ children }: PropsWithChildren) => {
+const TransactionsWrapper = () => {
   return (
     <TabbedPageLayout title="Transactions" tabs={transactionTabs}>
-      {children}
+      <Outlet />
     </TabbedPageLayout>
   );
 };

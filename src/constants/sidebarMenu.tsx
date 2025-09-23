@@ -11,6 +11,7 @@ import { ROLES, type UserRole } from "../helper";
 import type { JSX } from "react";
 import InventoryIcon from "../assets/styledIcons/InventoryIcon";
 import ProductsIcon from "../assets/styledIcons/ProductsIcon";
+import OrdersIcon from "../assets/styledIcons/ordersIcon";
 
 export type SidebarMenu = {
   id: string;
@@ -80,8 +81,8 @@ export const sidebarMenu: SidebarMenu[] = [
         },
 
         {
-          id: "app-transactions",
-          name: "App Transactions",
+          id: "chart-of-accounts",
+          name: "Chart of Account",
           link: "/transactions/chart-of-accounts",
           roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
           icon: <TransactionIcon />,
@@ -141,6 +142,13 @@ export const sidebarMenu: SidebarMenu[] = [
     icon: <KioskIcon />,
     link: "/kiosks",
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    id: "orders",
+    name: "Orders",
+    icon: <OrdersIcon />,
+    link: "/orders",
+    roles: [ROLES.SUPER_ADMIN],
   },
   {
     id: "settings",

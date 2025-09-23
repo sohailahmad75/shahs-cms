@@ -19,34 +19,18 @@ const transactionsRoutes = [
         ),
       },
       {
-        path: "/transactions/bank-transactions",
+        path: "/transactions",
         element: (
           <MainLayout>
-            <TransactionsWrapper>
-              <BankTransactions />
-            </TransactionsWrapper>
+            <TransactionsWrapper /> {/* <- renders <Outlet /> */}
           </MainLayout>
         ),
-      },
-      {
-        path: "/transactions/app-transactions",
-        element: (
-          <MainLayout>
-            <TransactionsWrapper>
-              <BankTransactions />
-            </TransactionsWrapper>
-          </MainLayout>
-        ),
-      },
-      {
-        path: "/transactions/chart-of-accounts",
-        element: (
-          <MainLayout>
-            <TransactionsWrapper>
-              <AccountsPage />
-            </TransactionsWrapper>
-          </MainLayout>
-        ),
+        children: [
+          { index: true, element: <BankTransactions /> }, // default tab
+          { path: "bank-transactions", element: <BankTransactions /> },
+          { path: "app-transactions", element: <BankTransactions /> },
+          { path: "chart-of-accounts", element: <AccountsPage /> },
+        ],
       },
     ],
   },
