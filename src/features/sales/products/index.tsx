@@ -79,7 +79,7 @@ const ProductListPage: React.FC = () => {
 
   const handleEdit = (p: Product) => {
     setEditingProduct(p);
-    setModalOpen(true);
+    setIsDrawerOpen(true);
   };
 
   const [activeStat, setActiveStat] = useState<"LOW" | "OUT" | null>(null);

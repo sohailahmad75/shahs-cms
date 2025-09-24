@@ -19,6 +19,9 @@ const validationSchema = Yup.object({
     sku: Yup.string().required('SKU is required'),
 });
 
+
+
+
 const getDefaultValues = (type: string) => ({
     sku: '',
     name: '',
