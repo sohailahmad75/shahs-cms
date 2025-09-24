@@ -48,12 +48,96 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
 
     return (
         <div className={`p-6 h-full overflow-y-auto ${finalDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white'}`}>
+            <div className="flex items-center justify-between mb-6 pb-4 border-b">
+               
+                <div className="flex items-center">
+                    <div className="bg-blue-600 rounded-full p-3 mr-4 flex items-center justify-center">
+                        {selectedType === "stock" && (
+                            <svg
+                                className="w-6 h-6 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                            </svg>
+                        )}
+                        {selectedType === "non-stock" && (
+                            <svg
+                                className="w-6 h-6 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9M5 11V9m2 2a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6z"
+                                />
+                            </svg>
+                        )}
+                        {selectedType === "service" && (
+                            <svg
+                                className="w-6 h-6 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12v2H7v-2z"
+                                />
+                            </svg>
+                        )}
+                        {selectedType === "bundle" && (
+                            <svg
+                                className="w-6 h-6 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M16 11V7a4 4 0 00-8 0v4M12 13a4 4 0 004 4h6m-6-4h-6m-6 4a4 4 0 004-4v-4a4 4 0 00-8 0v4a4 4 0 004 4z"
+                                />
+                            </svg>
+                        )}
+                    </div>
 
-            <div className="flex justify-end mb-4">
+                    <div>
+                        <h2
+                            className={`text-lg font-semibold ${finalDarkMode ? "text-slate-100" : "text-gray-800"
+                                }`}
+                        >
+                            {selectedType === "stock" && "Stock"}
+                            {selectedType === "non-stock" && "Non-stock"}
+                            {selectedType === "service" && "Service"}
+                            {selectedType === "bundle" && "Bundle"}
+                        </h2>
+                        <button
+                            onClick={onBack}
+                            className={`text-sm hover:underline ${finalDarkMode ? "text-blue-400" : "text-blue-600"
+                                }`}
+                        >
+                            Change type
+                        </button>
+                    </div>
+                </div>
+
                 <span
                     className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${finalDarkMode
-                        ? "text-slate-100 hover:text-slate-200"
-                        : "text-gray-600 hover:text-orange-500"
+                            ? "text-slate-100 hover:text-slate-200"
+                            : "text-gray-600 hover:text-orange-500"
                         }`}
                     onClick={onClose}
                     role="button"
@@ -63,45 +147,6 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                 </span>
             </div>
 
-
-            <div className="flex items-center mb-6 pb-4 border-b">
-                <div className="bg-blue-600 rounded-full p-3 mr-4 flex items-center justify-center">
-                    {selectedType === 'stock' && (
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                    )}
-                    {selectedType === 'non-stock' && (
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9M5 11V9m2 2a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6z" />
-                        </svg>
-                    )}
-                    {selectedType === 'service' && (
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12v2H7v-2z" />
-                        </svg>
-                    )}
-                    {selectedType === 'bundle' && (
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M12 13a4 4 0 004 4h6m-6-4h-6m-6 4a4 4 0 004-4v-4a4 4 0 00-8 0v4a4 4 0 004 4z" />
-                        </svg>
-                    )}
-                </div>
-                <div>
-                    <h2 className={`text-lg font-semibold ${finalDarkMode ? 'text-slate-100' : 'text-gray-800'}`}>
-                        {selectedType === 'stock' && 'Stock'}
-                        {selectedType === 'non-stock' && 'Non-stock'}
-                        {selectedType === 'service' && 'Service'}
-                        {selectedType === 'bundle' && 'Bundle'}
-                    </h2>
-                    <button
-                        onClick={onBack}
-                        className={`text-sm hover:underline ${finalDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
-                    >
-                        Change type
-                    </button>
-                </div>
-            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -114,8 +159,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         value={formData.name}
                         onChange={handleChange}
                         className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                : 'border-gray-300'
+                            ? 'bg-slate-800 border-slate-600 text-slate-100'
+                            : 'border-gray-300'
                             }`}
                         required
                     />
@@ -130,8 +175,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         value={formData.itemCode}
                         onChange={handleChange}
                         className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                : 'border-gray-300'
+                            ? 'bg-slate-800 border-slate-600 text-slate-100'
+                            : 'border-gray-300'
                             }`}
                     />
                 </div>
@@ -145,8 +190,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                             value={formData.category}
                             onChange={handleChange}
                             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                    : 'border-gray-300'
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                : 'border-gray-300'
                                 }`}
                         >
                             <option value="">Choose a category</option>
@@ -189,8 +234,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                     value={formData.initialQty}
                                     onChange={handleChange}
                                     className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                            ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                            : 'border-gray-300'
+                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                        : 'border-gray-300'
                                         }`}
                                     required
                                 />
@@ -204,8 +249,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                     value={formData.asOfDate}
                                     onChange={handleChange}
                                     className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                            ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                            : 'border-gray-300'
+                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                        : 'border-gray-300'
                                         }`}
                                     required
                                 />
@@ -219,8 +264,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                     value={formData.reorderPoint}
                                     onChange={handleChange}
                                     className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                            ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                            : 'border-gray-300'
+                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                        : 'border-gray-300'
                                         }`}
                                 />
                                 <a href="#" className={`text-xs mt-1 inline-block ${finalDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>What's the reorder point?</a>
@@ -234,8 +279,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                 value={formData.stockAssetAccount}
                                 onChange={handleChange}
                                 className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                        : 'border-gray-300'
+                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                    : 'border-gray-300'
                                     }`}
                             >
                                 <option>Stock Asset</option>
@@ -255,8 +300,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         placeholder="Description on sales forms"
                         rows={3}
                         className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                : 'border-gray-300'
+                            ? 'bg-slate-800 border-slate-600 text-slate-100'
+                            : 'border-gray-300'
                             }`}
                     />
                 </div>
@@ -271,8 +316,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                             value={formData.salesPrice}
                             onChange={handleChange}
                             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                    : 'border-gray-300'
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                : 'border-gray-300'
                                 }`}
                         />
                     </div>
@@ -283,8 +328,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                             value={formData.incomeAccount}
                             onChange={handleChange}
                             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                    : 'border-gray-300'
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                : 'border-gray-300'
                                 }`}
                         >
                             <option>Sales of Product Income</option>
@@ -310,8 +355,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         value={formData.vatRate}
                         onChange={handleChange}
                         className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                : 'border-gray-300'
+                            ? 'bg-slate-800 border-slate-600 text-slate-100'
+                            : 'border-gray-300'
                             }`}
                     >
                         <option>20.0% S</option>
@@ -330,8 +375,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         placeholder="Description on purchase forms"
                         rows={2}
                         className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                : 'border-gray-300'
+                            ? 'bg-slate-800 border-slate-600 text-slate-100'
+                            : 'border-gray-300'
                             }`}
                     />
                 </div>
@@ -347,8 +392,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                 value={formData.cost}
                                 onChange={handleChange}
                                 className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                        : 'border-gray-300'
+                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                    : 'border-gray-300'
                                     }`}
                             />
                         </div>
@@ -359,8 +404,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                 value={formData.expenseAccount}
                                 onChange={handleChange}
                                 className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                        : 'border-gray-300'
+                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
+                                    : 'border-gray-300'
                                     }`}
                             >
                                 <option>Cost of sales</option>
@@ -387,8 +432,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         value={formData.purchaseTax}
                         onChange={handleChange}
                         className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                : 'border-gray-300'
+                            ? 'bg-slate-800 border-slate-600 text-slate-100'
+                            : 'border-gray-300'
                             }`}
                     >
                         <option>Select tax</option>
@@ -405,8 +450,8 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         value={formData.preferredSupplier}
                         onChange={handleChange}
                         className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
-                                ? 'bg-slate-800 border-slate-600 text-slate-100'
-                                : 'border-gray-300'
+                            ? 'bg-slate-800 border-slate-600 text-slate-100'
+                            : 'border-gray-300'
                             }`}
                     >
                         <option>Select a preferred supplier</option>
@@ -426,7 +471,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                 </div>
 
             </form>
-        </div>
+        </div >
     );
 };
 
