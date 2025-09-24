@@ -135,6 +135,7 @@ export default function ProductFormDrawer({
                             <input
                                 type="text"
                                 name="name"
+                                placeholder="Enter Name"
                                 value={values.name}
                                 onChange={handleChange}
                                 className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
@@ -155,6 +156,7 @@ export default function ProductFormDrawer({
                                 type="text"
                                 name="sku"
                                 value={values.sku}
+                                placeholder="Enter SKU"
                                 onChange={handleChange}
                                 className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
                                     }`}
@@ -173,6 +175,7 @@ export default function ProductFormDrawer({
                             <input
                                 type="text"
                                 name="itemCode"
+                                placeholder="Enter Item Code"
                                 value={values.itemCode}
                                 onChange={handleChange}
                                 className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
