@@ -4,25 +4,25 @@ import { useTheme } from '../../../../context/themeContext';
 
 const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
     const { isDarkMode: themeDarkMode } = useTheme();
-    const finalDarkMode = false; 
+    const finalDarkMode = themeDarkMode;
 
-  
+
     const [formData, setFormData] = useState({
         name: '',
         itemCode: '',
         category: '',
-        initialQty: '', 
-        asOfDate: '',   
-        reorderPoint: '', 
-        stockAssetAccount: 'Stock Asset', 
+        initialQty: '',
+        asOfDate: '',
+        reorderPoint: '',
+        stockAssetAccount: 'Stock Asset',
         description: '',
         salesPrice: '',
         incomeAccount: 'Sales of Product Income',
         vatInclusive: false,
         vatRate: '20.0% S',
         purchaseDescription: '',
-        cost: '', 
-        expenseAccount: 'Cost of sales', 
+        cost: '',
+        expenseAccount: 'Cost of sales',
         purchaseTaxInclusive: false,
         purchaseTax: '',
         preferredSupplier: '',
@@ -42,20 +42,18 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
         alert(`Saved ${selectedType}! (Simulated)`);
     };
 
-   
+
     const showStockFields = selectedType === 'stock';
     const showNonStockFields = selectedType === 'non-stock';
-    const showServiceFields = selectedType === 'service';
-    const showBundleFields = selectedType === 'bundle';
 
     return (
         <div className={`p-6 h-full overflow-y-auto ${finalDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white'}`}>
-         
+
             <div className="flex justify-end mb-4">
                 <span
                     className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${finalDarkMode
-                            ? "text-slate-100 hover:text-slate-200"
-                            : "text-gray-600 hover:text-orange-500"
+                        ? "text-slate-100 hover:text-slate-200"
+                        : "text-gray-600 hover:text-orange-500"
                         }`}
                     onClick={onClose}
                     role="button"
@@ -65,7 +63,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                 </span>
             </div>
 
-            
+
             <div className="flex items-center mb-6 pb-4 border-b">
                 <div className="bg-blue-600 rounded-full p-3 mr-4 flex items-center justify-center">
                     {selectedType === 'stock' && (
@@ -107,7 +105,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
 
-           
+
                 <div>
                     <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Name*</label>
                     <input
@@ -115,16 +113,15 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                            finalDarkMode 
-                                ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
                                 : 'border-gray-300'
-                        }`}
+                            }`}
                         required
                     />
                 </div>
 
-          
+
                 <div>
                     <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Item/Service code</label>
                     <input
@@ -132,15 +129,14 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         name="itemCode"
                         value={formData.itemCode}
                         onChange={handleChange}
-                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                            finalDarkMode 
-                                ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
                                 : 'border-gray-300'
-                        }`}
+                            }`}
                     />
                 </div>
 
-               
+
                 <div className="flex items-start space-x-4">
                     <div className="flex-1">
                         <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Category</label>
@@ -148,11 +144,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                             name="category"
                             value={formData.category}
                             onChange={handleChange}
-                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                finalDarkMode 
-                                    ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
                                     : 'border-gray-300'
-                            }`}
+                                }`}
                         >
                             <option value="">Choose a category</option>
                             <option value="electronics">Electronics</option>
@@ -160,7 +155,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                             <option value="services">Services</option>
                         </select>
                     </div>
-                
+
                     <div className="flex flex-col items-center space-y-2">
                         <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -182,7 +177,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                     </div>
                 </div>
 
-               
+
                 {showStockFields && (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,11 +188,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                     name="initialQty"
                                     value={formData.initialQty}
                                     onChange={handleChange}
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                        finalDarkMode 
-                                            ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                            ? 'bg-slate-800 border-slate-600 text-slate-100'
                                             : 'border-gray-300'
-                                    }`}
+                                        }`}
                                     required
                                 />
                             </div>
@@ -209,11 +203,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                     placeholder="DD/MM/YYYY"
                                     value={formData.asOfDate}
                                     onChange={handleChange}
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                        finalDarkMode 
-                                            ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                            ? 'bg-slate-800 border-slate-600 text-slate-100'
                                             : 'border-gray-300'
-                                    }`}
+                                        }`}
                                     required
                                 />
                                 <a href="#" className={`text-xs mt-1 inline-block ${finalDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>What's the as of date?</a>
@@ -225,11 +218,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                     name="reorderPoint"
                                     value={formData.reorderPoint}
                                     onChange={handleChange}
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                        finalDarkMode 
-                                            ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                            ? 'bg-slate-800 border-slate-600 text-slate-100'
                                             : 'border-gray-300'
-                                    }`}
+                                        }`}
                                 />
                                 <a href="#" className={`text-xs mt-1 inline-block ${finalDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>What's the reorder point?</a>
                             </div>
@@ -241,11 +233,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                 name="stockAssetAccount"
                                 value={formData.stockAssetAccount}
                                 onChange={handleChange}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                    finalDarkMode 
-                                        ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
                                         : 'border-gray-300'
-                                }`}
+                                    }`}
                             >
                                 <option>Stock Asset</option>
                                 <option>Inventory Asset</option>
@@ -254,7 +245,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                     </>
                 )}
 
-            
+
                 <div>
                     <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Description</label>
                     <textarea
@@ -263,15 +254,14 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         onChange={handleChange}
                         placeholder="Description on sales forms"
                         rows={3}
-                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                            finalDarkMode 
-                                ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
                                 : 'border-gray-300'
-                        }`}
+                            }`}
                     />
                 </div>
 
-       
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Sales price/rate</label>
@@ -280,11 +270,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                             name="salesPrice"
                             value={formData.salesPrice}
                             onChange={handleChange}
-                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                finalDarkMode 
-                                    ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
                                     : 'border-gray-300'
-                            }`}
+                                }`}
                         />
                     </div>
                     <div>
@@ -293,11 +282,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                             name="incomeAccount"
                             value={formData.incomeAccount}
                             onChange={handleChange}
-                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                finalDarkMode 
-                                    ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                    ? 'bg-slate-800 border-slate-600 text-slate-100'
                                     : 'border-gray-300'
-                            }`}
+                                }`}
                         >
                             <option>Sales of Product Income</option>
                             <option>Service Revenue</option>
@@ -305,7 +293,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                     </div>
                 </div>
 
-         
+
                 <div>
                     <div className="flex items-center">
                         <input
@@ -321,11 +309,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         name="vatRate"
                         value={formData.vatRate}
                         onChange={handleChange}
-                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                            finalDarkMode 
-                                ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
                                 : 'border-gray-300'
-                        }`}
+                            }`}
                     >
                         <option>20.0% S</option>
                         <option>10.0% R</option>
@@ -333,7 +320,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                     </select>
                 </div>
 
-            
+
                 <div>
                     <h4 className={`text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'} mb-2`}>Purchasing information</h4>
                     <textarea
@@ -342,15 +329,14 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         onChange={handleChange}
                         placeholder="Description on purchase forms"
                         rows={2}
-                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                            finalDarkMode 
-                                ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
                                 : 'border-gray-300'
-                        }`}
+                            }`}
                     />
                 </div>
 
-             
+
                 {(showStockFields || showNonStockFields) && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -360,11 +346,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                 name="cost"
                                 value={formData.cost}
                                 onChange={handleChange}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                    finalDarkMode 
-                                        ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
                                         : 'border-gray-300'
-                                }`}
+                                    }`}
                             />
                         </div>
                         <div>
@@ -373,11 +358,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                                 name="expenseAccount"
                                 value={formData.expenseAccount}
                                 onChange={handleChange}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                                    finalDarkMode 
-                                        ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                        ? 'bg-slate-800 border-slate-600 text-slate-100'
                                         : 'border-gray-300'
-                                }`}
+                                    }`}
                             >
                                 <option>Cost of sales</option>
                                 <option>Operating Expenses</option>
@@ -386,7 +370,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                     </div>
                 )}
 
-             
+
                 <div>
                     <div className="flex items-center">
                         <input
@@ -402,11 +386,10 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                         name="purchaseTax"
                         value={formData.purchaseTax}
                         onChange={handleChange}
-                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                            finalDarkMode 
-                                ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
                                 : 'border-gray-300'
-                        }`}
+                            }`}
                     >
                         <option>Select tax</option>
                         <option>20.0% S</option>
@@ -414,18 +397,17 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                     </select>
                 </div>
 
-              
+
                 <div>
                     <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Preferred Supplier</label>
                     <select
                         name="preferredSupplier"
                         value={formData.preferredSupplier}
                         onChange={handleChange}
-                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                            finalDarkMode 
-                                ? 'bg-slate-800 border-slate-600 text-slate-100' 
+                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode
+                                ? 'bg-slate-800 border-slate-600 text-slate-100'
                                 : 'border-gray-300'
-                        }`}
+                            }`}
                     >
                         <option>Select a preferred supplier</option>
                         <option>Supplier A</option>
@@ -433,7 +415,7 @@ const ProductFormDrawer = ({ selectedType, onBack, onClose }) => {
                     </select>
                 </div>
 
-           
+
                 <div className="pt-6">
                     <button
                         type="submit"
