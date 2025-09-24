@@ -322,24 +322,111 @@
 
 
 
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
+// import TypeSelectorDrawer from './TypeSelectorDrawer';
+// import ProductFormDrawer from './ProductFormDrawer';
+
+// interface ProductDrawerManagerProps {
+//   isOpen: boolean;
+//   onClose: () => void;
+// }
+
+// const ProductDrawerManager: React.FC<ProductDrawerManagerProps> = ({ isOpen, onClose }) => {
+//   const [selectedType, setSelectedType] = useState<string | null>(null);
+
+//   const handleSelectType = (type: string) => {
+//     setSelectedType(type);
+//   };
+
+//   const handleBackToTypeSelector = () => {
+//     setSelectedType(null);
+//   };
+
+//   if (!isOpen) return null;
+
+//   return (
+//     <>
+//       <div
+//         className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl overflow-y-auto lg:w-1/3"
+//         role="dialog"
+//         aria-modal="true"
+//       >
+//         {selectedType ? (
+//           <ProductFormDrawer
+//             selectedType={selectedType}
+//             onBack={handleBackToTypeSelector}
+//             onClose={onClose}
+//           />
+//         ) : (
+//           <TypeSelectorDrawer
+//             onSelect={handleSelectType}
+//             onClose={onClose}
+//           />
+//         )}
+//       </div>
+//     </>
+//   );
+// };
+
+// export default ProductDrawerManager;
+
+
+
+// src/pages/products/components/ProductDrawerManager.tsx
+
+import { useState } from 'react';
+import { toast } from 'react-toastify';
 import TypeSelectorDrawer from './TypeSelectorDrawer';
 import ProductFormDrawer from './ProductFormDrawer';
+import type { Product } from '../product.types';
+import {
+  useCreateProductMutation,
+  useUpdateProductsMutation,
+} from '../services/productApi';
 
 interface ProductDrawerManagerProps {
   isOpen: boolean;
   onClose: () => void;
+  editingProduct?: Partial<Product>;
 }
 
-const ProductDrawerManager: React.FC<ProductDrawerManagerProps> = ({ isOpen, onClose }) => {
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+const ProductDrawerManager = ({ isOpen, onClose, editingProduct }: ProductDrawerManagerProps) => {
+  const [selectedType, setSelectedType] = useState<string | null>(editingProduct?.isInventoryItem ? 'stock' : 'service');
+  const [createProduct] = useCreateProductMutation();
+  const [updateProduct] = useUpdateProductsMutation();
 
   const handleSelectType = (type: string) => {
     setSelectedType(type);
   };
 
   const handleBackToTypeSelector = () => {
-    setSelectedType(null);
+    if (!editingProduct) {
+      setSelectedType(null);
+    }
+  };
+
+  const handleSubmit = async (values: Partial<Product>) => {
+    try {
+      const payload = {
+        ...values,
+        isInventoryItem: selectedType === 'stock',
+        // Map your form fields to API fields
+        sku: values.itemCode,
+        purchaseCost: values.purchaseCost,
+        // ... add other mappings
+      };
+
+      if (editingProduct?.id) {
+        await updateProduct({ id: editingProduct.id, data: payload }).unwrap();
+        toast.success('Product updated');
+      } else {
+        await createProduct(payload).unwrap();
+        toast.success('Product created');
+      }
+      onClose();
+    } catch (err) {
+      toast.error('Failed to save product');
+    }
   };
 
   if (!isOpen) return null;
@@ -347,15 +434,18 @@ const ProductDrawerManager: React.FC<ProductDrawerManagerProps> = ({ isOpen, onC
   return (
     <>
       <div
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl overflow-y-auto lg:w-1/3"
-        role="dialog"
-        aria-modal="true"
-      >
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        onClick={onClose}
+      />
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl overflow-y-auto lg:w-1/3">
         {selectedType ? (
           <ProductFormDrawer
             selectedType={selectedType}
             onBack={handleBackToTypeSelector}
             onClose={onClose}
+            onSubmit={handleSubmit}
+            editingProduct={editingProduct}
+            isSubmitting={false} // You can add loading state if needed
           />
         ) : (
           <TypeSelectorDrawer
