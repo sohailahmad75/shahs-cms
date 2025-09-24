@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import CloseIcon from '../../../../assets/styledIcons/CloseIcon';
@@ -125,8 +125,8 @@ export default function ProductFormDrawer({
                 enableReinitialize
                 onSubmit={onSubmit}
             >
-                {({ values, errors, touched, handleChange, setFieldValue, handleSubmit }) => (
-                    <Form onSubmit={handleSubmit} className="space-y-6">
+                {({ values, errors, touched, handleChange, handleSubmit }) => (
+                    <Form onSubmit={handleSubmit} className="space-y-2">
                      
                         <div>
                             <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
