@@ -239,7 +239,7 @@ export default function ProductFormDrawer({
                                     </div>
                                     <div>
                                         <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                            Available From
+                                            Date
                                         </label>
                                         <input
                                             type="date"
