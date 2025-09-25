@@ -3,7 +3,7 @@ import Button from "../../../components/Button";
 import {
   type Column,
   DynamicTable,
-  SortDir,
+  type SortDir,
 } from "../../../components/DynamicTable";
 import Loader from "../../../components/Loader";
 import ProductModal from "./components/ProductModal";
@@ -30,6 +30,7 @@ import StockOut from "../../../assets/styledIcons/StockOut";
 import LowStockIcon from "../../../assets/styledIcons/LowStockIcon";
 import CloseIcon from "../../../assets/styledIcons/CloseIcon";
 import { StockStatsHeader } from "./components/StatItem";
+import ProductDrawerManager from "./components/ProductModal";
 
 const ProductListPage: React.FC = () => {
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -41,6 +42,7 @@ const ProductListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
   const { isDarkMode } = useTheme();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // unified sort state for DynamicTable + API
   const [sort, setSort] = useState<{ key: string | null; direction: SortDir }>({
@@ -77,7 +79,7 @@ const ProductListPage: React.FC = () => {
 
   const handleEdit = (p: Product) => {
     setEditingProduct(p);
-    setModalOpen(true);
+    setIsDrawerOpen(true);
   };
 
   const [activeStat, setActiveStat] = useState<"LOW" | "OUT" | null>(null);
@@ -172,16 +174,30 @@ const ProductListPage: React.FC = () => {
     <div className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Products</h1>
-        <Button
+        {/* <Button
           onClick={() => {
             setEditingProduct(null);
             setModalOpen(true);
           }}
         >
           Add Product
+        </Button> */}
+
+        <Button
+          onClick={() => setIsDrawerOpen(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Add Product
         </Button>
+        {isDrawerOpen && (
+          <ProductDrawerManager
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+          />
+        )}
+
       </div>
-      {/* Inventory badges header */}
+
 
       <StockStatsHeader
         lowCount={21}
