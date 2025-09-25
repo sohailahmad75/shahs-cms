@@ -15,6 +15,9 @@ import SelectField from "../../../../components/SelectField";
 import CheckboxField from "../../../../components/CheckboxField";
 import DatePickerField from "../../../../components/DatePickerField";
 
+// ✅ Your dropzone + S3 uploader
+import FileUploader from "../../../../components/FileUploader";
+
 interface ProductFormDrawerProps {
   selectedType: "stock" | "non-stock" | "service";
   onBack: () => void;
@@ -23,9 +26,9 @@ interface ProductFormDrawerProps {
   editingProduct?: Partial<Product>;
   isSubmitting?: boolean;
 
-  // Option sources (plug your API lists in)
+  // Option sources
   categoryOptions?: { value: string; label: string }[];
-  vatOptions?: { value: string; label: string }[]; // e.g. [{value:"NO_VAT",label:"No VAT"}, {value:"S_20",label:"20% S"}]
+  vatOptions?: { value: string; label: string }[];
   incomeAccountOptions?: { value: string; label: string }[];
   expenseAccountOptions?: { value: string; label: string }[];
   stockAssetAccountOptions?: { value: string; label: string }[];
@@ -48,29 +51,77 @@ const defaultOptions = {
   suppliers: [{ value: "", label: "Select a preferred supplier" }],
 };
 
+// ✅ Validation (unchanged, s3Key optional)
 const qbValidation = Yup.object({
-  name: Yup.string().required("Name is required"),
-  sku: Yup.string().required("Item/Service code is required"),
-  // Stock-only requirements
+  name: Yup.string().trim().required("Name is required"),
+  sku: Yup.string().trim().required("Item/Service code is required"),
+
+  isInventoryItem: Yup.boolean().default(false),
+
   initialQuantity: Yup.number()
     .transform((v, o) => (o === "" || o === null ? undefined : v))
     .when("isInventoryItem", {
       is: true,
-      then: (s) => s.required("Initial quantity on hand is required"),
+      then: (s) =>
+        s
+          .required("Initial quantity on hand is required")
+          .min(0, "Initial quantity cannot be negative"),
       otherwise: (s) => s.optional(),
     }),
+
   initialAsOf: Yup.mixed().when("isInventoryItem", {
     is: true,
     then: (s) => s.required("As of date is required"),
     otherwise: (s) => s.optional(),
   }),
+
+  reorderPoint: Yup.number()
+    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .min(0, "Reorder point cannot be negative")
+    .optional(),
+
+  stockAssetAccount: Yup.string().when("isInventoryItem", {
+    is: true,
+    then: (s) => s.required("Stock asset account is required"),
+    otherwise: (s) => s.optional(),
+  }),
+
+  salesPrice: Yup.number()
+    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .min(0, "Sales price cannot be negative")
+    .optional(),
+  incomeAccount: Yup.string().when("salesPrice", {
+    is: (v: any) => v !== undefined && v !== null && v !== "",
+    then: (s) => s.required("Income account is required when price is set"),
+    otherwise: (s) => s.optional(),
+  }),
+  salesVatCode: Yup.string().optional(),
+
+  purchaseCost: Yup.number()
+    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .min(0, "Cost cannot be negative")
+    .optional(),
+  expenseAccount: Yup.string().when("purchaseCost", {
+    is: (v: any) => v !== undefined && v !== null && v !== "",
+    then: (s) => s.required("Expense account is required when cost is set"),
+    otherwise: (s) => s.optional(),
+  }),
+
+  categoryId: Yup.string().optional(),
+  purchaseTaxCode: Yup.string().optional(),
+  preferredSupplierId: Yup.string().optional(),
+
+  // If you want to make image required, uncomment:
+  // s3Key: Yup.string().required("Product image is required"),
 });
 
 const getDefaultValues = (type: string) => ({
   // header
   name: "",
-  sku: "", // Item/Service code
+  sku: "",
   categoryId: "",
+  // image
+  s3Key: "", // ✅ add image key to form values
   // stock section
   initialQuantity: undefined as number | undefined,
   initialAsOf: "",
@@ -79,12 +130,12 @@ const getDefaultValues = (type: string) => ({
   // descriptions
   salesDescription: "",
   purchaseDescription: "",
-  // sales section
+  // sales
   salesPrice: undefined as number | undefined,
   incomeAccount: "Sales of Product Income",
   salesVatInclusive: false,
   salesVatCode: "S_20",
-  // purchase section
+  // purchasing
   purchaseCost: undefined as number | undefined,
   expenseAccount: "cost_of_sales",
   purchaseTaxInclusive: false,
@@ -116,8 +167,10 @@ export default function ProductFormDrawer({
 
   const initialValues = useMemo(() => {
     const defaults = getDefaultValues(selectedType);
+    // If you keep a signed URL for preview on edit, make sure `editingProduct` includes it (e.g., `editingProduct.signedUrl`)
     return { ...defaults, ...(editingProduct || {}) };
   }, [selectedType, editingProduct]);
+
   const finalDarkMode = isDarkMode;
   const isStock = selectedType === "stock";
 
@@ -134,12 +187,12 @@ export default function ProductFormDrawer({
             {selectedType === "service" && <ServiceIcon />}
           </div>
 
-          <div>
-            <h2
-              className={`text-lg font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}
-            >
-              Product/Service information
-            </h2>
+          <div className="flex flex-col gap-1 leading-[1.1]">
+            <p>
+              {selectedType === "stock" && "Stock item"}
+              {selectedType === "non-stock" && "Non-stock item"}
+              {selectedType === "service" && "Service"}
+            </p>
             <button
               type="button"
               onClick={onBack}
@@ -151,7 +204,11 @@ export default function ProductFormDrawer({
         </div>
 
         <button
-          className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${isDarkMode ? "text-slate-100 hover:text-slate-200" : "text-gray-600 hover:text-orange-500"}`}
+          className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${
+            isDarkMode
+              ? "text-slate-100 hover:text-slate-200"
+              : "text-gray-600 hover:text-orange-500"
+          }`}
           onClick={onClose}
           aria-label="Close drawer"
         >
@@ -162,6 +219,8 @@ export default function ProductFormDrawer({
       <Formik
         initialValues={initialValues}
         validationSchema={qbValidation}
+        validateOnBlur
+        validateOnChange
         enableReinitialize
         onSubmit={onSubmit}
       >
@@ -171,11 +230,12 @@ export default function ProductFormDrawer({
           touched,
           handleChange,
           setFieldValue,
+          setFieldTouched,
           handleSubmit,
         }) => (
           <Form onSubmit={handleSubmit} className="space-y-6">
-            {/* Row: Name + Image placeholder (right) */}
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
+            {/* Row: Name + Image */}
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_140px] gap-4">
               <div className="flex flex-col gap-4">
                 <InputField
                   label="Name"
@@ -202,44 +262,35 @@ export default function ProductFormDrawer({
                   }
                 />
               </div>
-              {/* Simple thumbnail placeholder (optional to wire up later) */}
+
+              {/* ✅ Functional Image Upload */}
               <div className="flex flex-col items-center gap-2">
-                <div className="w-full aspect-square min-h-[120px] border-2 border-dashed border-gray-300 dark:border-slate-600 rounded flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 6h.01"
-                    />
-                  </svg>
-                </div>
-                <div className="flex gap-3 text-xs text-gray-500 dark:text-slate-400">
-                  <button
-                    type="button"
-                    className="hover:text-gray-700 dark:hover:text-slate-200"
-                  >
-                    Upload
-                  </button>
-                  <button
-                    type="button"
-                    className="hover:text-red-500 dark:hover:text-red-400"
-                  >
-                    Remove
-                  </button>
-                </div>
+                <FileUploader
+                  // store key in form state
+                  value={values.s3Key || ""}
+                  onChange={(key: string) => {
+                    setFieldValue("s3Key", key);
+                    setFieldTouched("s3Key", true, true);
+                  }}
+                  type="image"
+                  // pick the path your backend expects for product images
+                  // examples from your uploader: "menu-items", "menu-categories", etc.
+                  path="menu-items"
+                  // if you have a signed URL on the edit payload, pass it here
+                  initialPreview={(editingProduct as any)?.signedUrl || ""}
+                  // show any validation error if you decide to require s3Key
+                  error={
+                    touched.s3Key && (errors as any).s3Key
+                      ? ((errors as any).s3Key as string)
+                      : null
+                  }
+                  size={2}
+                  fit="cover"
+                />
               </div>
             </div>
 
-            {/* Item/Service code */}
-
-            {/* Category (dropdown) */}
+            {/* Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Category
@@ -247,25 +298,30 @@ export default function ProductFormDrawer({
               <SelectField
                 name="categoryId"
                 value={String(values.categoryId || "")}
-                onChange={(e: any) =>
-                  setFieldValue("categoryId", e.target.value)
-                }
+                onChange={(e: any) => {
+                  setFieldValue("categoryId", e.target.value);
+                  setFieldTouched("categoryId", true, true);
+                }}
                 options={categoryOptions}
+                error={
+                  touched.categoryId && (errors as any).categoryId
+                    ? ((errors as any).categoryId as string)
+                    : ""
+                }
               />
             </div>
-            <hr className="my-3 border-gray-300 my-7" />
-            {/* --- STOCK: Initial qty / As-of date / Reorder point --- */}
-            {/* --- STOCK: Initial qty / As-of date / Reorder point --- */}
-            {/* --- STOCK: Initial qty / As-of date / Reorder point (QB-style two-column row) --- */}
-            {/* --- STOCK: Initial qty / As-of date / Reorder point (responsive rows) --- */}
+
+            <hr className="my-7 border-gray-300" />
+
+            {/* STOCK SECTION */}
             {isStock && (
               <>
-                {/* Row 1: Initial qty */}
+                {/* Initial qty */}
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-2 items-center md:items-center pe-0 md:pe-10">
                   <p
                     className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
                   >
-                    Initial quantity on hand
+                    Initial quantity on hand{" "}
                     <span className="ms-1 text-red-500">*</span>
                   </p>
                   <InputField
@@ -282,7 +338,7 @@ export default function ProductFormDrawer({
                   />
                 </div>
 
-                {/* Row 2: As of date */}
+                {/* As of date */}
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-4 items-center md:items-center pe-0 md:pe-10">
                   <p
                     className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
@@ -292,7 +348,10 @@ export default function ProductFormDrawer({
                   <DatePickerField
                     name="initialAsOf"
                     value={(values.initialAsOf as any) || ""}
-                    onChange={(v: any) => setFieldValue("initialAsOf", v)}
+                    onChange={(v: any) => {
+                      setFieldValue("initialAsOf", v);
+                      setFieldTouched("initialAsOf", true, true);
+                    }}
                     error={
                       touched.initialAsOf && errors.initialAsOf
                         ? (errors.initialAsOf as string)
@@ -301,7 +360,7 @@ export default function ProductFormDrawer({
                   />
                 </div>
 
-                {/* Row 3: Reorder point */}
+                {/* Reorder point */}
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-4 items-center md:items-center pe-0 md:pe-10">
                   <p
                     className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
@@ -320,8 +379,10 @@ export default function ProductFormDrawer({
                     }
                   />
                 </div>
-                <hr className="my-3 border-gray-300 my-7" />
-                {/* Stock asset account (full width below) */}
+
+                <hr className="my-7 border-gray-300" />
+
+                {/* Stock asset account */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                     Stock asset account
@@ -329,15 +390,24 @@ export default function ProductFormDrawer({
                   <SelectField
                     name="stockAssetAccount"
                     value={String(values.stockAssetAccount || "")}
-                    onChange={(e: any) =>
-                      setFieldValue("stockAssetAccount", e.target.value)
-                    }
+                    onChange={(e: any) => {
+                      setFieldValue("stockAssetAccount", e.target.value);
+                      setFieldTouched("stockAssetAccount", true, true);
+                    }}
                     options={stockAssetAccountOptions}
+                    error={
+                      touched.stockAssetAccount &&
+                      (errors as any).stockAssetAccount
+                        ? ((errors as any).stockAssetAccount as string)
+                        : ""
+                    }
                   />
                 </div>
               </>
             )}
-            <hr className="my-3 border-gray-300 my-7" />
+
+            <hr className="my-7 border-gray-300" />
+
             {/* Sales description */}
             <InputField
               type="textarea"
@@ -357,6 +427,11 @@ export default function ProductFormDrawer({
                 type="number"
                 value={values.salesPrice ?? ""}
                 onChange={handleChange}
+                error={
+                  touched.salesPrice && (errors as any).salesPrice
+                    ? ((errors as any).salesPrice as string)
+                    : ""
+                }
               />
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
@@ -365,10 +440,16 @@ export default function ProductFormDrawer({
                 <SelectField
                   name="incomeAccount"
                   value={String(values.incomeAccount || "")}
-                  onChange={(e: any) =>
-                    setFieldValue("incomeAccount", e.target.value)
-                  }
+                  onChange={(e: any) => {
+                    setFieldValue("incomeAccount", e.target.value);
+                    setFieldTouched("incomeAccount", true, true);
+                  }}
                   options={incomeAccountOptions}
+                  error={
+                    touched.incomeAccount && (errors as any).incomeAccount
+                      ? ((errors as any).incomeAccount as string)
+                      : ""
+                  }
                 />
               </div>
             </div>
@@ -389,14 +470,22 @@ export default function ProductFormDrawer({
               <SelectField
                 name="salesVatCode"
                 value={String(values.salesVatCode || "")}
-                onChange={(e: any) =>
-                  setFieldValue("salesVatCode", e.target.value)
-                }
+                onChange={(e: any) => {
+                  setFieldValue("salesVatCode", e.target.value);
+                  setFieldTouched("salesVatCode", true, true);
+                }}
                 options={vatOptions}
+                error={
+                  touched.salesVatCode && (errors as any).salesVatCode
+                    ? ((errors as any).salesVatCode as string)
+                    : ""
+                }
               />
             </div>
-            <hr className="my-3 border-gray-300 my-7" />
-            {/* Purchasing information title */}
+
+            <hr className="my-7 border-gray-300" />
+
+            {/* Purchasing information */}
             <div>
               <h4 className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                 Purchasing information
@@ -419,6 +508,11 @@ export default function ProductFormDrawer({
                 type="number"
                 value={values.purchaseCost ?? ""}
                 onChange={handleChange}
+                error={
+                  touched.purchaseCost && (errors as any).purchaseCost
+                    ? ((errors as any).purchaseCost as string)
+                    : ""
+                }
               />
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
@@ -427,15 +521,21 @@ export default function ProductFormDrawer({
                 <SelectField
                   name="expenseAccount"
                   value={String(values.expenseAccount || "")}
-                  onChange={(e: any) =>
-                    setFieldValue("expenseAccount", e.target.value)
-                  }
+                  onChange={(e: any) => {
+                    setFieldValue("expenseAccount", e.target.value);
+                    setFieldTouched("expenseAccount", true, true);
+                  }}
                   options={expenseAccountOptions}
+                  error={
+                    touched.expenseAccount && (errors as any).expenseAccount
+                      ? ((errors as any).expenseAccount as string)
+                      : ""
+                  }
                 />
               </div>
             </div>
 
-            {/* Inclusive of purchase tax + Purchase tax select */}
+            {/* Inclusive of purchase tax + Purchase tax */}
             <div className="mb-4">
               <CheckboxField
                 name="purchaseTaxInclusive"
@@ -451,12 +551,19 @@ export default function ProductFormDrawer({
               <SelectField
                 name="purchaseTaxCode"
                 value={String(values.purchaseTaxCode || "")}
-                onChange={(e: any) =>
-                  setFieldValue("purchaseTaxCode", e.target.value)
-                }
+                onChange={(e: any) => {
+                  setFieldValue("purchaseTaxCode", e.target.value);
+                  setFieldTouched("purchaseTaxCode", true, true);
+                }}
                 options={purchaseTaxOptions}
+                error={
+                  touched.purchaseTaxCode && (errors as any).purchaseTaxCode
+                    ? ((errors as any).purchaseTaxCode as string)
+                    : ""
+                }
               />
             </div>
+
             {/* Preferred Supplier */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
@@ -465,19 +572,27 @@ export default function ProductFormDrawer({
               <SelectField
                 name="preferredSupplierId"
                 value={String(values.preferredSupplierId || "")}
-                onChange={(e: any) =>
-                  setFieldValue("preferredSupplierId", e.target.value)
-                }
+                onChange={(e: any) => {
+                  setFieldValue("preferredSupplierId", e.target.value);
+                  setFieldTouched("preferredSupplierId", true, true);
+                }}
                 options={supplierOptions}
+                error={
+                  touched.preferredSupplierId &&
+                  (errors as any).preferredSupplierId
+                    ? ((errors as any).preferredSupplierId as string)
+                    : ""
+                }
               />
             </div>
 
-            {/* Save button (QB-style green) */}
+            {/* Save (theme’d) */}
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="ml-auto block rounded-full bg-green-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                className={`ml-auto block rounded-full px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50
+                ${isDarkMode ? "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500" : "bg-green-600 hover:bg-green-700 focus:ring-green-500"}`}
               >
                 {isSubmitting ? "Saving..." : "Save and close"}
               </button>
