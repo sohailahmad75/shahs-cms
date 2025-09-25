@@ -17,6 +17,7 @@ import {
 import { toast } from "react-toastify";
 import CheckboxField from "../../../components/CheckboxField";
 import DatePickerField from "../../../components/DatePickerField";
+import CloseIcon from "../../../assets/styledIcons/CloseIcon";
 
 interface Props {
   isOpen: boolean;
@@ -123,11 +124,14 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
     <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
       <div className="h-full w-full max-w-xl bg-white p-4 overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-center flex-1">
             {editing ? "Edit account" : "New account"}
           </h2>
-          <button className="text-gray-500" onClick={onClose}>
-            ✕
+          <button
+            className="duration-200 ease-in-out hover:scale-110 cursor-pointer"
+            onClick={onClose}
+          >
+            <CloseIcon />
           </button>
         </div>
 

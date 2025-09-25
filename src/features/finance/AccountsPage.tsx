@@ -235,7 +235,7 @@ const AccountsPage: React.FC = () => {
   return (
     <div className="p-4">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 ">
         <h1 className="text-xl font-bold">Chart of accounts</h1>
         <Button
           onClick={() => {
