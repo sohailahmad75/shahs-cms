@@ -1,449 +1,490 @@
-import { useMemo } from 'react';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import CloseIcon from '../../../../assets/styledIcons/CloseIcon';
-import { useTheme } from '../../../../context/themeContext';
-import type { Product } from '../product.types';
+import React, { useMemo } from "react";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import CloseIcon from "../../../../assets/styledIcons/CloseIcon";
+import { useTheme } from "../../../../context/themeContext";
+import type { Product } from "../product.types";
+
+import NonStockIcon from "../../../../assets/styledIcons/NonStockIcon";
+import StockIcon from "../../../../assets/styledIcons/StockIcon";
+import ServiceIcon from "../../../../assets/styledIcons/ServiceIcon";
+
+// Themed controls (have internal error rendering)
+import InputField from "../../../../components/InputField";
+import SelectField from "../../../../components/SelectField";
+import CheckboxField from "../../../../components/CheckboxField";
+import DatePickerField from "../../../../components/DatePickerField";
 
 interface ProductFormDrawerProps {
-    selectedType: string;
-    onBack: () => void;
-    onClose: () => void;
-    onSubmit: (values: Partial<Product>) => void;
-    editingProduct?: Partial<Product>;
-    isSubmitting?: boolean;
+  selectedType: "stock" | "non-stock" | "service";
+  onBack: () => void;
+  onClose: () => void;
+  onSubmit: (values: Partial<Product>) => void;
+  editingProduct?: Partial<Product>;
+  isSubmitting?: boolean;
+
+  // Option sources (plug your API lists in)
+  categoryOptions?: { value: string; label: string }[];
+  vatOptions?: { value: string; label: string }[]; // e.g. [{value:"NO_VAT",label:"No VAT"}, {value:"S_20",label:"20% S"}]
+  incomeAccountOptions?: { value: string; label: string }[];
+  expenseAccountOptions?: { value: string; label: string }[];
+  stockAssetAccountOptions?: { value: string; label: string }[];
+  purchaseTaxOptions?: { value: string; label: string }[];
+  supplierOptions?: { value: string; label: string }[];
 }
 
-const validationSchema = Yup.object({
-    name: Yup.string().required('Name is required'),
-    sku: Yup.string().required('SKU is required'),
+const defaultOptions = {
+  categories: [{ value: "", label: "Choose a category" }],
+  vat: [
+    { value: "NO_VAT", label: "No VAT" },
+    { value: "S_20", label: "20.0% S" },
+  ],
+  income: [
+    { value: "Sales of Product Income", label: "Sales of Product Income" },
+  ],
+  expense: [{ value: "cost_of_sales", label: "Cost of sales" }],
+  stockAsset: [{ value: "Stock Asset", label: "Stock Asset" }],
+  purchaseTax: [{ value: "NO_VAT", label: "No VAT" }],
+  suppliers: [{ value: "", label: "Select a preferred supplier" }],
+};
+
+const qbValidation = Yup.object({
+  name: Yup.string().required("Name is required"),
+  sku: Yup.string().required("Item/Service code is required"),
+  // Stock-only requirements
+  initialQuantity: Yup.number()
+    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .when("isInventoryItem", {
+      is: true,
+      then: (s) => s.required("Initial quantity on hand is required"),
+      otherwise: (s) => s.optional(),
+    }),
+  initialAsOf: Yup.mixed().when("isInventoryItem", {
+    is: true,
+    then: (s) => s.required("As of date is required"),
+    otherwise: (s) => s.optional(),
+  }),
 });
 
-
-
-
 const getDefaultValues = (type: string) => ({
-    sku: '',
-    name: '',
-    itemCode: '',
-    categoryId: '',
-    description: '',
-    unit: 'pcs',
-    salesPrice: 0,
-    salesVatInclusive: false,
-    salesVatRate: 20,
-    incomeAccount: 'Sales of Product Income',
-    purchaseCost: 0,
-    purchaseTaxInclusive: false,
-    purchaseTaxRate: 0,
-    expenseAccount: 'Cost of Sales',
-    stockAssetAccount: 'Stock Asset',
-    reorderPoint: 0,
-    isInventoryItem: type === 'stock',
-    isActive: true,
-    s3Key: '',
-    availableFrom: '',
+  // header
+  name: "",
+  sku: "", // Item/Service code
+  categoryId: "",
+  // stock section
+  initialQuantity: undefined as number | undefined,
+  initialAsOf: "",
+  reorderPoint: undefined as number | undefined,
+  stockAssetAccount: "Stock Asset",
+  // descriptions
+  salesDescription: "",
+  purchaseDescription: "",
+  // sales section
+  salesPrice: undefined as number | undefined,
+  incomeAccount: "Sales of Product Income",
+  salesVatInclusive: false,
+  salesVatCode: "S_20",
+  // purchase section
+  purchaseCost: undefined as number | undefined,
+  expenseAccount: "cost_of_sales",
+  purchaseTaxInclusive: false,
+  purchaseTaxCode: "NO_VAT",
+  // supplier
+  preferredSupplierId: "",
+  // flags
+  isInventoryItem: type === "stock",
+  isActive: true,
 });
 
 export default function ProductFormDrawer({
-    selectedType,
-    onBack,
-    onClose,
-    onSubmit,
-    editingProduct,
-    isSubmitting = false,
+  selectedType,
+  onBack,
+  onClose,
+  onSubmit,
+  editingProduct,
+  isSubmitting = false,
+
+  categoryOptions = defaultOptions.categories,
+  vatOptions = defaultOptions.vat,
+  incomeAccountOptions = defaultOptions.income,
+  expenseAccountOptions = defaultOptions.expense,
+  stockAssetAccountOptions = defaultOptions.stockAsset,
+  purchaseTaxOptions = defaultOptions.purchaseTax,
+  supplierOptions = defaultOptions.suppliers,
 }: ProductFormDrawerProps) {
-    const { isDarkMode: themeDarkMode } = useTheme();
-    const finalDarkMode = themeDarkMode;
+  const { isDarkMode } = useTheme();
 
-    const initialValues = useMemo(() => {
-        const defaults = getDefaultValues(selectedType);
-        return { ...defaults, ...(editingProduct || {}) };
-    }, [selectedType, editingProduct]);
+  const initialValues = useMemo(() => {
+    const defaults = getDefaultValues(selectedType);
+    return { ...defaults, ...(editingProduct || {}) };
+  }, [selectedType, editingProduct]);
+  const finalDarkMode = isDarkMode;
+  const isStock = selectedType === "stock";
 
-    const showStockFields = selectedType === 'stock';
-    const showNonStockFields = selectedType === 'non-stock';
+  return (
+    <div
+      className={`p-6 h-full overflow-y-auto ${isDarkMode ? "bg-slate-900 text-slate-100" : "bg-white"}`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-slate-700">
+        <div className="flex items-center">
+          <div className="mr-4 rounded-full p-3 flex items-center justify-center text-orange-100 border border-orange-100 bg-orange-500/10">
+            {selectedType === "stock" && <StockIcon />}
+            {selectedType === "non-stock" && <NonStockIcon />}
+            {selectedType === "service" && <ServiceIcon />}
+          </div>
 
-    return (
-        <div className={`p-6 h-full overflow-y-auto ${finalDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white'}`}>
-          
-            <div className="flex items-center justify-between mb-6 pb-4 border-b">
-                <div className="flex items-center">
-                    <div className="bg-blue-600 rounded-full p-3 mr-4 flex items-center justify-center">
-                        {selectedType === "stock" && (
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        )}
-                        {selectedType === "non-stock" && (
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9M5 11V9m2 2a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6z" />
-                            </svg>
-                        )}
-                        {selectedType === "service" && (
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12v2H7v-2z" />
-                            </svg>
-                        )}
-                        {selectedType === "bundle" && (
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M12 13a4 4 0 004 4h6m-6-4h-6m-6 4a4 4 0 004-4v-4a4 4 0 00-8 0v4a4 4 0 004 4z" />
-                            </svg>
-                        )}
-                    </div>
+          <div>
+            <h2
+              className={`text-lg font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}
+            >
+              Product/Service information
+            </h2>
+            <button
+              type="button"
+              onClick={onBack}
+              className="text-sm text-orange-600 hover:text-orange-700"
+            >
+              Change type
+            </button>
+          </div>
+        </div>
 
-                    <div>
-                        <h2 className={`text-lg font-semibold ${finalDarkMode ? "text-slate-100" : "text-gray-800"}`}>
-                            {selectedType === "stock" && "Stock"}
-                            {selectedType === "non-stock" && "Non-stock"}
-                            {selectedType === "service" && "Service"}
-                            {selectedType === "bundle" && "Bundle"}
-                        </h2>
-                        <button
-                            onClick={onBack}
-                            className={`text-sm hover:underline ${finalDarkMode ? "text-blue-400" : "text-blue-600"}`}
-                        >
-                            Change type
-                        </button>
-                    </div>
+        <button
+          className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${isDarkMode ? "text-slate-100 hover:text-slate-200" : "text-gray-600 hover:text-orange-500"}`}
+          onClick={onClose}
+          aria-label="Close drawer"
+        >
+          <CloseIcon size={22} />
+        </button>
+      </div>
+
+      <Formik
+        initialValues={initialValues}
+        validationSchema={qbValidation}
+        enableReinitialize
+        onSubmit={onSubmit}
+      >
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          setFieldValue,
+          handleSubmit,
+        }) => (
+          <Form onSubmit={handleSubmit} className="space-y-6">
+            {/* Row: Name + Image placeholder (right) */}
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
+              <div className="flex flex-col gap-4">
+                <InputField
+                  label="Name"
+                  required
+                  name="name"
+                  placeholder=""
+                  type="textarea"
+                  value={values.name || ""}
+                  onChange={handleChange}
+                  error={
+                    touched.name && errors.name ? (errors.name as string) : ""
+                  }
+                  rows={2}
+                />
+                <InputField
+                  label="Item/Service code"
+                  required
+                  name="sku"
+                  placeholder=""
+                  value={values.sku || ""}
+                  onChange={handleChange}
+                  error={
+                    touched.sku && errors.sku ? (errors.sku as string) : ""
+                  }
+                />
+              </div>
+              {/* Simple thumbnail placeholder (optional to wire up later) */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-full aspect-square min-h-[120px] border-2 border-dashed border-gray-300 dark:border-slate-600 rounded flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 6h.01"
+                    />
+                  </svg>
                 </div>
-
-                <span
-                    className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${finalDarkMode
-                        ? "text-slate-100 hover:text-slate-200"
-                        : "text-gray-600 hover:text-orange-500"
-                        }`}
-                    onClick={onClose}
-                    role="button"
-                    aria-label="Close drawer"
-                >
-                    <CloseIcon size={22} />
-                </span>
+                <div className="flex gap-3 text-xs text-gray-500 dark:text-slate-400">
+                  <button
+                    type="button"
+                    className="hover:text-gray-700 dark:hover:text-slate-200"
+                  >
+                    Upload
+                  </button>
+                  <button
+                    type="button"
+                    className="hover:text-red-500 dark:hover:text-red-400"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
             </div>
 
-    
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                enableReinitialize
-                onSubmit={onSubmit}
-            >
-                {({ values, errors, touched, handleChange, handleSubmit }) => (
-                    <Form onSubmit={handleSubmit} className="space-y-2">
-                     
-                        <div>
-                            <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                Name*
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                placeholder="Enter Name"
-                                value={values.name}
-                                onChange={handleChange}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                    }`}
-                                required
-                            />
-                            {touched.name && errors.name && (
-                                <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-                            )}
-                        </div>
+            {/* Item/Service code */}
 
-                     
-                        <div>
-                            <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                SKU*
-                            </label>
-                            <input
-                                type="text"
-                                name="sku"
-                                value={values.sku}
-                                placeholder="Enter SKU"
-                                onChange={handleChange}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                    }`}
-                                required
-                            />
-                            {touched.sku && errors.sku && (
-                                <p className="mt-1 text-sm text-red-500">{errors.sku}</p>
-                            )}
-                        </div>
+            {/* Category (dropdown) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                Category
+              </label>
+              <SelectField
+                name="categoryId"
+                value={String(values.categoryId || "")}
+                onChange={(e: any) =>
+                  setFieldValue("categoryId", e.target.value)
+                }
+                options={categoryOptions}
+              />
+            </div>
+            <hr className="my-3 border-gray-300 my-7" />
+            {/* --- STOCK: Initial qty / As-of date / Reorder point --- */}
+            {/* --- STOCK: Initial qty / As-of date / Reorder point --- */}
+            {/* --- STOCK: Initial qty / As-of date / Reorder point (QB-style two-column row) --- */}
+            {/* --- STOCK: Initial qty / As-of date / Reorder point (responsive rows) --- */}
+            {isStock && (
+              <>
+                {/* Row 1: Initial qty */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-2 items-center md:items-center pe-0 md:pe-10">
+                  <p
+                    className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
+                  >
+                    Initial quantity on hand
+                    <span className="ms-1 text-red-500">*</span>
+                  </p>
+                  <InputField
+                    required
+                    name="initialQuantity"
+                    type="number"
+                    value={values.initialQuantity ?? ""}
+                    onChange={handleChange}
+                    error={
+                      touched.initialQuantity && errors.initialQuantity
+                        ? (errors.initialQuantity as string)
+                        : ""
+                    }
+                  />
+                </div>
 
-                  
-                        <div>
-                            <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                Item Code
-                            </label>
-                            <input
-                                type="text"
-                                name="itemCode"
-                                placeholder="Enter Item Code"
-                                value={values.itemCode}
-                                onChange={handleChange}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                    }`}
-                            />
-                        </div>
+                {/* Row 2: As of date */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-4 items-center md:items-center pe-0 md:pe-10">
+                  <p
+                    className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
+                  >
+                    As of date <span className="ms-1 text-red-500">*</span>
+                  </p>
+                  <DatePickerField
+                    name="initialAsOf"
+                    value={(values.initialAsOf as any) || ""}
+                    onChange={(v: any) => setFieldValue("initialAsOf", v)}
+                    error={
+                      touched.initialAsOf && errors.initialAsOf
+                        ? (errors.initialAsOf as string)
+                        : ""
+                    }
+                  />
+                </div>
 
-                     
-                        <div className="flex items-start space-x-4">
-                            <div className="flex-1">
-                                <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                    Category
-                                </label>
-                                <input
-                                    type="text"
-                                    name="categoryId"
-                                    value={values.categoryId}
-                                    onChange={handleChange}
-                                    placeholder="Enter category"
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                        }`}
-                                />
-                            </div>
+                {/* Row 3: Reorder point */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-4 items-center md:items-center pe-0 md:pe-10">
+                  <p
+                    className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
+                  >
+                    Reorder point
+                  </p>
+                  <InputField
+                    name="reorderPoint"
+                    type="number"
+                    value={values.reorderPoint ?? ""}
+                    onChange={handleChange}
+                    error={
+                      touched.reorderPoint && (errors as any).reorderPoint
+                        ? ((errors as any).reorderPoint as string)
+                        : ""
+                    }
+                  />
+                </div>
+                <hr className="my-3 border-gray-300 my-7" />
+                {/* Stock asset account (full width below) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                    Stock asset account
+                  </label>
+                  <SelectField
+                    name="stockAssetAccount"
+                    value={String(values.stockAssetAccount || "")}
+                    onChange={(e: any) =>
+                      setFieldValue("stockAssetAccount", e.target.value)
+                    }
+                    options={stockAssetAccountOptions}
+                  />
+                </div>
+              </>
+            )}
+            <hr className="my-3 border-gray-300 my-7" />
+            {/* Sales description */}
+            <InputField
+              type="textarea"
+              label="Description"
+              name="salesDescription"
+              placeholder="Description on sales forms"
+              rows={3}
+              value={values.salesDescription || ""}
+              onChange={handleChange}
+            />
 
-                            <div className="flex flex-col items-center space-y-2">
-                                <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 6h.01" />
-                                    </svg>
-                                </div>
-                                <div className="flex space-x-2">
-                                    <button type="button" className="text-xs text-gray-500 hover:text-gray-700">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-5L20 14.586a2 2 0 002.828 0l2.828-2.828a2 2 0 000-2.828l-2.828-2.828A2 2 0 0020 6l-5.586 5.586z" />
-                                        </svg>
-                                    </button>
-                                    <button type="button" className="text-xs text-gray-500 hover:text-red-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995 5.002 2 2 0 01-1.995-5.002L3 7m11 4a4 4 0 11-8 0 4 4 0 018 0z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            {/* Sales price + Income account */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="Sales price/rate"
+                name="salesPrice"
+                type="number"
+                value={values.salesPrice ?? ""}
+                onChange={handleChange}
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                  Income account
+                </label>
+                <SelectField
+                  name="incomeAccount"
+                  value={String(values.incomeAccount || "")}
+                  onChange={(e: any) =>
+                    setFieldValue("incomeAccount", e.target.value)
+                  }
+                  options={incomeAccountOptions}
+                />
+              </div>
+            </div>
 
-                        {showStockFields && (
-                            <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                            Reorder Point
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="reorderPoint"
-                                            value={values.reorderPoint}
-                                            onChange={handleChange}
-                                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                                }`}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                            Date
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="availableFrom"
-                                            // value={values.availableFrom}
-                                            onChange={handleChange}
-                                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                                }`}
-                                        />
-                                    </div>
-                                </div>
+            {/* Inclusive of VAT + VAT code */}
+            <div className="mb-4">
+              <CheckboxField
+                name="salesVatInclusive"
+                label="Inclusive of VAT"
+                checked={!!values.salesVatInclusive}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                VAT
+              </label>
+              <SelectField
+                name="salesVatCode"
+                value={String(values.salesVatCode || "")}
+                onChange={(e: any) =>
+                  setFieldValue("salesVatCode", e.target.value)
+                }
+                options={vatOptions}
+              />
+            </div>
+            <hr className="my-3 border-gray-300 my-7" />
+            {/* Purchasing information title */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                Purchasing information
+              </h4>
+              <InputField
+                type="textarea"
+                name="purchaseDescription"
+                placeholder="Description on purchase forms"
+                rows={3}
+                value={values.purchaseDescription || ""}
+                onChange={handleChange}
+              />
+            </div>
 
-                                <div>
-                                    <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                        Stock Asset Account
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="stockAssetAccount"
-                                        value={values.stockAssetAccount}
-                                        onChange={handleChange}
-                                        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                            }`}
-                                    />
-                                </div>
-                            </>
-                        )}
+            {/* Cost + Expense account */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="Cost"
+                name="purchaseCost"
+                type="number"
+                value={values.purchaseCost ?? ""}
+                onChange={handleChange}
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                  Expense account
+                </label>
+                <SelectField
+                  name="expenseAccount"
+                  value={String(values.expenseAccount || "")}
+                  onChange={(e: any) =>
+                    setFieldValue("expenseAccount", e.target.value)
+                  }
+                  options={expenseAccountOptions}
+                />
+              </div>
+            </div>
 
-                        {/* Description Field - Same as original */}
-                        <div>
-                            <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                Description
-                            </label>
-                            <textarea
-                                name="description"
-                                value={values.description}
-                                onChange={handleChange}
-                                placeholder="Description on sales forms"
-                                rows={3}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                    }`}
-                            />
-                        </div>
+            {/* Inclusive of purchase tax + Purchase tax select */}
+            <div className="mb-4">
+              <CheckboxField
+                name="purchaseTaxInclusive"
+                label="Inclusive of purchase tax"
+                checked={!!values.purchaseTaxInclusive}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                Purchase tax
+              </label>
+              <SelectField
+                name="purchaseTaxCode"
+                value={String(values.purchaseTaxCode || "")}
+                onChange={(e: any) =>
+                  setFieldValue("purchaseTaxCode", e.target.value)
+                }
+                options={purchaseTaxOptions}
+              />
+            </div>
+            {/* Preferred Supplier */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                Preferred Supplier
+              </label>
+              <SelectField
+                name="preferredSupplierId"
+                value={String(values.preferredSupplierId || "")}
+                onChange={(e: any) =>
+                  setFieldValue("preferredSupplierId", e.target.value)
+                }
+                options={supplierOptions}
+              />
+            </div>
 
-                 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                    Sales Price (£)
-                                </label>
-                                <input
-                                    type="number"
-                                    name="salesPrice"
-                                    value={values.salesPrice}
-                                    onChange={handleChange}
-                                    step="0.01"
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                        }`}
-                                />
-                            </div>
-                            <div>
-                                <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                    Income Account
-                                </label>
-                                <input
-                                    type="text"
-                                    name="incomeAccount"
-                                    value={values.incomeAccount}
-                                    onChange={handleChange}
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                        }`}
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <div className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="salesVatInclusive"
-                                    checked={values.salesVatInclusive}
-                                    onChange={handleChange}
-                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                                />
-                                <label className={`ml-2 block text-sm ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                    Inclusive of VAT
-                                </label>
-                            </div>
-                            <div className="mt-2">
-                                <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                    VAT Rate (%)
-                                </label>
-                                <input
-                                    type="number"
-                                    name="salesVatRate"
-                                    value={values.salesVatRate}
-                                    onChange={handleChange}
-                                    step="0.01"
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                        }`}
-                                />
-                            </div>
-                        </div>
-
-                       
-                        <div>
-                            <h4 className={`text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'} mb-2`}>
-                                Purchasing information
-                            </h4>
-
-                         
-                            {(showStockFields || showNonStockFields) && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                            Cost (£)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="purchaseCost"
-                                            value={values.purchaseCost}
-                                            onChange={handleChange}
-                                            step="0.01"
-                                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                                }`}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                            Expense Account
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="expenseAccount"
-                                            value={values.expenseAccount}
-                                            onChange={handleChange}
-                                            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                                }`}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-             
-                            <div className="flex items-center mb-2">
-                                <input
-                                    type="checkbox"
-                                    name="purchaseTaxInclusive"
-                                    checked={values.purchaseTaxInclusive}
-                                    onChange={handleChange}
-                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                                />
-                                <label className={`ml-2 block text-sm ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                    Inclusive of purchase tax
-                                </label>
-                            </div>
-                            <div>
-                                <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                    Purchase Tax Rate (%)
-                                </label>
-                                <input
-                                    type="number"
-                                    name="purchaseTaxRate"
-                                    value={values.purchaseTaxRate}
-                                    onChange={handleChange}
-                                    step="0.01"
-                                    className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                        }`}
-                                />
-                            </div>
-                        </div>
-
-           
-                        <div>
-                            <label className={`block text-sm font-medium ${finalDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                                Unit
-                            </label>
-                            <input
-                                type="text"
-                                name="unit"
-                                value={values.unit}
-                                onChange={handleChange}
-                                placeholder="e.g., pcs, kg, box"
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${finalDarkMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'border-gray-300'
-                                    }`}
-                            />
-                        </div>
-
-                    
-                        <div className="pt-6">
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                            >
-                                {isSubmitting ? 'Saving...' : 'Save and close'}
-                            </button>
-                        </div>
-                    </Form>
-                )}
-            </Formik>
-        </div>
-    );
+            {/* Save button (QB-style green) */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="ml-auto block rounded-full bg-green-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+              >
+                {isSubmitting ? "Saving..." : "Save and close"}
+              </button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
 }

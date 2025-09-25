@@ -1,8 +1,15 @@
 // FILE: src/features/finance/components/AccountModal.tsx
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo } from "react";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+
 import Button from "../../../components/Button";
 import InputField from "../../../components/InputField";
 import SelectField from "../../../components/SelectField";
+import CheckboxField from "../../../components/CheckboxField";
+import DatePickerField from "../../../components/DatePickerField";
+import CloseIcon from "../../../assets/styledIcons/CloseIcon";
+
 import {
   ACCOUNT_TYPE_OPTIONS,
   DETAIL_TYPES_BY_TYPE,
@@ -15,9 +22,6 @@ import {
   useGetAccountsQuery,
 } from "../services/financeAccountApi";
 import { toast } from "react-toastify";
-import CheckboxField from "../../../components/CheckboxField";
-import DatePickerField from "../../../components/DatePickerField";
-import CloseIcon from "../../../assets/styledIcons/CloseIcon";
 
 interface Props {
   isOpen: boolean;
@@ -25,83 +29,92 @@ interface Props {
   editing?: FinanceAccount | null;
 }
 
+// ---------- Validation ----------
+const AccountSchema = Yup.object({
+  name: Yup.string().trim().required("Account name is required"),
+  account_type: Yup.string().required("Account type is required"),
+  detail_type: Yup.string().required("Detail type is required"),
+  isSub: Yup.boolean().default(false),
+  parent_id: Yup.string().when("isSub", {
+    is: true,
+    then: (s) => s.required("Parent account is required"),
+    otherwise: (s) => s.optional(),
+  }),
+  opening_balance: Yup.number()
+    .typeError("Opening balance must be a number")
+    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .optional(),
+  opening_balance_date: Yup.mixed().when("opening_balance", {
+    is: (v: any) => v !== undefined,
+    then: (s) =>
+      s.required("As of date is required when opening balance is set"),
+    otherwise: (s) => s.optional(),
+  }),
+});
+
+// ---------- Component ----------
 const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
-  // Normalize initial form state (keep select values as strings)
-  const initialForm: Partial<FinanceAccount> = editing
-    ? {
-        ...editing,
-        // ensure string values for selects
-        account_type: String((editing as any).account_type) as any,
-        detail_type: editing.detail_type
-          ? String(editing.detail_type)
-          : undefined,
-        default_vat_code: editing.default_vat_code
-          ? String(editing.default_vat_code)
-          : undefined,
-        parent_id: editing.parent_id ? String(editing.parent_id) : undefined,
-      }
-    : { account_type: "current_assets" as any };
-
-  const [form, setForm] = useState<Partial<FinanceAccount>>(initialForm);
-  const [isSub, setIsSub] = useState<boolean>(!!editing?.parent_id);
-
-  // Reset form when modal re-opens with a different record
-  useEffect(() => {
-    if (isOpen) {
-      setForm(initialForm);
-      setIsSub(!!editing?.parent_id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, editing?.id]);
-
-  const [createAccount, { isLoading: creating }] = useCreateAccountMutation();
-  const [updateAccount, { isLoading: updating }] = useUpdateAccountMutation();
-
-  // Parent list (same account_type only)
-  const { data: parentCandidates = [] } = useGetAccountsQuery(
-    form.account_type
-      ? { account_type: String(form.account_type) as any }
-      : undefined,
-  );
-
-  // Detail types based on selected account type
-  const detailOptions = useMemo(
-    () =>
-      DETAIL_TYPES_BY_TYPE[String(form.account_type || "current_assets")] ?? [],
-    [form.account_type],
-  );
-
-  // Build parent select options (ids as strings)
-  const parentOptions = parentCandidates
-    .filter((a) => a.id !== editing?.id)
-    .map((a) => ({
-      value: String(a.id),
-      label: `${a.name}${a.code ? ` (${a.code})` : ""}`,
-    }));
-
-  const submit = async () => {
-    const payload = {
-      code: form.code || undefined,
-      name: form.name || "",
-      account_type: String(form.account_type) as any,
-      detail_type: form.detail_type ? String(form.detail_type) : "",
-      default_vat_code: form.default_vat_code
-        ? String(form.default_vat_code)
-        : undefined,
-      // Cast to number here only if your backend expects numeric ids.
-      parent_id: isSub
-        ? form.parent_id
-          ? String(form.parent_id)
-          : undefined
-        : undefined,
+  const [createAccount, createStatus] = useCreateAccountMutation();
+  const [updateAccount, updateStatus] = useUpdateAccountMutation();
+  const firstDetailFor = (type: string) =>
+    (DETAIL_TYPES_BY_TYPE[type] || [])[0]?.value || "";
+  const initialValues = useMemo(
+    () => ({
+      id: editing?.id || "",
+      code: editing?.code || "",
+      name: editing?.name || "",
+      account_type: (editing?.account_type as any) || "current_assets",
+      // 👇 if no detail_type, pick the first one that matches the initial account_type
+      detail_type:
+        (editing?.detail_type as any) ||
+        firstDetailFor((editing?.account_type as any) || "current_assets"),
+      default_vat_code: editing?.default_vat_code || "",
+      isSub: Boolean(editing?.parent_id),
+      parent_id: editing?.parent_id || "",
       opening_balance:
-        form.opening_balance !== undefined && form.opening_balance !== null
-          ? Number(form.opening_balance)
+        (editing as any)?.opening_balance !== undefined
+          ? (editing as any).opening_balance
           : undefined,
-      opening_balance_date: form.opening_balance
-        ? (form.opening_balance_date as any) || undefined
+      opening_balance_date: (editing as any)?.opening_balance_date || "",
+      description: editing?.description || "",
+    }),
+    [editing],
+  );
+
+  // Fetch parents for the currently selected type (filtered in render as type changes)
+  const { data: parentCandidates = [] } = useGetAccountsQuery(
+    { account_type: String(initialValues.account_type) as any },
+    { skip: !isOpen },
+  );
+
+  // Build friendly options for the parent select (prevent self-parenting)
+  const buildParentOptions = (type: string) =>
+    (parentCandidates || [])
+      .filter(
+        (a: any) =>
+          a.id !== editing?.id && String(a.account_type) === String(type),
+      )
+      .map((a: any) => ({
+        value: String(a.id),
+        label: `${a.name}${a.code ? ` (${a.code})` : ""}`,
+      }));
+
+  const onSubmit = async (values: any) => {
+    const payload = {
+      code: values.code || undefined,
+      name: values.name.trim(),
+      account_type: String(values.account_type) as any,
+      detail_type: String(values.detail_type),
+      default_vat_code: values.default_vat_code || undefined,
+      parent_id: values.isSub ? values.parent_id || undefined : undefined,
+      opening_balance:
+        values.opening_balance !== undefined && values.opening_balance !== null
+          ? Number(values.opening_balance)
+          : undefined,
+      opening_balance_date: values.opening_balance
+        ? values.opening_balance_date || undefined
         : undefined,
-      description: form.description || undefined,
+      description: values.description || undefined,
     };
 
     try {
@@ -122,169 +135,237 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
-      <div className="h-full w-full max-w-xl bg-white p-4 overflow-y-auto">
+      <div className="h-full w-full max-w-xl bg-white p-5 sm:p-6 md:p-7 overflow-y-auto shadow-2xl">
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-center flex-1">
+          <h2 className="text-xl font-semibold tracking-tight">
             {editing ? "Edit account" : "New account"}
           </h2>
           <button
             className="duration-200 ease-in-out hover:scale-110 cursor-pointer"
             onClick={onClose}
+            aria-label="Close"
+            title="Close"
           >
             <CloseIcon />
           </button>
         </div>
 
-        <div className="space-y-4">
-          <InputField
-            label="Account name"
-            value={form.name || ""}
-            onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-            placeholder="e.g. Accumulated Amortisation"
-          />
+        <Formik
+          initialValues={initialValues}
+          validationSchema={AccountSchema}
+          enableReinitialize
+          onSubmit={onSubmit}
+        >
+          {({
+            values,
+            errors,
+            touched,
+            handleChange,
+            setFieldValue,
+            isSubmitting,
+          }) => {
+            const type = String(values.account_type || "current_assets");
+            const detailOptions = DETAIL_TYPES_BY_TYPE[type] || [];
+            const parentOptions = buildParentOptions(type);
 
-          <div className="grid grid-cols-2 gap-3">
-            {/* Account type */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Account type
-              </label>
-              <SelectField
-                name="account_type"
-                value={String(form.account_type ?? "current_assets")}
-                onChange={(e: any) =>
-                  setForm((s) => ({
-                    ...s,
-                    account_type: String(e.target.value) as any,
-                    // reset dependent fields
-                    detail_type: undefined,
-                    parent_id: undefined,
-                  }))
-                }
-                options={ACCOUNT_TYPE_OPTIONS}
-              />
-            </div>
+            const submitting =
+              isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 
-            {/* Detail type */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Detail type
-              </label>
-              <SelectField
-                name="detail_type"
-                value={String(form.detail_type ?? "")}
-                onChange={(e: any) =>
-                  setForm((s) => ({
-                    ...s,
-                    detail_type: e.target.value ? String(e.target.value) : "",
-                  }))
-                }
-                options={detailOptions}
-              />
-            </div>
-          </div>
+            return (
+              <Form className="space-y-5">
+                {/* Account name */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Account name <span className="text-red-500">*</span>
+                  </label>
+                  <InputField
+                    name="name"
+                    value={values.name}
+                    onChange={handleChange}
+                    placeholder="e.g. Stock, Sales of Product Income"
+                    error={
+                      touched.name && errors.name ? (errors.name as string) : ""
+                    }
+                  />
+                </div>
 
-          <CheckboxField
-            label="Make this a subaccount"
-            checked={isSub}
-            onChange={(checked) => {
-              setIsSub(checked.target.checked);
-              if (!checked.target.checked)
-                setForm((s) => ({ ...s, parent_id: undefined }));
-            }}
-          />
+                {/* Type + Detail */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      Account type <span className="text-red-500">*</span>
+                    </label>
+                    <SelectField
+                      name="account_type"
+                      value={type}
+                      onChange={(e: any) => {
+                        const v = String(e.target.value);
+                        const firstDetail =
+                          (DETAIL_TYPES_BY_TYPE[v] || [])[0]?.value || "";
+                        setFieldValue("account_type", v);
+                        setFieldValue("detail_type", firstDetail);
+                        setFieldValue("isSub", false);
+                        setFieldValue("parent_id", "");
+                      }}
+                      options={ACCOUNT_TYPE_OPTIONS}
+                      error={
+                        touched.account_type && errors.account_type
+                          ? (errors.account_type as string)
+                          : ""
+                      }
+                    />
+                  </div>
 
-          {isSub && (
-            <div>
-              {console.log("form.parent_id", form.parent_id)}
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Parent account
-              </label>
-              <SelectField
-                name="parent_id"
-                value={String(form.parent_id ?? "")}
-                onChange={(e: any) =>
-                  setForm((s) => ({
-                    ...s,
-                    parent_id: e.target.value
-                      ? String(e.target.value)
-                      : undefined,
-                  }))
-                }
-                options={parentOptions}
-              />
-            </div>
-          )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      Detail type <span className="text-red-500">*</span>
+                    </label>
+                    <SelectField
+                      name="detail_type"
+                      value={String(values.detail_type || "")}
+                      onChange={(e: any) =>
+                        setFieldValue("detail_type", String(e.target.value))
+                      }
+                      options={detailOptions}
+                      error={
+                        touched.detail_type && errors.detail_type
+                          ? (errors.detail_type as string)
+                          : ""
+                      }
+                    />
+                  </div>
+                </div>
 
-          {/* VAT code */}
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Default VAT Code
-            </label>
-            <SelectField
-              name="default_vat_code"
-              value={String(form.default_vat_code ?? "")}
-              onChange={(e: any) =>
-                setForm((s) => ({
-                  ...s,
-                  default_vat_code: e.target.value
-                    ? String(e.target.value)
-                    : undefined,
-                }))
-              }
-              options={[{ value: "", label: "—" }, ...VAT_OPTIONS]}
-            />
-          </div>
+                {/* Subaccount */}
+                <div className="pt-1">
+                  <CheckboxField
+                    name="isSub"
+                    label="Make this a subaccount"
+                    checked={!!values.isSub}
+                    onChange={(e: any) => {
+                      const checked = !!e.target.checked;
+                      setFieldValue("isSub", checked);
+                      if (!checked) setFieldValue("parent_id", "");
+                    }}
+                  />
+                </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <InputField
-              label="Opening balance"
-              type="number"
-              value={form.opening_balance ?? ""}
-              onChange={(e) =>
-                setForm((s) => ({
-                  ...s,
-                  opening_balance: e.target.value
-                    ? Number(e.target.value)
-                    : undefined,
-                }))
-              }
-            />
-            <DatePickerField
-              label="As of"
-              value={(form.opening_balance_date as any) || ""}
-              onChange={(v) =>
-                setForm((s) => ({ ...s, opening_balance_date: v as string }))
-              }
-              disabled={!form.opening_balance && form.opening_balance !== 0}
-            />
-          </div>
+                {values.isSub && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      Parent account <span className="text-red-500">*</span>
+                    </label>
+                    <SelectField
+                      name="parent_id"
+                      value={String(values.parent_id || "")}
+                      onChange={(e: any) =>
+                        setFieldValue("parent_id", String(e.target.value))
+                      }
+                      options={parentOptions}
+                      error={
+                        touched.parent_id && errors.parent_id
+                          ? (errors.parent_id as string)
+                          : ""
+                      }
+                    />
+                  </div>
+                )}
 
-          <InputField
-            label="Description"
-            value={form.description || ""}
-            onChange={(e) =>
-              setForm((s) => ({ ...s, description: e.target.value }))
-            }
-          />
-        </div>
+                {/* VAT */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Default VAT Code
+                  </label>
+                  <SelectField
+                    name="default_vat_code"
+                    value={String(values.default_vat_code || "")}
+                    onChange={(e: any) =>
+                      setFieldValue(
+                        "default_vat_code",
+                        e.target.value ? String(e.target.value) : "",
+                      )
+                    }
+                    options={VAT_OPTIONS}
+                  />
+                </div>
 
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={submit}
-            disabled={
-              !form.name ||
-              !String(form.account_type) ||
-              !String(form.detail_type || "")
-            }
-            loading={creating || updating}
-          >
-            Save
-          </Button>
-        </div>
+                {/* Opening balance + As of */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      As of
+                    </label>
+                    <DatePickerField
+                      name="opening_balance_date"
+                      value={(values.opening_balance_date as any) || ""}
+                      onChange={(v: any) =>
+                        setFieldValue("opening_balance_date", v)
+                      }
+                      disabled={
+                        values.opening_balance === undefined ||
+                        values.opening_balance === null
+                      }
+                      error={
+                        touched.opening_balance_date &&
+                        errors.opening_balance_date
+                          ? (errors.opening_balance_date as string)
+                          : ""
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      Opening balance
+                    </label>
+                    <InputField
+                      name="opening_balance"
+                      type="number"
+                      value={values.opening_balance ?? ""}
+                      onChange={(e: any) =>
+                        setFieldValue(
+                          "opening_balance",
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                        )
+                      }
+                      placeholder="0.00"
+                      error={
+                        touched.opening_balance && errors.opening_balance
+                          ? (errors.opening_balance as string)
+                          : ""
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Description
+                  </label>
+                  <InputField
+                    name="description"
+                    value={values.description || ""}
+                    onChange={handleChange}
+                    placeholder="Optional notes about this account"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="mt-6 flex justify-end gap-2">
+                  <Button type="button" variant="outlined" onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" loading={submitting}>
+                    Save
+                  </Button>
+                </div>
+              </Form>
+            );
+          }}
+        </Formik>
       </div>
     </div>
   );
