@@ -1,7 +1,7 @@
 // FILE: src/features/finance/services/financeAccountApi.ts
 import { baseApi } from "../../../services/baseApi";
 
-// FE enum for AccountType
+
 export type AccountType =
   | "current_assets"
   | "tangible_assets"
@@ -16,46 +16,50 @@ export type AccountType =
   | "other_income"
   | "other_expenses";
 
-// FE account shape
 export interface FinanceAccount {
   id: string;
   code?: string | null;
   name: string;
-  account_type: AccountType;
-  detail_type: string;
-  parent_id?: string | null;
-  default_vat_code?: string | null;
-  opening_balance?: number | null;
-  opening_balance_date?: string | null;
+  accountType: AccountType;
+  detailType: string;
+  parentId?: string | null;
+  defaultVatCode?: string | null;
+  openingBalance?: number | null;
+  openingBalanceDate?: string | null;
   description?: string | null;
 }
 
 export const financeAccountApi = baseApi.injectEndpoints({
   endpoints: (b) => ({
-    // List accounts with optional filters (q, account_type, parent_id)
     getAccounts: b.query<
-      FinanceAccount[],
-      {
-        q?: string;
-        account_type?: AccountType;
-        parent_id?: string | null;
-      } | void
+      FinanceAccount[] | { data: FinanceAccount[]; meta?: any },
+      { q?: string; accountType?: AccountType; parentId?: string | null } | void
     >({
       query: (args) => {
         const p = new URLSearchParams();
         if (args?.q) p.set("q", args.q);
-        if (args?.account_type) p.set("account_type", args.account_type);
-        if (args?.parent_id !== undefined)
-          p.set("parent_id", String(args.parent_id ?? ""));
+        if (args?.accountType) p.set("account_type", args.accountType); // map to snake for BE
+        if (args?.parentId !== undefined)
+          p.set("parent_id", String(args.parentId ?? ""));
         return { url: `/finance/accounts?${p.toString()}`, method: "GET" };
       },
       providesTags: [{ type: "FinanceAccounts", id: "LIST" }],
     }),
-    // Tree endpoint for nested selectors
+
+    // Options used by product form
+    getProductFinanceOptions: b.query<
+      any,
+      { account_type: string; detail_type: string } & { group?: string }
+    >({
+      query: (q) => ({
+        url: "/finance/accounts/product-finance-options",
+        params: q, // this endpoint already expects snake query keys
+      }),
+    }),
+
     getAccountTree: b.query<any, void>({
       query: () => ({ url: `/finance/accounts/tree`, method: "GET" }),
     }),
-    // Create/Update/Delete account
     createAccount: b.mutation<FinanceAccount, Partial<FinanceAccount>>({
       query: (body) => ({ url: `/finance/accounts`, method: "POST", body }),
       invalidatesTags: [{ type: "FinanceAccounts", id: "LIST" }],
@@ -69,7 +73,7 @@ export const financeAccountApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (r, e, a) => [{ type: "FinanceAccounts", id: "LIST" }],
+      invalidatesTags: (_r, _e, _a) => [{ type: "FinanceAccounts", id: "LIST" }],
     }),
     deleteAccount: b.mutation<{ success: boolean }, string>({
       query: (id) => ({ url: `/finance/accounts/${id}`, method: "DELETE" }),
@@ -81,6 +85,7 @@ export const financeAccountApi = baseApi.injectEndpoints({
 
 export const {
   useGetAccountsQuery,
+  useGetProductFinanceOptionsQuery,
   useGetAccountTreeQuery,
   useCreateAccountMutation,
   useUpdateAccountMutation,

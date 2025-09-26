@@ -61,7 +61,6 @@ const ProductDrawerManager = ({
       onClose();
     } catch (err: any) {
       console.error("Failed to save product:", err);
-      toast.error(err.data?.message || "Failed to save product");
     } finally {
       setIsSubmitting(false);
     }

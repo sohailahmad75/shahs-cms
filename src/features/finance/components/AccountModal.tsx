@@ -29,70 +29,69 @@ interface Props {
   editing?: FinanceAccount | null;
 }
 
-// ---------- Validation ----------
+// ---------- Validation (camelCase) ----------
 const AccountSchema = Yup.object({
   name: Yup.string().trim().required("Account name is required"),
-  account_type: Yup.string().required("Account type is required"),
-  detail_type: Yup.string().required("Detail type is required"),
+  accountType: Yup.string().required("Account type is required"),
+  detailType: Yup.string().required("Detail type is required"),
   isSub: Yup.boolean().default(false),
-  parent_id: Yup.string().when("isSub", {
+  parentId: Yup.string().when("isSub", {
     is: true,
     then: (s) => s.required("Parent account is required"),
-    otherwise: (s) => s.optional(),
+    otherwise: (s) => s.notRequired(),
   }),
-  opening_balance: Yup.number()
+  openingBalance: Yup.number()
     .typeError("Opening balance must be a number")
     .transform((v, o) => (o === "" || o === null ? undefined : v))
-    .optional(),
-  opening_balance_date: Yup.mixed().when("opening_balance", {
+    .notRequired(),
+  openingBalanceDate: Yup.mixed().when("openingBalance", {
     is: (v: any) => v !== undefined,
     then: (s) =>
       s.required("As of date is required when opening balance is set"),
-    otherwise: (s) => s.optional(),
+    otherwise: (s) => s.notRequired(),
   }),
 });
 
-// ---------- Component ----------
 const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
   const [createAccount, createStatus] = useCreateAccountMutation();
   const [updateAccount, updateStatus] = useUpdateAccountMutation();
+
   const firstDetailFor = (type: string) =>
     (DETAIL_TYPES_BY_TYPE[type] || [])[0]?.value || "";
+
   const initialValues = useMemo(
     () => ({
       id: editing?.id || "",
       code: editing?.code || "",
       name: editing?.name || "",
-      account_type: (editing?.account_type as any) || "current_assets",
-      // 👇 if no detail_type, pick the first one that matches the initial account_type
-      detail_type:
-        (editing?.detail_type as any) ||
-        firstDetailFor((editing?.account_type as any) || "current_assets"),
-      default_vat_code: editing?.default_vat_code || "",
-      isSub: Boolean(editing?.parent_id),
-      parent_id: editing?.parent_id || "",
-      opening_balance:
-        (editing as any)?.opening_balance !== undefined
-          ? (editing as any).opening_balance
+      accountType: (editing?.accountType as any) || "current_assets",
+      detailType:
+        (editing?.detailType as any) ||
+        firstDetailFor((editing?.accountType as any) || "current_assets"),
+      defaultVatCode: editing?.defaultVatCode || "",
+      isSub: Boolean(editing?.parentId),
+      parentId: editing?.parentId || "",
+      openingBalance:
+        editing?.openingBalance !== undefined
+          ? editing?.openingBalance
           : undefined,
-      opening_balance_date: (editing as any)?.opening_balance_date || "",
+      openingBalanceDate: editing?.openingBalanceDate || "",
       description: editing?.description || "",
     }),
     [editing],
   );
 
-  // Fetch parents for the currently selected type (filtered in render as type changes)
+  // Fetch parents for selected type
   const { data: parentCandidates = [] } = useGetAccountsQuery(
-    { account_type: String(initialValues.account_type) as any },
+    { accountType: String(initialValues.accountType) as any },
     { skip: !isOpen },
   );
 
-  // Build friendly options for the parent select (prevent self-parenting)
   const buildParentOptions = (type: string) =>
     (parentCandidates || [])
       .filter(
         (a: any) =>
-          a.id !== editing?.id && String(a.account_type) === String(type),
+          a.id !== editing?.id && String(a.accountType) === String(type),
       )
       .map((a: any) => ({
         value: String(a.id),
@@ -103,16 +102,16 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
     const payload = {
       code: values.code || undefined,
       name: values.name.trim(),
-      account_type: String(values.account_type) as any,
-      detail_type: String(values.detail_type),
-      default_vat_code: values.default_vat_code || undefined,
-      parent_id: values.isSub ? values.parent_id || undefined : undefined,
-      opening_balance:
-        values.opening_balance !== undefined && values.opening_balance !== null
-          ? Number(values.opening_balance)
+      accountType: String(values.accountType) as any,
+      detailType: String(values.detailType),
+      defaultVatCode: values.defaultVatCode || undefined,
+      parentId: values.isSub ? values.parentId || undefined : undefined,
+      openingBalance:
+        values.openingBalance !== undefined && values.openingBalance !== null
+          ? Number(values.openingBalance)
           : undefined,
-      opening_balance_date: values.opening_balance
-        ? values.opening_balance_date || undefined
+      openingBalanceDate: values.openingBalance
+        ? values.openingBalanceDate || undefined
         : undefined,
       description: values.description || undefined,
     };
@@ -165,7 +164,7 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
             setFieldValue,
             isSubmitting,
           }) => {
-            const type = String(values.account_type || "current_assets");
+            const type = String(values.accountType || "current_assets");
             const detailOptions = DETAIL_TYPES_BY_TYPE[type] || [];
             const parentOptions = buildParentOptions(type);
 
@@ -197,21 +196,21 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                       Account type <span className="text-red-500">*</span>
                     </label>
                     <SelectField
-                      name="account_type"
+                      name="accountType"
                       value={type}
                       onChange={(e: any) => {
                         const v = String(e.target.value);
                         const firstDetail =
                           (DETAIL_TYPES_BY_TYPE[v] || [])[0]?.value || "";
-                        setFieldValue("account_type", v);
-                        setFieldValue("detail_type", firstDetail);
+                        setFieldValue("accountType", v);
+                        setFieldValue("detailType", firstDetail);
                         setFieldValue("isSub", false);
-                        setFieldValue("parent_id", "");
+                        setFieldValue("parentId", "");
                       }}
                       options={ACCOUNT_TYPE_OPTIONS}
                       error={
-                        touched.account_type && errors.account_type
-                          ? (errors.account_type as string)
+                        touched.accountType && errors.accountType
+                          ? (errors.accountType as string)
                           : ""
                       }
                     />
@@ -222,15 +221,15 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                       Detail type <span className="text-red-500">*</span>
                     </label>
                     <SelectField
-                      name="detail_type"
-                      value={String(values.detail_type || "")}
+                      name="detailType"
+                      value={String(values.detailType || "")}
                       onChange={(e: any) =>
-                        setFieldValue("detail_type", String(e.target.value))
+                        setFieldValue("detailType", String(e.target.value))
                       }
                       options={detailOptions}
                       error={
-                        touched.detail_type && errors.detail_type
-                          ? (errors.detail_type as string)
+                        touched.detailType && errors.detailType
+                          ? (errors.detailType as string)
                           : ""
                       }
                     />
@@ -243,10 +242,9 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                     name="isSub"
                     label="Make this a subaccount"
                     checked={!!values.isSub}
-                    onChange={(e: any) => {
-                      const checked = !!e.target.checked;
+                    onChange={(checked: boolean) => {
                       setFieldValue("isSub", checked);
-                      if (!checked) setFieldValue("parent_id", "");
+                      if (!checked) setFieldValue("parentId", "");
                     }}
                   />
                 </div>
@@ -257,15 +255,15 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                       Parent account <span className="text-red-500">*</span>
                     </label>
                     <SelectField
-                      name="parent_id"
-                      value={String(values.parent_id || "")}
+                      name="parentId"
+                      value={String(values.parentId || "")}
                       onChange={(e: any) =>
-                        setFieldValue("parent_id", String(e.target.value))
+                        setFieldValue("parentId", String(e.target.value))
                       }
                       options={parentOptions}
                       error={
-                        touched.parent_id && errors.parent_id
-                          ? (errors.parent_id as string)
+                        touched.parentId && errors.parentId
+                          ? (errors.parentId as string)
                           : ""
                       }
                     />
@@ -278,11 +276,11 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                     Default VAT Code
                   </label>
                   <SelectField
-                    name="default_vat_code"
-                    value={String(values.default_vat_code || "")}
+                    name="defaultVatCode"
+                    value={String(values.defaultVatCode || "")}
                     onChange={(e: any) =>
                       setFieldValue(
-                        "default_vat_code",
+                        "defaultVatCode",
                         e.target.value ? String(e.target.value) : "",
                       )
                     }
@@ -297,19 +295,18 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                       As of
                     </label>
                     <DatePickerField
-                      name="opening_balance_date"
-                      value={(values.opening_balance_date as any) || ""}
+                      name="openingBalanceDate"
+                      value={(values.openingBalanceDate as any) || ""}
                       onChange={(v: any) =>
-                        setFieldValue("opening_balance_date", v)
+                        setFieldValue("openingBalanceDate", v)
                       }
                       disabled={
-                        values.opening_balance === undefined ||
-                        values.opening_balance === null
+                        values.openingBalance === undefined ||
+                        values.openingBalance === null
                       }
                       error={
-                        touched.opening_balance_date &&
-                        errors.opening_balance_date
-                          ? (errors.opening_balance_date as string)
+                        touched.openingBalanceDate && errors.openingBalanceDate
+                          ? (errors.openingBalanceDate as string)
                           : ""
                       }
                     />
@@ -319,12 +316,12 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                       Opening balance
                     </label>
                     <InputField
-                      name="opening_balance"
+                      name="openingBalance"
                       type="number"
-                      value={values.opening_balance ?? ""}
+                      value={values.openingBalance ?? ""}
                       onChange={(e: any) =>
                         setFieldValue(
-                          "opening_balance",
+                          "openingBalance",
                           e.target.value === ""
                             ? undefined
                             : Number(e.target.value),
@@ -332,8 +329,8 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                       }
                       placeholder="0.00"
                       error={
-                        touched.opening_balance && errors.opening_balance
-                          ? (errors.opening_balance as string)
+                        touched.openingBalance && errors.openingBalance
+                          ? (errors.openingBalance as string)
                           : ""
                       }
                     />

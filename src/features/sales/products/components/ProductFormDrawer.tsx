@@ -17,6 +17,8 @@ import DatePickerField from "../../../../components/DatePickerField";
 
 // ✅ Your dropzone + S3 uploader
 import FileUploader from "../../../../components/FileUploader";
+import { useGetProductFinanceOptionsQuery } from "../../../finance/services/financeAccountApi";
+import { useGetProductCategoriesQuery } from "../../productCategories/services/productCategoryApi";
 
 interface ProductFormDrawerProps {
   selectedType: "stock" | "non-stock" | "service";
@@ -42,11 +44,6 @@ const defaultOptions = {
     { value: "NO_VAT", label: "No VAT" },
     { value: "S_20", label: "20.0% S" },
   ],
-  income: [
-    { value: "Sales of Product Income", label: "Sales of Product Income" },
-  ],
-  expense: [{ value: "cost_of_sales", label: "Cost of sales" }],
-  stockAsset: [{ value: "Stock Asset", label: "Stock Asset" }],
   purchaseTax: [{ value: "NO_VAT", label: "No VAT" }],
   suppliers: [{ value: "", label: "Select a preferred supplier" }],
 };
@@ -117,6 +114,7 @@ const qbValidation = Yup.object({
 
 const getDefaultValues = (type: string) => ({
   // header
+  type,
   name: "",
   sku: "",
   categoryId: "",
@@ -155,11 +153,7 @@ export default function ProductFormDrawer({
   editingProduct,
   isSubmitting = false,
 
-  categoryOptions = defaultOptions.categories,
   vatOptions = defaultOptions.vat,
-  incomeAccountOptions = defaultOptions.income,
-  expenseAccountOptions = defaultOptions.expense,
-  stockAssetAccountOptions = defaultOptions.stockAsset,
   purchaseTaxOptions = defaultOptions.purchaseTax,
   supplierOptions = defaultOptions.suppliers,
 }: ProductFormDrawerProps) {
@@ -174,10 +168,72 @@ export default function ProductFormDrawer({
   const finalDarkMode = isDarkMode;
   const isStock = selectedType === "stock";
 
+  const { data: catResp = { data: [] }, isLoading: categoriesLoading } =
+    useGetProductCategoriesQuery(
+      {
+        page: 1,
+        perPage: 50,
+        sort: "createdAt",
+        sortDir: "DESC",
+      },
+      {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
+      },
+    );
+
+  // 2) Map to Select options
+  const categoryOptions = useMemo(
+    () =>
+      (catResp?.data ?? []).map((c: any) => ({
+        value: c.id,
+        label: c.name,
+      })),
+    [catResp],
+  );
+
+  const { data: acc, isLoading: accLoading } = useGetProductFinanceOptionsQuery(
+    {
+      account_type: "current_assets,income,cost_of_sales",
+      detail_type: "stock,sales_of_product_income,supplies_and_materials_cos",
+      group: "both",
+    },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
+
+  // Map the three sets:
+  const stockAssetAccountOptions =
+    acc?.current_assets?.stock?.map((a: any) => ({
+      value: a.id,
+      label: a.label,
+    })) ?? [];
+
+  const incomeAccountOptions =
+    acc?.income?.sales_of_product_income?.map((a: any) => ({
+      value: a.id,
+      label: a.label,
+    })) ?? [];
+
+  const expenseAccountOptions =
+    acc?.cost_of_sales?.supplies_and_materials_cos?.map((a: any) => ({
+      value: a.id,
+      label: a.label,
+    })) ?? [];
+
   return (
     <div
       className={`p-6 h-full overflow-y-auto ${isDarkMode ? "bg-slate-900 text-slate-100" : "bg-white"}`}
     >
+      <h2
+        className={`text-md mb-3 font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}
+      >
+        Product/Service information
+      </h2>
       {/* Header */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-slate-700">
         <div className="flex items-center">

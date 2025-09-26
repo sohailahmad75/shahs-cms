@@ -10,7 +10,6 @@ import Pagination from "../../components/Pagination";
 import FilterBar from "../../components/FilterBar";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import ActionIcon from "../../components/ActionIcon";
-import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import EditIcon from "../../assets/styledIcons/EditIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import { DynamicTable, type Column } from "../../components/DynamicTable";
@@ -56,16 +55,16 @@ const fmtGBP = (n: number | null | undefined) =>
       }).format(n)
     : "—";
 
-// ---------- FilterBar config ----------
+// ---------- FilterBar config (camelCase) ----------
 const accountFiltersConfig = [
   {
-    key: "account_type",
+    key: "accountType",
     label: "Account type",
     type: "select",
     options: [{ value: "", label: "All types" }, ...ACCOUNT_TYPE_OPTIONS],
   },
   {
-    key: "default_vat_code",
+    key: "defaultVatCode",
     label: "VAT rate",
     type: "select",
     options: [{ value: "", label: "All VAT" }, ...VAT_OPTIONS],
@@ -78,7 +77,6 @@ const AccountsPage: React.FC = () => {
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
 
-  // same table controller as Stores page
   const {
     query,
     setQuery,
@@ -91,10 +89,10 @@ const AccountsPage: React.FC = () => {
     sort,
     setSort,
     queryParams,
-  } = useServerTable();
+  } = useServerTable(); // returns camelCase params from FilterBar
 
-  // fetch accounts (supports both array and { data, meta } shapes)
-  const { data: resp, isLoading } = useGetAccountsQuery(queryParams);
+  // fetch accounts (supports array or {data,meta})
+  const { data: resp, isLoading } = useGetAccountsQuery(queryParams as any);
 
   const accounts: FinanceAccount[] = useMemo(() => {
     if (Array.isArray(resp)) return resp as FinanceAccount[];
@@ -112,7 +110,6 @@ const AccountsPage: React.FC = () => {
 
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
-  // modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<FinanceAccount> | null>(null);
 
@@ -139,52 +136,32 @@ const AccountsPage: React.FC = () => {
       ),
     },
     {
-      key: "account_type",
+      key: "accountType",
       label: "Account type",
       sortable: true,
-      render: (_v, row) =>
-        typeLabelByValue[row.account_type] ?? row.account_type,
+      render: (_v, row) => typeLabelByValue[row.accountType] ?? row.accountType,
     },
     {
-      key: "detail_type",
+      key: "detailType",
       label: "Detail type",
       sortable: true,
-      render: (_v, row) =>
-        detailLabelByValue[row.detail_type] ?? row.detail_type,
+      render: (_v, row) => detailLabelByValue[row.detailType] ?? row.detailType,
     },
     {
-      key: "default_vat_code",
+      key: "defaultVatCode",
       label: "VAT rate",
       sortable: true,
       render: (_v, row) =>
-        row.default_vat_code
-          ? (vatLabelByValue[row.default_vat_code] ?? row.default_vat_code)
+        row.defaultVatCode
+          ? (vatLabelByValue[row.defaultVatCode] ?? row.defaultVatCode)
           : "—",
     },
     {
-      key: "qb_balance",
-      label: "QuickBooks balance",
-      align: "right",
-      render: (_v, row) => {
-        const val =
-          typeof (row as any).balance === "number"
-            ? (row as any).balance
-            : typeof (row as any).qb_balance === "number"
-              ? (row as any).qb_balance
-              : typeof row.opening_balance === "number"
-                ? row.opening_balance
-                : undefined;
-        return <span className="tabular-nums">{fmtGBP(val)}</span>;
-      },
-    },
-    {
-      key: "bank_balance",
-      label: "Bank balance",
+      key: "openingBalance",
+      label: "Opening balance",
       align: "right",
       render: (_v, row) => (
-        <span className="tabular-nums">
-          {fmtGBP((row as any).bank_balance)}
-        </span>
+        <span className="tabular-nums">{fmtGBP(row.openingBalance)}</span>
       ),
     },
     {
@@ -193,14 +170,6 @@ const AccountsPage: React.FC = () => {
       sortable: false,
       render: (_v, row) => (
         <div className="flex gap-2">
-          {/*<ActionIcon*/}
-          {/*  title="Account history"*/}
-          {/*  icon={<EyeOpen size={22} />}*/}
-          {/*  className={isDarkMode ? "text-white" : "text-secondary-100"}*/}
-          {/*  onClick={() =>*/}
-          {/*    navigate(`/transactions/bank-transactions?account_id=${row.id}`)*/}
-          {/*  }*/}
-          {/*/>*/}
           <ActionIcon
             icon={<EditIcon size={22} />}
             onClick={() => {
@@ -235,7 +204,7 @@ const AccountsPage: React.FC = () => {
   return (
     <div className="p-4">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 ">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Chart of accounts</h1>
         <Button
           onClick={() => {
