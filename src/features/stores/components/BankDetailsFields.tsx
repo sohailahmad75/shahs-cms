@@ -192,7 +192,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
                   )}
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Bank Name <span className="text-red-500">*</span>
+                      Bank Name <span className={`${isDarkMode?"text-white":"text-red-500"}`}>*</span>
                     </label>
                     <InputField
                       name={`${prefix}.bankName`}
@@ -208,7 +208,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
 
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Account Number <span className="text-red-500">*</span>
+                      Account Number <span className={`${isDarkMode?"text-white":"text-red-500"}`}>*</span>
                     </label>
                     <InputField
                       name={`${prefix}.accountNumber`}
@@ -224,7 +224,7 @@ const BankDetailsFields: React.FC<BankDetailsFieldsProps> = ({
 
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Sort Code <span className="text-red-500">*</span>
+                      Sort Code <span className={`${isDarkMode?"text-white":"text-red-500"}`}>*</span>
                     </label>
                     <InputField
                       name={`${prefix}.sortCode`}
