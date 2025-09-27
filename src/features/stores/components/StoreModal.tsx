@@ -708,6 +708,7 @@ const StoreModal = ({
                                       ""
                                     )}
                                     onChange={handleChange}
+                                    className="[&_input]:h-[25px]"
                                   />
                                 </div>
                               </div>

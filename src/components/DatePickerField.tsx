@@ -107,8 +107,8 @@ const DatePickerField: React.FC<Props> = ({
       readOnly
       name={name}
       className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${error
-          ? "border-orange-100 focus:border-orange-100"
-          : "border-gray-300 focus:border-orange-100"
+        ? "border-orange-100 focus:border-orange-100"
+        : "border-gray-300 focus:border-orange-100"
         }`}
       placeholder={placeholder}
       value={displayValue}
@@ -124,7 +124,7 @@ const DatePickerField: React.FC<Props> = ({
           style={{
             top: dropdownPosition.top,
             left: dropdownPosition.left,
-            
+
           }}
         >
           {isRange ? (
