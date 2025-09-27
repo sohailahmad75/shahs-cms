@@ -5,7 +5,7 @@ import { RotateCcw } from 'lucide-react';
 import InputField from './InputField';
 import SelectField from './SelectField';
 import DatePickerField from './DatePickerField';
-import { useTheme } from "../../src/context/themeContext";
+import { useTheme } from '../../src/context/themeContext';
 
 interface FilterOption {
     key: string;
@@ -71,10 +71,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
         onClearAll?.();
         onApplyFilters?.({});
     };
-     const { isDarkMode } = useTheme();
+
+    const { isDarkMode } = useTheme();
 
     const renderFilterControl = (filter: FilterOption) => {
-        const { key, label, type, options} = filter;
+        const { key, label, type, options } = filter;
 
         if (type === 'select') {
             return (
@@ -93,23 +94,19 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
             );
         }
-        if (type === "date") {
+        if (type === 'date') {
             return (
                 <div key={key} className="w-full sm:w-auto">
                     <DatePickerField
                         isRange={true}
-                        value={filters[key] || ["", ""]}
+                        value={filters[key] || ['', '']}
                         onChange={(value) => {
                             if (Array.isArray(value)) {
-                            
                                 const [from, to] = value;
-                                handleFilterChange("startDate", new Date(from).toISOString());
-                                handleFilterChange("endDate", new Date(to).toISOString());
-
-                             
+                                handleFilterChange('startDate', new Date(from).toISOString());
+                                handleFilterChange('endDate', new Date(to).toISOString());
                                 applyFilter(key, `${from} → ${to}`);
                             } else {
-                            
                                 const dateValue = new Date(value as string).toISOString();
                                 handleFilterChange(key, dateValue);
                                 applyFilter(key, value as string);
@@ -121,8 +118,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
             );
         }
-
-
 
         return (
             <div key={key} className="w-full sm:w-auto">
@@ -142,23 +137,31 @@ const FilterBar: React.FC<FilterBarProps> = ({
     };
 
     return (
-        <div className={`${isDarkMode ? "bg-slate-900" : "bg-white"} ${isDarkMode ? "border border-slate-800" : "border border-gray-200 -white"}border border-gray-200 p-4 rounded-md shadow-sm`}>
-
+        <div
+            className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+                } p-4 rounded-md shadow-sm border`}
+        >
             <div className="flex flex-wrap gap-3 mb-4">
                 {filtersConfig.map(renderFilterControl)}
             </div>
 
             {/* Separator line */}
-            <hr className="my-3 border-gray-300" />
+            <hr className={`my-3 ${isDarkMode ? 'border-slate-700' : 'border-gray-300'}`} />
 
             {/* Applied filters */}
             <div className="flex flex-wrap items-center gap-2">
-                <span className={`${isDarkMode ? "text-slate-200" : "text-gray-600"} text-sm font-medium text-gray-600 whitespace-nowrap`}>
+                <span
+                    className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-gray-600'
+                        } whitespace-nowrap`}
+                >
                     Applied Filters:
                 </span>
 
                 {appliedFilters.length === 0 ? (
-                    <span className="text-sm text-gray-500 italic">
+                    <span
+                        className={`text-sm italic ${isDarkMode ? 'text-slate-400' : 'text-gray-500'
+                            }`}
+                    >
                         No filters applied
                     </span>
                 ) : (
@@ -173,7 +176,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             return (
                                 <div
                                     key={index}
-                                    className="inline-flex items-center bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full text-sm border border-gray-200 shadow-sm"
+                                    className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm border shadow-sm ${isDarkMode
+                                            ? 'bg-slate-800 text-slate-200 border-slate-700'
+                                            : 'bg-gray-100 text-gray-800 border-gray-200'
+                                        }`}
                                 >
                                     <span className="font-medium">
                                         {filtersConfig.find((f) => f.key === filter.key)?.label ||
@@ -184,7 +190,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => removeFilter(index)}
-                                        className="ml-2 text-gray-500 hover:text-red-500 transition-colors font-bold text-lg"
+                                        className={`ml-2 font-bold text-lg transition-colors cursor-pointer ${isDarkMode
+                                                ? 'text-slate-400 hover:text-red-400'
+                                                : 'text-gray-500 hover:text-red-500'
+                                            }`}
                                         aria-label={`Remove ${filter.value} filter`}
                                     >
                                         ×
@@ -196,7 +205,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         <button
                             type="button"
                             onClick={resetFilters}
-                            className="ml-2 text-gray-600 hover:text-blue-600 transition-colors"
+                            className={`ml-2 transition-colors cursor-pointer ${isDarkMode
+                                    ? 'text-slate-300 hover:text-slate-100'
+                                    : 'text-gray-600 '
+                                }`}
                             title="Clear All"
                         >
                             <RotateCcw size={20} />
