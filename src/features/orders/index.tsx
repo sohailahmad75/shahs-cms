@@ -15,6 +15,7 @@ import { orderFiltersConfig } from "./helpers/ordersFilters";
 import { useServerTable } from "../../hooks/useServerTable";
 import ActionIcon from "../../components/ActionIcon";
 import { formatOrderDate } from "../../components/helper/dateFormat";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const OrderListPage: React.FC = () => {
     const { isDarkMode } = useTheme();
@@ -108,12 +109,12 @@ const OrderListPage: React.FC = () => {
             </div>
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <InputField
-                    className="w-72"
+                <DebouncedSearch
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(val) => setQuery(val)}
+                    delay={400}
                     placeholder="Search orders…"
-                    name="query"
+                    className="w-100"
                 />
             </div>
 

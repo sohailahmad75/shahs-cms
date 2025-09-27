@@ -10,7 +10,7 @@ import {
 import {
   type Column,
   DynamicTable,
-  SortDir,
+  type SortDir,
 } from "../../components/DynamicTable";
 import { toast } from "react-toastify";
 import type { Kiosk, CreateKioskDto, UpdateKioskDto } from "./kiosks.types";
@@ -21,11 +21,11 @@ import EditIcon from "../../assets/styledIcons/EditIcon";
 import ActionIcon from "../../components/ActionIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import FilterBar from "../../components/FilterBar";
 import { kioskFiltersConfig } from "./helpers/kiosklist";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const KioskListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -165,7 +165,7 @@ const KioskListPage: React.FC = () => {
       {/* Search */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <InputField
+          {/* <InputField
             className="w-72"
             value={query}
             onChange={(e) => {
@@ -174,6 +174,13 @@ const KioskListPage: React.FC = () => {
             }}
             placeholder="Search kiosks…"
             name="query"
+          /> */}
+          <DebouncedSearch
+            value={query}
+            onChange={(val) => setQuery(val)}
+            delay={400}
+            placeholder="Search kiosks…"
+            className="w-100"
           />
         </div>
       </div>

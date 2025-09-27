@@ -15,7 +15,6 @@ import EditIcon from "../../assets/styledIcons/EditIcon";
 import ActionIcon from "../../components/ActionIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { useTheme } from "../../context/themeContext";
@@ -23,6 +22,7 @@ import FilterBar from "../../components/FilterBar";
 import { storeFiltersConfig } from "./helper/store-list";
 import { useServerTable } from "../../hooks/useServerTable";
 import { toast } from "react-toastify";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const StoreListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -111,7 +111,7 @@ const StoreListPage: React.FC = () => {
     setEditingStore({
       ...store,
       storeDocuments: mappedDocuments,
-      openingHours: store.availabilityHour || store.storeAvailability || [] 
+      openingHours: store.availabilityHour || store.storeAvailability || []
     } as any);
 
     setModalOpen(true);
@@ -191,12 +191,19 @@ const StoreListPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <InputField
+        {/* <InputField
           className="w-72"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search stores…"
           name="query"
+        /> */}
+        <DebouncedSearch
+          value={query}
+          onChange={(val) => setQuery(val)}
+          delay={400}
+          placeholder="Search stores…"
+          className="w-100"
         />
       </div>
 

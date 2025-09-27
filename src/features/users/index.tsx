@@ -9,7 +9,6 @@ import ActionIcon from "../../components/ActionIcon";
 import { UserRole, type UserInfoTypes, type UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
 import { Link } from "react-router-dom";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import ConfirmDelete from "../../components/ConfirmDelete";
@@ -24,6 +23,7 @@ import {
   useUpdateUsersMutation,
   useDeleteUsersMutation,
 } from "./services/UsersApi";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -186,12 +186,19 @@ const UsersTypeListPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <InputField
+        {/* <InputField
           className="w-72"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search users…"
           name="query"
+        /> */}
+        <DebouncedSearch
+          value={query}
+          onChange={(val) => setQuery(val)}
+          delay={400}
+          placeholder="Search users..."
+          className="w-100"
         />
       </div>
 
