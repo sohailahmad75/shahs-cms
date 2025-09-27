@@ -46,7 +46,6 @@ const OrderInformation = () => {
                                 ["Provider", renderTypeBadge(order.provider)],
                                 ["Store ID", order.storeId],
                                 ["Type", renderTypeBadge(order.type)],
-                                ["Status", order.state],
                                 ["Total Amount", formatCurrency(order.totalAmount)],
                                 ["Placed At", new Date(order.placedAt).toLocaleString()],
                                 ["Estimated Ready", new Date(order.estimatedReadyAt).toLocaleString()],
