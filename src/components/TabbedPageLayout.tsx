@@ -23,14 +23,16 @@ const TabbedPageLayout = ({ title, tabs, children }: TabbedPageLayoutProps) => {
           <NavLink
             key={tab.path}
             to={tab.path}
+            end 
             className={({ isActive }) =>
               `relative cursor-pointer pb-2 font-medium transition-all
-       ${isActive ? "text-primary-100 after:scale-x-100" : "text-gray-500 hover:text-primary-100 after:scale-x-0"}
-       after:content-[''] after:absolute after:left-0 after:-bottom-0 after:h-[2px] after:w-full after:bg-primary-100 after:transition-transform after:origin-left`
+     ${isActive ? "text-primary-100 after:scale-x-100" : "text-gray-500 hover:text-primary-100 after:scale-x-0"}
+     after:content-[''] after:absolute after:left-0 after:-bottom-0 after:h-[2px] after:w-full after:bg-primary-100 after:transition-transform after:origin-left`
             }
           >
             {tab.label}
           </NavLink>
+
         ))}
       </div>
 
