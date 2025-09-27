@@ -54,7 +54,9 @@ export const CreateStoreSchema = (documentsList: any[]) =>
         bankName: Yup.string().required("Bank name is required"),
         accountNumber: Yup.string()
           .matches(/^\d+$/, "Account number must be digits only")
+          .matches(/^\d{16}$/, "Account Number must be exactly 16 digits")
           .required("Account number is required"),
+          
         sortCode: Yup.string()
           .matches(/^\d{6}$/, "Sort code must be 6 digits")
           .required("Sort code is required"),

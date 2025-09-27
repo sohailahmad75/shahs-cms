@@ -17,10 +17,17 @@ export const userSchema = (documentsList: any[]) =>
     type: Yup.mixed().oneOf(["staff", "owner"]).required("Type is required"),
 
     bankDetails: Yup.array().of(
-      Yup.object({
+      Yup.object().shape({
         bankName: Yup.string().required("Bank name is required"),
-        accountNumber: Yup.string().required("Account Number is required"),
-        sortCode: Yup.string().required("Sort Code is Required"),
+
+        accountNumber: Yup.string()
+          .required("Account Number is required")
+           .matches(/^\d+$/, "Account number must be digits only")
+          .matches(/^\d{16}$/, "Account Number must be exactly 16 digits"),
+
+        sortCode: Yup.string()
+          .required("Sort Code is required")
+          .matches(/^\d{6}$/, "Sort Code must be exactly 6 digits"),
       })
     ),
 
