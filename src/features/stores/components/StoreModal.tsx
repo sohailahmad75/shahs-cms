@@ -188,7 +188,7 @@ const StoreModal = ({
   const mapUpdateDto = (v: any, storeId: string): Partial<UpdateStoreDto> => {
     const updateData: Partial<UpdateStoreDto> = { id: storeId };
 
-    
+
     if (activeStep === 0) {
       updateData.storeBasicInfo = {
         name: v.name,
@@ -295,11 +295,11 @@ const StoreModal = ({
         initialValues={{
           ...createStoreInitialValues,
           ...(editingStore || {}),
-          
+
           storeType: editingStore?.storeType !== undefined
             ? Number(editingStore.storeType)
             : StoreTypeEnum.SHOP,
-         
+
           documents: editingStore?.storeDocuments
             ? (Array.isArray(editingStore.storeDocuments)
               ? editingStore.storeDocuments.reduce((acc: any, doc: any) => {
@@ -724,14 +724,16 @@ const StoreModal = ({
                   Cancel
                 </Button>
                 <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outlined"
-                    onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
-                    disabled={currentIndex === 0 || isSaving}
-                  >
-                    Back
-                  </Button>
+                  {currentIndex > 0 && (
+                    <Button
+                      type="button"
+                      variant="outlined"
+                      onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
+                      disabled={isSaving}
+                    >
+                      Back
+                    </Button>
+                  )}
                   <Button type="button" onClick={goNext} disabled={isSaving}>
                     {currentIndex < steps.length - 1
                       ? "Next"

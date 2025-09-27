@@ -799,14 +799,16 @@ const UsersTypeModal = ({
                   Cancel
                 </Button>
                 <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outlined"
-                    onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
-                    disabled={currentIndex === 0 || isSaving}
-                  >
-                    Back
-                  </Button>
+                  {currentIndex > 0 && (
+                    <Button
+                      type="button"
+                      variant="outlined"
+                      onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
+                      disabled={isSaving}
+                    >
+                      Back
+                    </Button>
+                  )}
                   <Button type="button" onClick={goNext} disabled={isSaving}>
                     {currentIndex < steps.length - 1 ? "Next" : isSaving ? "Saving..." : "Save"}
                   </Button>
