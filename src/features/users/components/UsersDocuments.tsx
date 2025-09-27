@@ -4,7 +4,6 @@ import Loader from "../../../components/Loader";
 import { useTheme } from "../../../context/themeContext";
 import { useGetUsersByIdQuery } from "../services/UsersApi";
 import { DocumentIcon } from "@heroicons/react/24/solid";
-import Button from "../../../components/Button";
 import Modal from "../../../components/Modal";
 
 interface Document {
@@ -52,7 +51,7 @@ const UserDocuments = () => {
                         >
                             <div className="flex items-center space-x-3">
                                 <DocumentIcon
-                                    className={`w-8 h-8 flex-shrink-0 ${isDarkMode ? "text-slate-400" : "text-orange-500"
+                                    className={`w-8 h-8 flex-shrink-0 ${isDarkMode ? "text-slate-400" : "text-gray-400"
                                         }`}
                                 />
                                 <div className="flex-1 overflow-hidden">
@@ -69,13 +68,14 @@ const UserDocuments = () => {
                                 </div>
                             </div>
                             {doc.signedUrl && (
-                                <Button
-                                    className="mt-4 px-3 py-2 text-sm sm:text-base w-full"
+                                <button
+                                    className={`mt-4 px-3 py-2 text-sm sm:text-base w-full ${isDarkMode ? "bg-slate-900 hover:bg-slate-950" : "bg-gray-400 hover:bg-gray-500"}  text-white rounded`}
                                     onClick={() => setPreviewDocUrl(doc.signedUrl)}
                                 >
                                     Preview
-                                </Button>
+                                </button>
                             )}
+
                         </div>
                     ))}
                 </div>

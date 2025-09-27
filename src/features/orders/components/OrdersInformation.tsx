@@ -3,6 +3,7 @@ import { useGetOrderByIdQuery } from "../services/orderApi";
 import Loader from "../../../components/Loader";
 import { useTheme } from "../../../context/themeContext";
 import type { CartItem, Modifier } from "../helpers/ordersHelpers";
+import { renderTypeBadge } from "../../../components/statusBadge";
 
 const OrderInformation = () => {
     const { id } = useParams();
@@ -16,6 +17,15 @@ const OrderInformation = () => {
                 Order not found.
             </div>
         );
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("en-GB", {
+            style: "currency",
+            currency: "GBP",
+        }).format(amount);
+    };
+
+    const capitalizeFirst = (str: string) =>
+        str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
     return (
         <div className={`mx-auto ${isDarkMode ? "bg-slate-950" : "bg-white"}`}>
@@ -33,50 +43,19 @@ const OrderInformation = () => {
                             data={[
                                 ["Order ID", order.id],
                                 ["Display ID", order.displayId],
-                                ["Provider", order.provider],
+                                ["Provider", renderTypeBadge(order.provider)],
                                 ["Store ID", order.storeId],
-                                ["Type", order.type],
+                                ["Type", renderTypeBadge(order.type)],
                                 ["Status", order.state],
-                                ["Total Amount", `$${order.totalAmount}`],
+                                ["Total Amount", formatCurrency(order.totalAmount)],
                                 ["Placed At", new Date(order.placedAt).toLocaleString()],
                                 ["Estimated Ready", new Date(order.estimatedReadyAt).toLocaleString()],
-                                [
-                                    "Actual Ready",
-                                    order.actualReadyAt
-                                        ? new Date(order.actualReadyAt).toLocaleString()
-                                        : "—",
-                                ],
-                                ["Created At", new Date(order.createdAt).toLocaleString()],
-                                ["Updated At", new Date(order.updatedAt).toLocaleString()],
                             ]}
                             isDarkMode={isDarkMode}
                         />
                     </Card>
 
-                    {/* Customer Info */}
-                    <Card isDarkMode={isDarkMode}>
-                        <h2
-                            className={`font-semibold text-lg mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
-                                }`}
-                        >
-                            Customer Information
-                        </h2>
-                        <GridDetail
-                            data={[
-                                [
-                                    "Name",
-                                    `${order.customer.firstName} ${order.customer.lastName}`,
-                                ],
-                                ["Email", order.customer.email],
-                                ["Phone", order.customer.phone],
-                               
-                            ]}
-                            isDarkMode={isDarkMode}
-                        />
-                    </Card>
-
-                    {/* Cart Items */}
-                    <Card isDarkMode={isDarkMode}>
+                    `<Card isDarkMode={isDarkMode}>
                         <h2
                             className={`font-semibold text-lg mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
                                 }`}
@@ -89,8 +68,8 @@ const OrderInformation = () => {
                                     <li
                                         key={item.itemId}
                                         className={`border rounded-lg p-3 ${isDarkMode
-                                                ? "bg-slate-700 border-slate-600"
-                                                : "bg-slate-50 border-gray-200"
+                                            ? "bg-slate-700 border-slate-600"
+                                            : "bg-slate-50 border-gray-200"
                                             }`}
                                     >
                                         <Detail
@@ -117,14 +96,13 @@ const OrderInformation = () => {
                                                     <div key={mod.modifierId} className="ml-3 mt-1">
                                                         <Detail
                                                             label="Modifier"
-                                                            value={`${mod.modifierName} (${mod.modifierType})`}
+                                                            value={`${capitalizeFirst(mod.modifierType)}`}
                                                             isDarkMode={isDarkMode}
                                                         />
                                                         <ul className="list-disc list-inside ml-4">
                                                             {mod.modifierOptions.map((opt) => (
                                                                 <li key={opt.optionId}>
-                                                                    {opt.optionName} - Qty: {opt.quantity} - $
-                                                                    {opt.totalPrice}
+                                                                    Qty: {opt.quantity} - {formatCurrency(opt.totalPrice)}
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -142,32 +120,8 @@ const OrderInformation = () => {
                                 No cart items available.
                             </p>
                         )}
-                    </Card>
+                    </Card>`
 
-                    {/* External References */}
-                    <Card isDarkMode={isDarkMode}>
-                        <h2
-                            className={`font-semibold text-lg mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
-                                }`}
-                        >
-                            External References
-                        </h2>
-                        {order.externalReferences && order.externalReferences.length > 0 ? (
-                            <ul className="list-disc list-inside">
-                                {order.externalReferences.map((ref) => (
-                                    <li key={ref.externalOrderId}>
-                                        {ref.provider} - {ref.externalOrderId} ({ref.syncStatus})
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p
-                                className={isDarkMode ? "text-slate-400" : "text-gray-500"}
-                            >
-                                No external references available.
-                            </p>
-                        )}
-                    </Card>
                 </div>
             </div>
         </div>
@@ -183,8 +137,8 @@ const Card = ({
 }) => (
     <div
         className={`p-5 rounded-lg shadow ${isDarkMode
-                ? "bg-slate-800 border border-slate-700"
-                : "bg-white border border-gray-200"
+            ? "bg-slate-800 border border-slate-700"
+            : "bg-white border border-gray-200"
             }`}
     >
         {children}
@@ -195,17 +149,12 @@ const GridDetail = ({
     data,
     isDarkMode,
 }: {
-    data: [string, string | undefined | number | null][];
+    data: [string, React.ReactNode][];
     isDarkMode: boolean;
 }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         {data.map(([label, value]) => (
-            <Detail
-                key={label}
-                label={label}
-                value={String(value ?? "")}
-                isDarkMode={isDarkMode}
-            />
+            <Detail key={label} label={label} value={value} isDarkMode={isDarkMode} />
         ))}
     </div>
 );
@@ -216,7 +165,7 @@ const Detail = ({
     isDarkMode,
 }: {
     label: string;
-    value?: string;
+    value?: React.ReactNode;
     isDarkMode: boolean;
 }) => (
     <div>
@@ -228,5 +177,6 @@ const Detail = ({
         </span>
     </div>
 );
+
 
 export default OrderInformation;
