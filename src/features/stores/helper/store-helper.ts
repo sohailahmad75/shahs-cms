@@ -56,7 +56,7 @@ export const CreateStoreSchema = (documentsList: any[]) =>
           .matches(/^\d+$/, "Account number must be digits only")
           .matches(/^\d{16}$/, "Account Number must be exactly 16 digits")
           .required("Account number is required"),
-          
+
         sortCode: Yup.string()
           .matches(/^\d{6}$/, "Sort code must be 6 digits")
           .required("Sort code is required"),
@@ -68,21 +68,39 @@ export const CreateStoreSchema = (documentsList: any[]) =>
           fileS3Key: doc.isMandatory
             ? Yup.string().required(`${doc.name} Document is required`)
             : Yup.string().nullable(),
-          fileType: Yup.string().when("fileS3Key", {
+
+          fileType: Yup.string().when('fileS3Key', {
             is: (v: string) => !!v,
-            then: (s) => s.required("File type is required"),
-            otherwise: (s) => s.notRequired(),
+            then: (schema) => schema.required('File type is required'),
+            otherwise: (schema) => schema.strip(),
           }),
-          expiresAt: Yup.mixed().nullable().optional(),
+
+          expiresAt: Yup.mixed()
+            .nullable()
+            .optional()
+            .when('fileS3Key', {
+              is: (v: string) => !!v,
+              then: (schema) => schema,
+              otherwise: (schema) => schema.strip(),
+            }),
+
           remindBeforeDays: Yup.number()
-            .typeError("Must be a number")
-            .min(0, "Cannot be negative")
-            .optional(),
-        });
+            .typeError('Must be a number')
+            .min(0, 'Cannot be negative')
+            .nullable()
+            .optional()
+            .when('fileS3Key', {
+              is: (v: string) => !!v,
+              then: (schema) => schema,
+              otherwise: (schema) => schema.strip(),
+            }),
+        }).nullable().optional();
+
         return acc;
       }, {})
-    ),
+    ).nullable().optional(),
   });
+
 
 export const defaultDays = [
   "Sunday",
