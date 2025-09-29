@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import Button from "../../components/Button";
 import {
   useGetStoresQuery,
-  useCreateStoreMutation,
-  useUpdateStoresMutation,
   useDeleteStoreMutation,
 } from "./services/storeApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
@@ -46,10 +44,9 @@ const StoreListPage: React.FC = () => {
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
+    refetch,
   } = useGetStoresQuery(queryParams);
 
-  const [createStore, { isLoading: creating }] = useCreateStoreMutation();
-  const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
   const [deleteStore] = useDeleteStoreMutation();
 
   const stores = storesResp.data;
@@ -59,35 +56,6 @@ const StoreListPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<Partial<Store> | null>(null);
 
-  // const handleEdit = (store: Store) => {
-  //   let mappedDocuments: Record<string, any> = {};
-  //   if (Array.isArray(store.storeDocuments)) {
-  //     mappedDocuments = store.storeDocuments.reduce((acc: any, doc: any) => {
-  //       acc[doc.documentTypeId] = {
-  //         documentType: doc.documentTypeId,
-  //         fileS3Key: doc.fileS3Key,
-  //         signedUrl: doc.signedUrl,
-  //         fileType: doc.fileType || "all",
-  //         name: doc.name,
-  //         expiresAt: doc.expiresAt,
-  //         remindBeforeDays: doc.remindBeforeDays,
-  //       };
-  //       return acc;
-  //     }, {});
-  //   } else if (
-  //     store.storeDocuments &&
-  //     typeof store.storeDocuments === "object"
-  //   ) {
-  //     mappedDocuments = store.storeDocuments;
-  //   }
-  //   setEditingStore({ ...store, storeDocuments: mappedDocuments });
-  //   setEditingStore({
-  //     ...store,
-  //     storeDocuments: mappedDocuments,
-  //     storeAvailability: store.availabilityHour || store.storeAvailability || []
-  //   });
-  //   setModalOpen(true);
-  // };
   const handleEdit = (store: Store) => {
     let mappedDocuments: Record<string, any> = {};
 
@@ -191,13 +159,6 @@ const StoreListPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* <InputField
-          className="w-72"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search stores…"
-          name="query"
-        /> */}
         <DebouncedSearch
           value={query}
           onChange={(val) => setQuery(val)}
@@ -248,37 +209,14 @@ const StoreListPage: React.FC = () => {
           setModalOpen(false);
           setEditingStore(null);
         }}
-        // onSubmit={async (values: any) => {
-        //   if (editingStore) {
-        //     await updateStore({ id: editingStore.id, data: values }).unwrap();
-        //     toast.success("Store updated");
-        //   } else {
-        //     await createStore(values).unwrap();
-        //     toast.success("Store created");
-        //   }
-        //   setModalOpen(false);
-        //   setEditingStore(null);
-        // }}
-        onSubmit={async (values: any) => {
-          const payload = {
-            ...values,
-            storeAvailability: values.openingHours,
-          };
-
-          if (editingStore) {
-            await updateStore({ id: editingStore.id, data: payload }).unwrap();
-            toast.success("Store updated");
-          } else {
-            await createStore(payload).unwrap();
-            toast.success("Store created");
-          }
-
+        onSubmit={async () => {
+          await refetch();
           setModalOpen(false);
           setEditingStore(null);
         }}
 
         editingStore={editingStore}
-        isSubmitting={creating || updating}
+
       />
     </div>
   );
