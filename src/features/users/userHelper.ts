@@ -41,23 +41,15 @@ export const userSchema = (documentsList: any[]) =>
             ? Yup.string().required(`${doc.name} Document is required`)
             : Yup.string().nullable(),
           fileType: Yup.string().when("fileS3Key", {
-            is: (v: string) => !!v && v.trim() !== "",
+            is: (v: string) => !!v,
             then: (s) => s.required("File type is required"),
             otherwise: (s) => s.notRequired(),
           }),
-          expiresAt: Yup.mixed().when("fileS3Key", {
-            is: (v: string) => !!v && v.trim() !== "", 
-            then: (s) => s.nullable().optional(),
-            otherwise: (s) => s.notRequired(),
-          }),
+          expiresAt: Yup.mixed().nullable().optional(),
           remindBeforeDays: Yup.number()
             .typeError("Must be a number")
             .min(0, "Cannot be negative")
-            .when("fileS3Key", {
-              is: (v: string) => !!v && v.trim() !== "", 
-              then: (s) => s.nullable().optional(),
-              otherwise: (s) => s.notRequired(),
-            }),
+            .optional(),
         });
         return acc;
       }, {})
