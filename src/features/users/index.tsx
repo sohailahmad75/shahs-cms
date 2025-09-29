@@ -245,7 +245,6 @@ const UsersTypeListPage: React.FC = () => {
           setEditingUser(null);
         }}
         editingUsers={editingUser}
-      // isSubmitting={creating || updating}
       />
     </div>
   );

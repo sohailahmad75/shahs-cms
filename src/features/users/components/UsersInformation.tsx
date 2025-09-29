@@ -55,15 +55,14 @@ const UsersInformation = () => {
                                 ["NI Rate", Users.NiRate],
                                 ["Share Code", Users.shareCode],
                                 ["Role", getRoleName(Number(Users.role))],
-                                // ["Status", String(Users.statusId)],
                             ]}
                             isDarkMode={isDarkMode}
                         />
                     </Card>
 
 
-                    {/* Availability Hours */}
-                    {Number(Users.role) !== 1 && ( // 1 = Owner
+                  
+                    {Number(Users.role) !== 1 && (
                         <Card isDarkMode={isDarkMode}>
                             <h2
                                 className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"
