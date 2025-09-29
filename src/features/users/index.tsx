@@ -19,8 +19,6 @@ import { toast } from "react-toastify";
 
 import {
   useGetNewUsersQuery,
-  useCreateUsersMutation,
-  useUpdateUsersMutation,
   useDeleteUsersMutation,
 } from "./services/UsersApi";
 import DebouncedSearch from "../../components/DebounceSerach";
@@ -63,8 +61,6 @@ const UsersTypeListPage: React.FC = () => {
   const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(
     null,
   );
-  const [createUser, { isLoading: creating }] = useCreateUsersMutation();
-  const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
   const [deleteUser] = useDeleteUsersMutation();
 
   const handleEdit = (user: UsersType) => {
@@ -249,7 +245,7 @@ const UsersTypeListPage: React.FC = () => {
           setEditingUser(null);
         }}
         editingUsers={editingUser}
-        isSubmitting={creating || updating}
+      // isSubmitting={creating || updating}
       />
     </div>
   );

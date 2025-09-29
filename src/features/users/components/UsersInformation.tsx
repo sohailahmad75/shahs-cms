@@ -61,44 +61,46 @@ const UsersInformation = () => {
                         />
                     </Card>
 
+
                     {/* Availability Hours */}
-                    <Card isDarkMode={isDarkMode}>
-                        <h2
-                            className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"
-                                }`}
-                        >
-                            Availability Hours
-                        </h2>
-
-                        {Users.availabilityHours && Users.availabilityHours.length > 0 ? (
-                            <ul className="divide-y divide-gray-200 mt-3">
-                                {Users.availabilityHours.map((hour: any) => (
-                                    <li
-                                        key={hour.day}
-                                        className={`flex justify-between py-2 ${isDarkMode ? "text-slate-200" : "text-gray-700"
-                                            }`}
-                                    >
-                                        <span className="font-medium">{hour.day}</span>
-                                        {hour.closed ? (
-                                            <span className="italic text-red-500">Closed</span>
-                                        ) : (
-                                            <span>
-                                                {hour.open} - {hour.close}
-                                            </span>
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p
-                                className={isDarkMode ? "text-slate-400" : "text-gray-500"}
+                    {Number(Users.role) !== 1 && ( // 1 = Owner
+                        <Card isDarkMode={isDarkMode}>
+                            <h2
+                                className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"
+                                    }`}
                             >
-                                No opening hours available.
-                            </p>
-                        )}
-                    </Card>
+                                Availability Hours
+                            </h2>
 
-                    {/* Bank Accounts */}
+                            {Users.availabilityHours && Users.availabilityHours.length > 0 ? (
+                                <ul className="divide-y divide-gray-200 mt-3">
+                                    {Users.availabilityHours.map((hour: any) => (
+                                        <li
+                                            key={hour.day}
+                                            className={`flex justify-between py-2 ${isDarkMode ? "text-slate-200" : "text-gray-700"
+                                                }`}
+                                        >
+                                            <span className="font-medium">{hour.day}</span>
+                                            {hour.closed ? (
+                                                <span className="italic text-red-500">Closed</span>
+                                            ) : (
+                                                <span>
+                                                    {hour.open} - {hour.close}
+                                                </span>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className={isDarkMode ? "text-slate-400" : "text-gray-500"}>
+                                    No opening hours available.
+                                </p>
+                            )}
+                        </Card>
+                    )}
+
+
+                    
                     <Card isDarkMode={isDarkMode}>
                         <h2
                             className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
