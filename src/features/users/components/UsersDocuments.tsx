@@ -19,7 +19,6 @@ const UserDocuments = () => {
     const { data: user, isLoading } = useGetUsersByIdQuery(id!);
     const { isDarkMode } = useTheme();
     const [previewDocUrl, setPreviewDocUrl] = useState<string | null>(null);
-    const [previewName, setPreviewName] = useState<string>("");
 
     if (isLoading) return <Loader />;
 
@@ -35,8 +34,11 @@ const UserDocuments = () => {
         <div
             className={`p-4 sm:p-6 md:p-8 ${isDarkMode ? "bg-slate-900 text-slate-100" : "bg-gray-50 text-gray-800"
                 } min-h-screen`}
-        > <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-center sm:text-left">
-                User Documents </h2>
+        >
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-center sm:text-left">
+                User Documents
+            </h2>
+
             {documents.length === 0 ? (
                 <p className="text-gray-500 text-center">No documents uploaded.</p>
             ) : (
@@ -44,8 +46,8 @@ const UserDocuments = () => {
                     {documents.map((doc) => (
                         <div
                             key={doc.id}
-                            className={`flex flex-col justify-between p-4 border rounded-lg shadow hover:shadow-lg transition-all duration-200 ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
-                                }`}
+                            className={`flex flex-col justify-between p-4 border rounded-lg shadow hover:shadow-lg transition-all duration-200
+                            ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}
                         >
                             <div className="flex items-center space-x-3">
                                 <DocumentIcon
@@ -67,18 +69,13 @@ const UserDocuments = () => {
                             </div>
                             {doc.signedUrl && (
                                 <button
-                                    className={`mt-4 px-3 py-2 text-sm sm:text-base w-full ${isDarkMode
-                                        ? "bg-slate-900 hover:bg-slate-950"
-                                        : "bg-gray-400 hover:bg-gray-500"
-                                        } text-white rounded`}
-                                    onClick={() => {
-                                        setPreviewDocUrl(doc.signedUrl!);
-                                        setPreviewName(doc.name);
-                                    }}
+                                    className={`mt-4 px-3 py-2 text-sm sm:text-base w-full ${isDarkMode ? "bg-slate-900 hover:bg-slate-950" : "bg-gray-400 hover:bg-gray-500"}  text-white rounded`}
+                                    onClick={() => setPreviewDocUrl(doc.signedUrl)}
                                 >
                                     Preview
                                 </button>
                             )}
+
                         </div>
                     ))}
                 </div>
@@ -87,26 +84,20 @@ const UserDocuments = () => {
             {previewDocUrl && (
                 <Modal
                     isOpen={!!previewDocUrl}
-                    onClose={() => {
-                        setPreviewDocUrl(null);
-                        setPreviewName("");
-                    }}
+                    onClose={() => setPreviewDocUrl(null)}
                     title="Document Preview"
                     isDarkMode={isDarkMode}
                 >
                     <div className="flex items-center justify-center w-full h-full">
-
-                        <iframe
+                        <img
                             src={previewDocUrl}
-                            className="w-full h-[70vh] rounded-lg"
-                            title={previewName}
+                            alt="Document Preview"
+                            className="max-w-full max-h-[70vh] object-contain rounded-lg"
                         />
                     </div>
                 </Modal>
             )}
         </div>
-
-
     );
 };
 
