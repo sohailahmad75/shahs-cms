@@ -674,39 +674,6 @@ const UsersTypeModal = ({
                             {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
                           </label>
 
-                          {/* <FileUploader
-                            value={
-                              values.documents?.[doc.id]?.fileS3Key ||
-                              doc.userDoc?.fileS3Key ||
-                              ""
-                            }
-                            initialPreview={doc.userDoc?.signedUrl}
-                            onChange={(fileS3Key) => {
-                              const prevDocs = values.documents || {};
-                              setFieldValue("documents", {
-                                ...prevDocs,
-                                [doc.id]: {
-                                  ...(prevDocs[doc.id] || {}),
-                                  documentType: doc.id,
-                                  fileS3Key,
-                                  fileType: prevDocs[doc.id]?.fileType || "all",
-                                  name: doc.name,
-                                },
-                              });
-
-
-                              if (fileS3Key) {
-                                setTimeout(() => {
-                                  setFieldTouched(`documents.${doc.id}.fileS3Key`, true, true);
-                                  validateForm();
-                                }, 100);
-                              }
-                            }}
-                            path="users-documents"
-                            type="all"
-                            pathId={doc.id}
-                          /> */}
-
                           <FileUploader
                             value={values.documents?.[doc.id]?.fileS3Key || ""}
                             initialPreview={doc.userDoc?.signedUrl}
@@ -714,20 +681,20 @@ const UsersTypeModal = ({
                               const prevDocs = values.documents || {};
 
                               if (!fileS3Key) {
-
+                             
                                 const newDocs = { ...prevDocs };
                                 delete newDocs[doc.id];
                                 setFieldValue("documents", newDocs);
                               } else {
-
+                           
                                 setFieldValue("documents", {
                                   ...prevDocs,
                                   [doc.id]: {
-                                    ...(prevDocs[doc.id] || {}),
                                     documentType: doc.id,
                                     fileS3Key,
-                                    fileType: prevDocs[doc.id]?.fileType || "all",
+                                    fileType: "all", 
                                     name: fileName || doc.name,
+                                  
                                   },
                                 });
                               }

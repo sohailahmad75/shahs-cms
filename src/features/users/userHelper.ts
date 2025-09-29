@@ -22,7 +22,7 @@ export const userSchema = (documentsList: any[]) =>
 
         accountNumber: Yup.string()
           .required("Account Number is required")
-           .matches(/^\d+$/, "Account number must be digits only")
+          .matches(/^\d+$/, "Account number must be digits only")
           .matches(/^\d{16}$/, "Account Number must be exactly 16 digits"),
 
         sortCode: Yup.string()
@@ -41,15 +41,23 @@ export const userSchema = (documentsList: any[]) =>
             ? Yup.string().required(`${doc.name} Document is required`)
             : Yup.string().nullable(),
           fileType: Yup.string().when("fileS3Key", {
-            is: (v: string) => !!v,
+            is: (v: string) => !!v && v.trim() !== "",
             then: (s) => s.required("File type is required"),
             otherwise: (s) => s.notRequired(),
           }),
-          expiresAt: Yup.mixed().nullable().optional(),
+          expiresAt: Yup.mixed().when("fileS3Key", {
+            is: (v: string) => !!v && v.trim() !== "", 
+            then: (s) => s.nullable().optional(),
+            otherwise: (s) => s.notRequired(),
+          }),
           remindBeforeDays: Yup.number()
             .typeError("Must be a number")
             .min(0, "Cannot be negative")
-            .optional(),
+            .when("fileS3Key", {
+              is: (v: string) => !!v && v.trim() !== "", 
+              then: (s) => s.nullable().optional(),
+              otherwise: (s) => s.notRequired(),
+            }),
         });
         return acc;
       }, {})
