@@ -139,11 +139,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     onDrop,
     accept: acceptedTypes,
     maxFiles: 1,
-    maxSize: 10 * 1024 * 1024, 
+    maxSize: 10 * 1024 * 1024,
   });
 
   const fitClass = `object-${fit}`;
-
 
   const renderPreview = () => {
     const src = localPreviewUrl || initialPreview;
@@ -151,7 +150,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
     if (!src) return null;
 
-    if (name.endsWith(".pdf")) {
+
+    if (
+      (fileName && fileName.toLowerCase().endsWith(".pdf")) ||
+      (src && src.toLowerCase().includes(".pdf"))
+    ) {
       return (
         <iframe
           src={src}
@@ -161,6 +164,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       );
     }
 
+    
     if (name.endsWith(".xls") || name.endsWith(".xlsx")) {
       return (
         <div className="flex flex-col items-center justify-center h-full">
@@ -178,7 +182,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       );
     }
 
-  
+   
     return (
       <img
         src={src}
@@ -209,10 +213,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           <div
             {...getRootProps()}
             className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${error
-                ? "border-red-500 bg-red-50"
-                : isDragActive
-                  ? "border-orange-100 bg-orange-05"
-                  : "border-gray-300 hover:border-orange-100"
+              ? "border-red-500 bg-red-50"
+              : isDragActive
+                ? "border-orange-100 bg-orange-05"
+                : "border-gray-300 hover:border-orange-100"
               }`}
           >
             <input {...getInputProps()} />
