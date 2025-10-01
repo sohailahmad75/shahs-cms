@@ -270,6 +270,10 @@ const UsersTypeModal = ({
           const current = steps[currentIndex];
 
           const goNext = async () => {
+            const steps = getVisibleSteps(values.type);
+            const totalSteps = steps.length;
+            const currentIndex = activeStep >= totalSteps ? totalSteps - 1 : activeStep;
+            const current = steps[currentIndex];
 
             const getBankFields = (values: UserInfoTypes) => {
               return (
@@ -416,6 +420,10 @@ const UsersTypeModal = ({
             }
           };
           const goToStep = async (targetIdx: number) => {
+            const steps = getVisibleSteps(values.type);
+            const currentIndex = activeStep >= steps.length ? steps.length - 1 : activeStep;
+            const current = steps[currentIndex];
+
             if (targetIdx <= currentIndex) {
               setActiveStep(targetIdx);
               return;
