@@ -65,25 +65,6 @@ const UsersTypeModal = ({
     { skip: !role }
   );
 
-  // useEffect(() => {
-  //   if (!documentTypes?.data) {
-  //     setDocumentsList([]);
-  //     return;
-  //   }
-
-  //   const userDocsMap = (editingUsers?.documents || []).reduce((acc: any, doc: any) => {
-  //     acc[doc.documentTypeId] = doc;
-  //     return acc;
-  //   }, {});
-
-  //   setDocumentsList(
-  //     documentTypes.data.map((docType: any) => ({
-  //       ...docType,
-  //       userDoc: userDocsMap[docType.id] || null,
-  //     }))
-  //   );
-  // }, [documentTypes, editingUsers]);
-
   useEffect(() => {
     if (!documentTypes?.data) {
       setDocumentsList([]);
@@ -221,11 +202,6 @@ const UsersTypeModal = ({
     };
   };
 
-  console.log("editingUsers.documents =>", editingUsers?.documents);
-  console.log("Final documentsList =>", documentsList);
-  console.log("editingUsers.openingHours =>", editingUsers?.openingHours);
-  console.log("Final openingHours =>", openingHours);
-
 
   useEffect(() => {
     if (isOpen) {
@@ -292,12 +268,6 @@ const UsersTypeModal = ({
           const currentIndex =
             activeStep >= totalSteps ? totalSteps - 1 : activeStep;
           const current = steps[currentIndex];
-
-          // const stepKeysOf = (stepIdx: number) =>
-          //   userStepFieldKeys[
-          //   steps[stepIdx].key as keyof typeof userStepFieldKeys
-          //   ];
-
 
           const goNext = async () => {
 
@@ -445,36 +415,12 @@ const UsersTypeModal = ({
               onClose?.();
             }
           };
-
-          // const goToStep = async (targetIdx: number) => {
-          //   if (targetIdx <= currentIndex) {
-
-          //     setActiveStep(targetIdx);
-          //     return;
-          //   }
-
-
-          //   const stepKeys = stepKeysOf(currentIndex);
-          //   await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, false)));
-
-          //   const allErrors = await validateForm();
-          //   const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
-
-          //   if (stepErrors.length === 0) {
-          //     setActiveStep(targetIdx);
-          //   } else {
-          //     console.log("Validation failed, cannot move to next step");
-          //   }
-          // };
-
-
           const goToStep = async (targetIdx: number) => {
             if (targetIdx <= currentIndex) {
               setActiveStep(targetIdx);
               return;
             }
 
-            // --- same logic like goNext ---
             const getBankFields = (values: UserInfoTypes) => {
               return (
                 values.bankDetails?.flatMap((_, idx) => [
@@ -646,7 +592,6 @@ const UsersTypeModal = ({
 
                 <OpeningHoursFormSection
                   openingHours={openingHours}
-                  // setOpeningHours={setOpeningHours}
                   setOpeningHours={(updated) => {
                     setOpeningHours(updated);
                     setFieldValue("openingHours", updated);
@@ -674,38 +619,6 @@ const UsersTypeModal = ({
                             {doc.name} {doc.isMandatory && <span className="text-red-500">*</span>}
                           </label>
 
-                          {/* <FileUploader
-                            value={
-                              values.documents?.[doc.id]?.fileS3Key ||
-                              doc.userDoc?.fileS3Key ||
-                              ""
-                            }
-                            initialPreview={doc.userDoc?.signedUrl}
-                            onChange={(fileS3Key) => {
-                              const prevDocs = values.documents || {};
-                              setFieldValue("documents", {
-                                ...prevDocs,
-                                [doc.id]: {
-                                  ...(prevDocs[doc.id] || {}),
-                                  documentType: doc.id,
-                                  fileS3Key,
-                                  fileType: prevDocs[doc.id]?.fileType || "all",
-                                  name: doc.name,
-                                },
-                              });
-
-
-                              if (fileS3Key) {
-                                setTimeout(() => {
-                                  setFieldTouched(`documents.${doc.id}.fileS3Key`, true, true);
-                                  validateForm();
-                                }, 100);
-                              }
-                            }}
-                            path="users-documents"
-                            type="all"
-                            pathId={doc.id}
-                          /> */}
 
                           <FileUploader
                             value={values.documents?.[doc.id]?.fileS3Key || ""}
