@@ -1,3 +1,4 @@
+// DatePickerField.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { DateRange, Calendar } from "react-date-range";
@@ -30,17 +31,36 @@ const DatePickerField: React.FC<Props> = ({
     width: 0,
   });
 
-  const [rangeState, setRangeState] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
-    key: "selection",
-  });
+  // Convert external value to internal state
+  const getRangeStateFromValue = () => {
+    if (isRange && Array.isArray(value)) {
+      return {
+        startDate: value[0] ? new Date(value[0]) : new Date(),
+        endDate: value[1] ? new Date(value[1]) : new Date(),
+        key: "selection",
+      };
+    }
+    return {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    };
+  };
+
+  const [rangeState, setRangeState] = useState(getRangeStateFromValue());
+
+  // Update internal state when external value changes
+  useEffect(() => {
+    setRangeState(getRangeStateFromValue());
+  }, [value]);
 
   const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
   const displayValue = isRange
     ? Array.isArray(value)
-      ? `${value[0]} - ${value[1]}`
+      ? value[0] && value[1]
+        ? `${value[0]} - ${value[1]}`
+        : ""
       : ""
     : (value as string);
 
@@ -52,8 +72,6 @@ const DatePickerField: React.FC<Props> = ({
       onChange([formatDate(startDate), formatDate(endDate)]);
       setShow(false);
     }
-
-
   };
 
   const handleSingleDateChange = (date: Date) => {
@@ -72,7 +90,6 @@ const DatePickerField: React.FC<Props> = ({
     }
   };
 
-
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -85,7 +102,6 @@ const DatePickerField: React.FC<Props> = ({
       }
     };
 
-
     document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("resize", updateDropdownPosition);
     window.addEventListener("scroll", updateDropdownPosition, true);
@@ -95,61 +111,57 @@ const DatePickerField: React.FC<Props> = ({
       window.removeEventListener("resize", updateDropdownPosition);
       window.removeEventListener("scroll", updateDropdownPosition, true);
     };
-
   }, []);
 
   useEffect(() => {
     if (show) updateDropdownPosition();
   }, [show]);
 
-  return (<div className="relative w-full" ref={wrapperRef}>
-    <input
-      readOnly
-      name={name}
-      className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${error
-        ? "border-orange-100 focus:border-orange-100"
-        : "border-gray-300 focus:border-orange-100"
-        }`}
-      placeholder={placeholder}
-      value={displayValue}
-      onClick={() => setShow((prev) => !prev)}
-    />
+  return (
+    <div className="relative w-full" ref={wrapperRef}>
+      <input
+        readOnly
+        name={name}
+        className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${error
+            ? "border-orange-100 focus:border-orange-100"
+            : "border-gray-300 focus:border-orange-100"
+          }`}
+        placeholder={placeholder}
+        value={displayValue}
+        onClick={() => setShow((prev) => !prev)}
+      />
 
+      {show &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="absolute z-50 mt-2 bg-white shadow-xl rounded-lg"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+            }}
+          >
+            {isRange ? (
+              <DateRange
+                ranges={[rangeState]}
+                onChange={handleRangeChange}
+                moveRangeOnFirstSelection={false}
+                editableDateInputs
+                rangeColors={["#FF4F04"]}
+              />
+            ) : (
+              <Calendar
+                date={value ? new Date(value as string) : new Date()}
+                onChange={handleSingleDateChange}
+                color="#FF4F04"
+              />
+            )}
+          </div>,
+          document.body
+        )}
 
-    {show &&
-      createPortal(
-        <div
-          ref={dropdownRef}
-          className="absolute z-50 mt-2 bg-white shadow-xl rounded-lg"
-          style={{
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-
-          }}
-        >
-          {isRange ? (
-            <DateRange
-              ranges={[rangeState]}
-              onChange={handleRangeChange}
-              moveRangeOnFirstSelection={false}
-              editableDateInputs
-              rangeColors={["#FF4F04"]}
-            />
-          ) : (
-            <Calendar
-              date={value ? new Date(value as string) : new Date()}
-              onChange={handleSingleDateChange}
-              color="#FF4F04"
-            />
-          )}
-        </div>,
-        document.body
-      )}
-
-    {error && <p className="text-orange-100 text-sm mt-1">{error}</p>}
-  </div>
-
-
+      {error && <p className="text-orange-100 text-sm mt-1">{error}</p>}
+    </div>
   );
 };
 
