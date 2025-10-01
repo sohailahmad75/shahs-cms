@@ -1,4 +1,3 @@
-// services/orderApi.ts
 import { baseApi } from "../../../services/baseApi"
 import type { Order, OrderListResponse } from "../helpers/ordersHelpers"
 
@@ -7,13 +6,50 @@ export const ordersApi = baseApi.injectEndpoints({
 
         getOrders: builder.query<
             OrderListResponse,
-            { page?: number; perPage?: number; query?: string }
+            { page?: number; perPage?: number; query?: string;[key: string]: any }
         >({
             query: (args) => {
                 const { page = 1, perPage = 10, query = "", ...filters } = args ?? {}
-                return { url: "/orders", params: { page, perPage, query, ...filters } }
+                console.log("🔍 Orders API Params:", { page, perPage, query, ...filters });
+                return {
+                    url: "/orders",
+                    params: {
+                        page,
+                        perPage,
+                        query,
+                        ...filters
+                    }
+                }
             },
             transformResponse: (resp: any): OrderListResponse => {
+
+
+                if (resp && typeof resp === 'object' && resp.data && resp.meta) {
+                    return {
+                        data: resp.data,
+                        meta: resp.meta
+                    };
+                }
+
+
+                if (resp && typeof resp === 'object' && resp.items) {
+                    const total = resp.total || resp.items.length;
+                    const page = resp.page || 1;
+                    const perPage = resp.perPage || resp.per_page || 10;
+                    const totalPages = resp.totalPages || resp.total_pages || Math.ceil(total / perPage);
+
+                    return {
+                        data: resp.items,
+                        meta: {
+                            total,
+                            page,
+                            perPage,
+                            totalPages,
+                        }
+                    };
+                }
+
+
                 if (Array.isArray(resp)) {
                     return {
                         data: resp,
@@ -27,14 +63,14 @@ export const ordersApi = baseApi.injectEndpoints({
                 }
 
                 return {
-                    data: resp.data || resp.items || [],
-                    meta: resp.meta || {
-                        total: (resp.data || resp.items || []).length,
+                    data: [],
+                    meta: {
+                        total: 0,
                         page: 1,
                         perPage: 10,
-                        totalPages: 1,
+                        totalPages: 0,
                     }
-                }
+                };
             },
             providesTags: (result) =>
                 result
