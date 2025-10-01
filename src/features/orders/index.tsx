@@ -7,7 +7,6 @@ import type { Order } from "./helpers/ordersHelpers";
 import Loader from "../../components/Loader";
 import { Link } from "react-router-dom";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import { useTheme } from "../../context/themeContext";
 import FilterBar from "../../components/FilterBar";

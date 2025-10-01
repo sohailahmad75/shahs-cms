@@ -126,10 +126,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     placeholder={label}
                     value={filters[key] || ''}
                     onChange={(e) => {
-                        const value = e.target.value;
-                        handleFilterChange(key, value);
-                        applyFilter(key, value);
+                        setFilters((prev) => ({ ...prev, [key]: e.target.value }));
                     }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            const value = (e.target as HTMLInputElement).value;
+                            if (value.trim()) {
+                                handleFilterChange(key, value); 
+                                applyFilter(key, value);
+                            }
+                        }
+                    }}
+                   
                     name={key}
                 />
             </div>
@@ -145,10 +153,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 {filtersConfig.map(renderFilterControl)}
             </div>
 
-            {/* Separator line */}
             <hr className={`my-3 ${isDarkMode ? 'border-slate-700' : 'border-gray-300'}`} />
 
-            {/* Applied filters */}
             <div className="flex flex-wrap items-center gap-2">
                 <span
                     className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-gray-600'
@@ -177,8 +183,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                 <div
                                     key={index}
                                     className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm border shadow-sm ${isDarkMode
-                                            ? 'bg-slate-800 text-slate-200 border-slate-700'
-                                            : 'bg-gray-100 text-gray-800 border-gray-200'
+                                        ? 'bg-slate-800 text-slate-200 border-slate-700'
+                                        : 'bg-gray-100 text-gray-800 border-gray-200'
                                         }`}
                                 >
                                     <span className="font-medium">
@@ -191,8 +197,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                         type="button"
                                         onClick={() => removeFilter(index)}
                                         className={`ml-2 font-bold text-lg transition-colors cursor-pointer ${isDarkMode
-                                                ? 'text-slate-400 hover:text-red-400'
-                                                : 'text-gray-500 hover:text-red-500'
+                                            ? 'text-slate-400 hover:text-red-400'
+                                            : 'text-gray-500 hover:text-red-500'
                                             }`}
                                         aria-label={`Remove ${filter.value} filter`}
                                     >
@@ -206,8 +212,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             type="button"
                             onClick={resetFilters}
                             className={`ml-2 transition-colors cursor-pointer ${isDarkMode
-                                    ? 'text-slate-300 hover:text-slate-100'
-                                    : 'text-gray-600 '
+                                ? 'text-slate-300 hover:text-slate-100'
+                                : 'text-gray-600 '
                                 }`}
                             title="Clear All"
                         >
