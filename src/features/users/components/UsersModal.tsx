@@ -21,6 +21,7 @@ import {
   type CreateUsersDto,
   type UpdateUsersDto,
   UserRole,
+  type OpeningHour,
 } from "../users.types";
 
 import {
@@ -101,22 +102,26 @@ const UsersTypeModal = ({
   }, [documentTypes, editingUsers]);
 
 
+  const [sameAllDays, setSameAllDays] = useState(false);
 
-  const [openingHours, setOpeningHours] = useState(
+  const [openingHours, setOpeningHours] = useState<OpeningHour[]>(
     defaultDays.map((day) => ({
       day,
       open: "11:00 am",
       close: "11:00 pm",
       closed: false,
-    })),
+    }))
   );
-  const [sameAllDays, setSameAllDays] = useState(false);
+
   useEffect(() => {
     const source = editingUsers?.availabilityHours || editingUsers?.openingHours;
 
     if (source?.length) {
+
+      const hoursArray = Array.isArray(source) ? source : [source];
+
       const dayMap = Object.fromEntries(
-        source.map((h: any) => [h.day, h])
+        hoursArray.map((h: any) => [h.day, h])
       );
 
       const mapped = defaultDays.map((day) => ({
@@ -139,8 +144,6 @@ const UsersTypeModal = ({
       );
     }
   }, [editingUsers]);
-
-
 
   const formatDateOnly = (dateString?: string) => {
     if (!dateString) return "";
@@ -169,6 +172,11 @@ const UsersTypeModal = ({
   };
 
   const mapUpdateDto = (v: UserInfoTypes, userId: string): UpdateUsersDto => {
+
+    const openingHoursArray = Array.isArray(v.openingHours)
+      ? v.openingHours
+      : openingHours;
+
     return {
       userBankDetails:
         (v.bankDetails || []).map((b) => ({
@@ -180,7 +188,8 @@ const UsersTypeModal = ({
           iban: b.iban || "",
           swiftCode: b.swiftCode || "",
         })) || [],
-      userAvailability: (v.openingHours || []).map((o) => ({
+
+      userAvailability: openingHoursArray.map((o) => ({
         id: o.id || undefined,
         day: o.day,
         open: o.closed ? null : o.open || null,
@@ -201,8 +210,6 @@ const UsersTypeModal = ({
       })),
     };
   };
-
-
   useEffect(() => {
     if (isOpen) {
       setActiveStep(0);
@@ -268,30 +275,23 @@ const UsersTypeModal = ({
           const currentIndex =
             activeStep >= totalSteps ? totalSteps - 1 : activeStep;
           const current = steps[currentIndex];
-
           const goNext = async () => {
             const steps = getVisibleSteps(values.type);
             const totalSteps = steps.length;
             const currentIndex = activeStep >= totalSteps ? totalSteps - 1 : activeStep;
             const current = steps[currentIndex];
 
-            const getBankFields = (values: UserInfoTypes) => {
-              return (
-                values.bankDetails?.flatMap((_, idx) => [
-                  `bankDetails[${idx}].bankName`,
-                  `bankDetails[${idx}].accountNumber`,
-                  `bankDetails[${idx}].sortCode`,
-                ]) || []
-              );
-            };
-
+            const getBankFields = (values: UserInfoTypes) =>
+              values.bankDetails?.flatMap((_, idx) => [
+                `bankDetails[${idx}].bankName`,
+                `bankDetails[${idx}].accountNumber`,
+                `bankDetails[${idx}].sortCode`,
+              ]) || [];
 
             const getDocumentFields = (documentsList: any[]) =>
               documentsList.flatMap((doc) => {
                 const fields: string[] = [];
-                if (doc.isMandatory) {
-                  fields.push(`documents.${doc.id}.fileS3Key`);
-                }
+                if (doc.isMandatory) fields.push(`documents.${doc.id}.fileS3Key`);
                 fields.push(
                   `documents.${doc.id}.fileType`,
                   `documents.${doc.id}.expiresAt`,
@@ -300,94 +300,94 @@ const UsersTypeModal = ({
                 return fields;
               });
 
+            const getAvailabilityFields = (openingHours: any[]) => {
+              if (values.type !== "staff") return [];
+              if (sameAllDays) return ["openingHours[0].open", "openingHours[0].close", "openingHours[0].closed"];
+              return openingHours.flatMap((_, idx) => [
+                `openingHours[${idx}].open`,
+                `openingHours[${idx}].close`,
+                `openingHours[${idx}].closed`,
+              ]);
+            };
 
             const stepKeys =
               current.key === "account"
                 ? getBankFields(values)
-                : current.key === "documents"
-                  ? getDocumentFields(documentsList || [])
-                  : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
+                : current.key === "availability"
+                  ? getAvailabilityFields(openingHours)
+                  : current.key === "documents"
+                    ? getDocumentFields(documentsList || [])
+                    : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
+      
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
             const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+            const stepErrors = stepKeys.filter((k) => {
+              const error = getIn(allErrors, k);
+              if (!error) return false;
+              if (k.includes('openingHours') && (k.includes('.open') || k.includes('.close'))) {
+                const dayIndex = parseInt(k.match(/\[(\d+)\]/)?.[1] || '0');
+                const isClosed = getIn(values, `openingHours[${dayIndex}].closed`);
+                return !isClosed;
+              }
+              return true;
+            });
 
             if (stepErrors.length) {
-              const first = stepErrors[0];
-              const safe = first.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
-              const el = document.querySelector(
-                `[name="${safe}"], [name="${safe}[]"]`
-              ) as HTMLElement | null;
-              if (el && "focus" in el) (el as any).focus();
+              const first = stepErrors[0].replace(/\[/g, "\\[").replace(/\]/g, "\\]");
+              const el = document.querySelector(`[name="${first}"], [name="${first}[]"]`) as HTMLElement | null;
+              if (el) el.focus();
               return;
             }
 
-
             let idForPut = userId || values.id;
 
-            if (current.key === "basic" && !editingUsers && !idForPut) {
+            if (!editingUsers && current.key === "basic" && !idForPut) {
               try {
                 const payload = mapCreateDto(values);
                 const res: any = await createUser(payload).unwrap();
                 const newId = res.user?.id || res.id || res.data?.id;
-                if (newId) {
-                  setUserId(newId);
-                  await setFieldValue("id", newId);
-                  idForPut = newId;
-                } else {
-                  console.error("User create response missing ID", res);
-                  return;
-                }
+                if (!newId) return console.error("User create response missing ID", res);
+                setUserId(newId);
+                await setFieldValue("id", newId);
+                idForPut = newId;
               } catch (err) {
                 console.error("Create user failed:", err);
                 return;
               }
             }
 
-            if (!idForPut) {
-              console.error("No userId found to update.");
-              return;
-            }
-
+            if (!idForPut) return console.error("No userId found to update.");
             try {
-
               if (current.key === "basic") {
                 const newBasic = mapCreateDto(values).basicInfo;
-                const oldBasic = editingUsers
-                  ? mapCreateDto(editingUsers as UserInfoTypes).basicInfo
-                  : null;
-                if (!oldBasic || shouldUpdate(oldBasic, newBasic)) {
+                const oldBasic = editingUsers ? mapCreateDto(editingUsers as UserInfoTypes).basicInfo : null;
+                if (!editingUsers || !oldBasic || shouldUpdate(oldBasic, newBasic)) {
                   await updateUser({ id: idForPut, data: { basicInfo: newBasic } }).unwrap();
                 }
               }
-
-
               if (current.key === "account") {
                 const newBank = mapUpdateDto(values, idForPut).userBankDetails;
-                const hasData = newBank.some(
-                  (b) =>
-                    b.accountNumber ||
-                    b.sortCode ||
-                    b.bankName ||
-                    b.accountHolderName ||
-                    b.iban ||
-                    b.swiftCode
-                );
-                const oldBank = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails
-                  : null;
-                if ((oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
+                const oldBank = editingUsers ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userBankDetails : null;
+                const hasData = newBank.some(b => b.accountNumber || b.sortCode || b.bankName || b.accountHolderName || b.iban || b.swiftCode);
+                if (!editingUsers || (oldBank && shouldUpdate(oldBank, newBank)) || (!oldBank && hasData)) {
                   await updateUser({ id: idForPut, data: { userBankDetails: newBank } }).unwrap();
                 }
               }
 
-
               if (current.key === "availability") {
                 const newAvail = mapUpdateDto(values, idForPut).userAvailability;
-                const oldAvail = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userAvailability
-                  : null;
-                if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
+
+                const oldAvailRaw = editingUsers?.availabilityHours || editingUsers?.openingHours || [];
+                const oldAvail = oldAvailRaw.map((o: any) => ({
+                  day: o.day,
+                  open: o.closed ? null : o.open || null,
+                  close: o.closed ? null : o.close || null,
+                  closed: !!o.closed,
+                }));
+
+                if (!oldAvail.length || shouldUpdate(oldAvail, newAvail)) {
                   await updateUser({
                     id: idForPut,
                     data: { userAvailability: newAvail },
@@ -395,30 +395,21 @@ const UsersTypeModal = ({
                 }
               }
 
-
               if (current.key === "documents") {
                 const newDocs = mapUpdateDto(values, idForPut).userDocuments;
-                const oldDocs = editingUsers
-                  ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments
-                  : null;
-                if (!oldDocs || shouldUpdate(oldDocs, newDocs)) {
-                  await updateUser({
-                    id: idForPut,
-                    data: { userDocuments: newDocs },
-                  }).unwrap();
+                const oldDocs = editingUsers ? mapUpdateDto(editingUsers as UserInfoTypes, idForPut).userDocuments : null;
+                if (!editingUsers || !oldDocs || shouldUpdate(oldDocs, newDocs)) {
+                  await updateUser({ id: idForPut, data: { userDocuments: newDocs } }).unwrap();
                 }
               }
             } catch (err) {
               console.error("Update user failed:", err);
               return;
             }
+            if (currentIndex < totalSteps - 1) setActiveStep(s => s + 1);
+            else onClose?.();
+          }
 
-            if (currentIndex < totalSteps - 1) {
-              setActiveStep((s) => s + 1);
-            } else {
-              onClose?.();
-            }
-          };
           const goToStep = async (targetIdx: number) => {
             const steps = getVisibleSteps(values.type);
             const currentIndex = activeStep >= steps.length ? steps.length - 1 : activeStep;
@@ -453,16 +444,48 @@ const UsersTypeModal = ({
                 return fields;
               });
 
+            const getAvailabilityFields = (openingHours: any[]) => {
+              if (values.type !== "staff") return [];
+
+              if (sameAllDays) {
+                return [
+                  "openingHours[0].open",
+                  "openingHours[0].close",
+                  "openingHours[0].closed"
+                ];
+              }
+
+              return openingHours.flatMap((_, idx) => [
+                `openingHours[${idx}].open`,
+                `openingHours[${idx}].close`,
+                `openingHours[${idx}].closed`
+              ]);
+            };
+
             const stepKeys =
               current.key === "account"
                 ? getBankFields(values)
-                : current.key === "documents"
-                  ? getDocumentFields(documentsList || [])
-                  : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
+                : current.key === "availability"
+                  ? getAvailabilityFields(openingHours)
+                  : current.key === "documents"
+                    ? getDocumentFields(documentsList || [])
+                    : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
             const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+            const stepErrors = stepKeys.filter((k) => {
+              const error = getIn(allErrors, k);
+              if (!error) return false;
+
+              if (k.includes('openingHours') && (k.includes('.open') || k.includes('.close'))) {
+                const dayIndex = parseInt(k.match(/\[(\d+)\]/)?.[1] || '0');
+                const isClosed = getIn(values, `openingHours[${dayIndex}].closed`);
+                return !isClosed;
+              }
+
+              return true;
+            });
 
             if (stepErrors.length) {
               const first = stepErrors[0];
@@ -536,7 +559,6 @@ const UsersTypeModal = ({
 
             setActiveStep(targetIdx);
           };
-
           const isSaving =
             isSubmitting || createStatus.isLoading || updateStatus.isLoading;
 

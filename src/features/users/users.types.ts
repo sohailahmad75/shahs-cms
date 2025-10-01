@@ -8,7 +8,7 @@ export enum UserRole {
 }
 
 export type OpeningHour = {
-  id: any;
+  id?: any;
   day: string;
   open: string;
   close: string;
@@ -55,17 +55,14 @@ export type UserInfoTypes = {
 
   bankDetails?: BankDetail[];
 
-
   openingHours: OpeningHour[];
   sameAllDays?: boolean;
-
 
   fileS3Key?: string | null;
   fileType?: string;
   expiresAt?: any;
   remindBeforeDays?: number | null;
 };
-
 export type UsersType = UserInfoTypes;
 
 
