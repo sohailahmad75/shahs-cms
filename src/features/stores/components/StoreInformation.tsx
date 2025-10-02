@@ -6,9 +6,8 @@ import {
 } from "../services/storeApi";
 import Loader from "../../../components/Loader";
 import Button from "../../../components/Button";
-import StoreMap from "./StoreMap";
-import { getFsaBadgeUrl } from "../helper/store-helper";
-import { toast } from "react-toastify";
+// import StoreMap from "./StoreMap";
+// import { getFsaBadgeUrl } from "../helper/store-helper";
 import OpeningHoursFormSection from "./OpeningHoursFormSection";
 import { useTheme } from "../../../context/themeContext";
 
@@ -64,18 +63,14 @@ const StoreInformation = () => {
         close: hour.closed ? null : hour.close,
         closed: hour.closed,
       }));
-
-      // Wrap in storeAvailability to match UpdateStoreDto
       await updateOpeningHours({
         id: store.id,
         data: { storeAvailability: transformedData },
       }).unwrap();
 
-      toast.success("Store Opening hours updated successfully");
-      refetch(); // Refresh the store data
+      refetch(); 
     } catch (err: any) {
       console.error("Failed to update opening hours:", err);
-      toast.error(err?.data?.message || "Error occurred while updating opening hours");
     }
   };
 
