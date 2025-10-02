@@ -96,14 +96,6 @@ const StoreModal = ({
     );
   }, [documentTypes, editingStore]);
 
-  // const [openingHours, setOpeningHours] = useState(
-  //   defaultDays.map((day) => ({
-  //     day,
-  //     open: "11:00 am",
-  //     close: "11:00 pm",
-  //     closed: false,
-  //   }))
-  // );
 
   const [openingHours, setOpeningHours] = useState(
     defaultDays.map((day) => ({
@@ -114,23 +106,6 @@ const StoreModal = ({
     }))
   );
   const [sameAllDays, setSameAllDays] = useState(false);
-
-  // useEffect(() => {
-  //   if (editingStore?.availabilityHour?.length) {
-  //     const dayMap = Object.fromEntries(
-  //       editingStore.availabilityHour.map((h) => [h.day, h])
-  //     );
-
-  //     const mapped = defaultDays.map((day) => ({
-  //       day,
-  //       open: dayMap[day]?.open || "11:00 am",
-  //       close: dayMap[day]?.close || "11:00 pm",
-  //       closed: dayMap[day]?.closed ?? false,
-  //     }));
-
-  //     setOpeningHours(mapped);
-  //   }
-  // }, [editingStore]);
 
   useEffect(() => {
     const source = editingStore?.availabilityHour || editingStore?.storeAvailability;
@@ -217,12 +192,6 @@ const StoreModal = ({
     }
 
     if (activeStep === 2) {
-      // updateData.availabilityHour = openingHours.map((o) => ({
-      //   day: o.day,
-      //   open: o.closed ? null : o.open || null,
-      //   close: o.closed ? null : o.close || null,
-      //   closed: !!o.closed,
-      // }));
       updateData.storeAvailability = (v.storeAvailability || []).map((o: any) => ({
         id: o.id || undefined,
         day: o.day,
@@ -540,12 +509,6 @@ const StoreModal = ({
               )}
 
               {current.key === "availability" && (
-                // <OpeningHoursFormSection
-                //   openingHours={openingHours}
-                //   setOpeningHours={setOpeningHours}
-                //   sameAllDays={sameAllDays}
-                //   setSameAllDays={setSameAllDays}
-                // />
                 <OpeningHoursFormSection
                   openingHours={openingHours}
                   setOpeningHours={(updated) => {
@@ -589,43 +552,6 @@ const StoreModal = ({
                               <span className="text-red-500">*</span>
                             )}
                           </label>
-
-                          {/* <FileUploader
-                            value={
-                              values.documents?.[doc.id]?.fileS3Key ||
-                              doc.storeDoc?.fileS3Key ||
-                              ""
-                            }
-                            initialPreview={doc.storeDoc?.signedUrl}
-                            onChange={(fileS3Key) => {
-                              const prevDocs = values.documents || {};
-                              setFieldValue("documents", {
-                                ...prevDocs,
-                                [doc.id]: {
-                                  ...(prevDocs[doc.id] || {}),
-                                  documentType: doc.id,
-                                  fileS3Key,
-                                  fileType:
-                                    prevDocs[doc.id]?.fileType || "all",
-                                  name: doc.name,
-                                },
-                              });
-
-                              if (fileS3Key) {
-                                setTimeout(() => {
-                                  setFieldTouched(
-                                    `documents.${doc.id}.fileS3Key`,
-                                    true,
-                                    true
-                                  );
-                                  validateForm();
-                                }, 100);
-                              }
-                            }}
-                            path="store-documents"
-                            type="all"
-                            pathId={doc.id}
-                          /> */}
 
                           <FileUploader
                             value={values.documents?.[doc.id]?.fileS3Key || ""}
