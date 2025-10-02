@@ -22,7 +22,8 @@ import {
 import {
   type Store,
   type CreateStoreDto,
-  type UpdateStoreDto
+  type UpdateStoreDto,
+  type OpeningHour
 } from "../store.types";
 
 import {
@@ -96,8 +97,10 @@ const StoreModal = ({
     );
   }, [documentTypes, editingStore]);
 
+  const [sameAllDays, setSameAllDays] = useState(false);
 
-  const [openingHours, setOpeningHours] = useState(
+
+  const [openingHours, setOpeningHours] = useState<OpeningHour[]>(
     defaultDays.map((day) => ({
       day,
       open: "11:00 am",
@@ -105,14 +108,16 @@ const StoreModal = ({
       closed: false,
     }))
   );
-  const [sameAllDays, setSameAllDays] = useState(false);
 
   useEffect(() => {
     const source = editingStore?.availabilityHour || editingStore?.storeAvailability;
 
     if (source?.length) {
+
+      const hoursArray = Array.isArray(source) ? source : [source];
+
       const dayMap = Object.fromEntries(
-        source.map((h: any) => [h.day, h])
+        hoursArray.map((h: any) => [h.day, h])
       );
 
       const mapped = defaultDays.map((day) => ({
@@ -191,8 +196,9 @@ const StoreModal = ({
       }));
     }
 
+
     if (activeStep === 2) {
-      updateData.storeAvailability = (v.storeAvailability || []).map((o: any) => ({
+      updateData.storeAvailability = openingHours.map((o: any) => ({
         id: o.id || undefined,
         day: o.day,
         open: o.closed ? null : o.open || null,
@@ -318,18 +324,42 @@ const StoreModal = ({
                 );
                 return fields;
               });
+            const getAvailabilityFields = (openingHours: any[]) => {
+              if (sameAllDays) {
+                return ["storeAvailability[0].open", "storeAvailability[0].close", "storeAvailability[0].closed"];
+              }
+              return openingHours.flatMap((_, idx) => [
+                `storeAvailability[${idx}].open`,
+                `storeAvailability[${idx}].close`,
+                `storeAvailability[${idx}].closed`,
+              ]);
+            };
+
 
             const stepKeys =
               currentKey === "account"
                 ? getBankFields(values)
-                : currentKey === "documents"
-                  ? getDocumentFields(documentsList || [])
-                  : storeStepFieldKeys[currentKey as keyof typeof storeStepFieldKeys];
+                : currentKey === "availability"
+                  ? getAvailabilityFields(openingHours)
+                  : currentKey === "documents"
+                    ? getDocumentFields(documentsList || [])
+                    : storeStepFieldKeys[currentKey as keyof typeof storeStepFieldKeys];
 
-            // ✅ Run validation
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
             const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+
+            const stepErrors = stepKeys.filter((k) => {
+              const error = getIn(allErrors, k);
+              if (!error) return false;
+
+              if (k.includes('storeAvailability') && (k.includes('.open') || k.includes('.close'))) {
+                const dayIndex = parseInt(k.match(/\[(\d+)\]/)?.[1] || '0');
+                const isClosed = getIn(values, `storeAvailability[${dayIndex}].closed`);
+                return !isClosed;
+              }
+              return true;
+            });
 
             if (stepErrors.length) {
               const first = stepErrors[0];
@@ -341,7 +371,7 @@ const StoreModal = ({
               return false;
             }
 
-            // ✅ Create / Update logic
+
             let idForPut = storeId || values.id;
 
             if (currentKey === "basic" && !editingStore && !idForPut) {
@@ -390,13 +420,22 @@ const StoreModal = ({
                 }
               }
 
-              if (currentKey === "availability") {
+               if (current.key === "availability") {
                 const newAvail = mapUpdateDto(values, idForPut).storeAvailability;
-                const oldAvail = editingStore
-                  ? mapUpdateDto(editingStore as Store, idForPut).storeAvailability
-                  : null;
-                if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
-                  await updateStore({ id: idForPut, data: { storeAvailability: newAvail } }).unwrap();
+
+                const oldAvailRaw = editingStore?.storeAvailability || editingStore?.availabilityHour || [];
+                const oldAvail = oldAvailRaw.map((o: any) => ({
+                  day: o.day,
+                  open: o.closed ? null : o.open || null,
+                  close: o.closed ? null : o.close || null,
+                  closed: !!o.closed,
+                }));
+
+                if (!oldAvail.length || shouldUpdate(oldAvail, newAvail)) {
+                  await updateStore({
+                    id: idForPut,
+                    data: { storeAvailability: newAvail },
+                  }).unwrap();
                 }
               }
 
