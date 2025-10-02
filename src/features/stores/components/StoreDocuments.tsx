@@ -74,12 +74,12 @@ const StoreDocuments = () => {
                   <p className="text-xs sm:text-sm text-gray-400 truncate">
                     Type: {doc.documentTypeId}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-400">
+                  {/* <p className="text-xs sm:text-sm text-gray-400">
                     Expires:{" "}
                     {doc.expiresAt
                       ? new Date(doc.expiresAt).toLocaleDateString()
                       : "N/A"}
-                  </p>
+                  </p> */}
                 </div>
               </div>
               {doc.signedUrl && (
