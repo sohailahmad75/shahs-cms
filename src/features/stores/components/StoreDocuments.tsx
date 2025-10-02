@@ -22,7 +22,6 @@ const StoreDocuments = () => {
 
   if (isLoading) return <Loader />;
 
-  // Handle different formats of storeDocuments (array, object, or undefined)
   const rawDocuments = store?.storeDocuments;
   const normalizedDocs = Array.isArray(rawDocuments)
     ? rawDocuments
