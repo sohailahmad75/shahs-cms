@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
-import { useTheme } from "../context/themeContext"; // Import the theme context
+import { useTheme } from "../context/themeContext"; 
 
 type Option = {
   label: string;
@@ -16,7 +16,7 @@ type SelectFieldProps = {
   name?: string;
   error?: string;
   disabled?: boolean;
-  darkMode?: boolean; // Add dark mode prop
+  darkMode?: boolean; 
 };
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -27,10 +27,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
   name,
   error,
   disabled,
-  darkMode = false, // Default to false
+  darkMode = false, 
 }) => {
-  const { isDarkMode: themeDarkMode } = useTheme(); // Get theme from context
-  const finalDarkMode = darkMode || themeDarkMode; // Use prop if provided, otherwise use context
+  const { isDarkMode: themeDarkMode } = useTheme();
+  const finalDarkMode = darkMode || themeDarkMode; 
 
   const [open, setOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
@@ -43,7 +43,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
   const selectedOption = options.find((opt) => opt.value === value);
 
-  // Update dropdown position relative to input + scroll
+
   const updateDropdownPosition = () => {
     if (wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect();
@@ -55,7 +55,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
     }
   };
 
-  // Handle clicks outside and update position on resize/scroll
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -70,7 +70,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
 
     document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("resize", updateDropdownPosition);
-    window.addEventListener("scroll", updateDropdownPosition, true); // capture scroll in parent containers
+    window.addEventListener("scroll", updateDropdownPosition, true); 
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
