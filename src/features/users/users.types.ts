@@ -25,6 +25,14 @@ export type BankDetail = {
   swiftCode?: string;
 };
 
+export type UserTypeStaffKind =
+  | "full_time"
+  | "student"
+  | "sponsored"
+  | "psw"
+  | "asylum"
+  | "other";
+
 export type FileType = "passport" | "fsa_cert" | "license" | "all" | "";
 
 export type DocumentInfo = {
@@ -52,6 +60,7 @@ export type UserInfoTypes = {
   niRate?: number | null;
   niNumber?: string | null;
   shareCode?: string | null;
+  staffType?: UserTypeStaffKind;
 
   bankDetails?: BankDetail[];
 
@@ -80,6 +89,7 @@ export type CreateUsersDto = {
     NiRate?: number | null;
     shareCode?: string | null;
     role: UserRole;
+    staffType: UserTypeStaffKind
   };
 };
 
@@ -97,6 +107,7 @@ export type UpdateUsersDto = {
     NiRate?: number | null;
     shareCode?: string | null;
     role?: UserRole;
+    staffType?: UserTypeStaffKind
   };
   userBankDetails?: Array<Required<BankDetail>>;
   userAvailability?: Array<{

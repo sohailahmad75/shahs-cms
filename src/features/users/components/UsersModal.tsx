@@ -22,6 +22,7 @@ import {
   type UpdateUsersDto,
   UserRole,
   type OpeningHour,
+  type UserTypeStaffKind,
 } from "../users.types";
 
 import {
@@ -167,6 +168,7 @@ const UsersTypeModal = ({
         NiRate: v.niRate ?? null,
         shareCode: v.shareCode ?? null,
         role: v.type === "owner" ? UserRole.OWNER : UserRole.STAFF,
+        staffType: v.type === "staff" ? (v.staffType as UserTypeStaffKind) : undefined,
       },
     };
   };
@@ -319,7 +321,7 @@ const UsersTypeModal = ({
                     ? getDocumentFields(documentsList || [])
                     : userStepFieldKeys[current.key as keyof typeof userStepFieldKeys];
 
-      
+
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
             const allErrors = await validateForm();
 

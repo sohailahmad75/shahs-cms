@@ -15,6 +15,11 @@ export const userSchema = (documentsList: any[]) =>
     niRate: Yup.number().min(0).required("NI rate is required"),
     shareCode: Yup.string().required("Share Code is required"),
     type: Yup.mixed().oneOf(["staff", "owner"]).required("Type is required"),
+    staffType: Yup.string().when('type', {
+      is: 'staff',
+      then: (schema) => schema.required('Staff type is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
 
     bankDetails: Yup.array().of(
       Yup.object().shape({
@@ -66,7 +71,7 @@ export const userSchema = (documentsList: any[]) =>
               then: (schema) => schema,
               otherwise: (schema) => schema.strip(),
             }),
-        }).nullable().optional(); 
+        }).nullable().optional();
 
         return acc;
       }, {})
@@ -87,6 +92,7 @@ export const userEmptyInitialValues: UserInfoTypes = {
   niRate: null,
   type: null,
   shareCode: "",
+  staffType:null,
   // niNumber: "",
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
 
@@ -148,6 +154,7 @@ export const userStepFieldKeys = {
     "type",
     "shareCode",
     "niNumber",
+    "staffType"
   ],
   account: ["bankDetails"],
   availability: ["openingHours", "sameAllDays"],
