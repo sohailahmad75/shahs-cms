@@ -8,7 +8,7 @@ export enum UserRole {
 }
 
 export type OpeningHour = {
-  id: any;
+  id?: any;
   day: string;
   open: string;
   close: string;
@@ -24,6 +24,14 @@ export type BankDetail = {
   iban?: string;
   swiftCode?: string;
 };
+
+export type UserTypeStaffKind =
+  | "full_time"
+  | "student"
+  | "sponsored"
+  | "psw"
+  | "asylum"
+  | "other";
 
 export type FileType = "passport" | "fsa_cert" | "license" | "all" | "";
 
@@ -52,20 +60,18 @@ export type UserInfoTypes = {
   niRate?: number | null;
   niNumber?: string | null;
   shareCode?: string | null;
+  staffType?: UserTypeStaffKind;
 
   bankDetails?: BankDetail[];
 
-
   openingHours: OpeningHour[];
   sameAllDays?: boolean;
-
 
   fileS3Key?: string | null;
   fileType?: string;
   expiresAt?: any;
   remindBeforeDays?: number | null;
 };
-
 export type UsersType = UserInfoTypes;
 
 
@@ -83,6 +89,7 @@ export type CreateUsersDto = {
     NiRate?: number | null;
     shareCode?: string | null;
     role: UserRole;
+    staffType: UserTypeStaffKind
   };
 };
 
@@ -100,6 +107,7 @@ export type UpdateUsersDto = {
     NiRate?: number | null;
     shareCode?: string | null;
     role?: UserRole;
+    staffType?: UserTypeStaffKind
   };
   userBankDetails?: Array<Required<BankDetail>>;
   userAvailability?: Array<{

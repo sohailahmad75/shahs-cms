@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import Button from "../../components/Button";
 import {
   useGetStoresQuery,
-  useCreateStoreMutation,
-  useUpdateStoresMutation,
   useDeleteStoreMutation,
 } from "./services/storeApi";
 import { type Column, DynamicTable } from "../../components/DynamicTable";
@@ -15,7 +13,6 @@ import EditIcon from "../../assets/styledIcons/EditIcon";
 import ActionIcon from "../../components/ActionIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import ConfirmDelete from "../../components/ConfirmDelete";
 import { useTheme } from "../../context/themeContext";
@@ -23,6 +20,7 @@ import FilterBar from "../../components/FilterBar";
 import { storeFiltersConfig } from "./helper/store-list";
 import { useServerTable } from "../../hooks/useServerTable";
 import { toast } from "react-toastify";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const StoreListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -46,10 +44,9 @@ const StoreListPage: React.FC = () => {
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
+    refetch,
   } = useGetStoresQuery(queryParams);
 
-  const [createStore, { isLoading: creating }] = useCreateStoreMutation();
-  const [updateStore, { isLoading: updating }] = useUpdateStoresMutation();
   const [deleteStore] = useDeleteStoreMutation();
 
   const stores = storesResp.data;
@@ -61,6 +58,7 @@ const StoreListPage: React.FC = () => {
 
   const handleEdit = (store: Store) => {
     let mappedDocuments: Record<string, any> = {};
+
     if (Array.isArray(store.storeDocuments)) {
       mappedDocuments = store.storeDocuments.reduce((acc: any, doc: any) => {
         acc[doc.documentTypeId] = {
@@ -74,13 +72,16 @@ const StoreListPage: React.FC = () => {
         };
         return acc;
       }, {});
-    } else if (
-      store.storeDocuments &&
-      typeof store.storeDocuments === "object"
-    ) {
+    } else if (store.storeDocuments && typeof store.storeDocuments === "object") {
       mappedDocuments = store.storeDocuments;
     }
-    setEditingStore({ ...store, storeDocuments: mappedDocuments });
+
+    setEditingStore({
+      ...store,
+      storeDocuments: mappedDocuments,
+      openingHours: store.availabilityHour || store.storeAvailability || []
+    } as any);
+
     setModalOpen(true);
   };
 
@@ -158,12 +159,12 @@ const StoreListPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <InputField
-          className="w-72"
+        <DebouncedSearch
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(val) => setQuery(val)}
+          delay={400}
           placeholder="Search stores…"
-          name="query"
+          className="w-100"
         />
       </div>
 
@@ -208,19 +209,14 @@ const StoreListPage: React.FC = () => {
           setModalOpen(false);
           setEditingStore(null);
         }}
-        onSubmit={async (values: any) => {
-          if (editingStore) {
-            await updateStore({ id: editingStore.id, data: values }).unwrap();
-            toast.success("Store updated");
-          } else {
-            await createStore(values).unwrap();
-            toast.success("Store created");
-          }
+        onSubmit={async () => {
+          await refetch();
           setModalOpen(false);
           setEditingStore(null);
         }}
+
         editingStore={editingStore}
-        isSubmitting={creating || updating}
+
       />
     </div>
   );

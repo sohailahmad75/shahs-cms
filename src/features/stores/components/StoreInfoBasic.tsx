@@ -6,6 +6,7 @@ import {
   StoreTypeEnum,
   StoreTypeOptions,
 } from "../../../common/enums/status.enum";
+import { useTheme } from "../../../context/themeContext";
 
 type StoreInfoTypes = {
   name: string;
@@ -28,13 +29,14 @@ const StoreBasicInfoForm: React.FC = () => {
     const nextType = Number(e?.target?.value ?? e) as StoreTypeEnum;
     setFieldValue("storeType", nextType);
   };
+  const { isDarkMode } = useTheme();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Store Name <span className="text-red-500">*</span>
+          Store Name <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="name"
@@ -48,7 +50,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Email <span className="text-red-500">*</span>
+          Email <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="email"
@@ -62,7 +64,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Company Name <span className="text-red-500">*</span>
+          Company Name <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="companyName"
@@ -90,7 +92,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Phone <span className="text-red-500">*</span>
+          Phone <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="phone"
@@ -104,7 +106,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Street <span className="text-red-500">*</span>
+          Street <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="street"
@@ -118,7 +120,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          City <span className="text-red-500">*</span>
+          City <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="city"
@@ -132,7 +134,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Postcode <span className="text-red-500">*</span>
+          Postcode <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="postcode"
@@ -146,7 +148,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Country <span className="text-red-500">*</span>
+          Country <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="country"
@@ -159,7 +161,7 @@ const StoreBasicInfoForm: React.FC = () => {
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Store Type <span className="text-red-500">*</span>
+          Store Type <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <SelectField
           name="storeType"

@@ -8,7 +8,6 @@ import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
 import type { DocumentType } from "./documentTypes.types";
 import { useTheme } from "../../context/themeContext";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import FilterBar from "../../components/FilterBar";
 import { documentTypeFiltersConfig } from "./helpers/documentlist";
@@ -21,6 +20,7 @@ import {
   useDeleteDocumentsTypeMutation,
 } from "./services/documentTypeApi";
 import { toast } from "react-toastify";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const DocumentTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -137,12 +137,19 @@ const DocumentTypeListPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <InputField
+        {/* <InputField
           className="w-72"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search documents…"
           name="query"
+        /> */}
+        <DebouncedSearch
+          value={query}
+          onChange={(val) => setQuery(val)}
+          delay={400}
+          placeholder="Search documents…"
+          className="w-100"
         />
       </div>
 

@@ -1,168 +1,159 @@
-// ConfirmDelete.tsx
 import React, { useCallback, useMemo, useState } from "react";
 import Modal from "./Modal";
 import Button from "./Button";
+import { X } from "lucide-react";
 
 type ConfirmDeleteProps = {
-  onConfirm: () => Promise<void> | void;
-
-  // Copy
-  title?: string;
-  message?: React.ReactNode;
-  confirmLabel?: string;
-  cancelLabel?: string;
-
-  // Modal sizing
-  width?: string;
-
-  // Control (optional)
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-
-  // Loading/Disabled (optional)
-  loading?: boolean; // if provided, confirm button uses this (spinner)
-  disabled?: boolean; // disables trigger (+ confirm while loading)
-
-  autoCloseOnSuccess?: boolean;
-
-  // NEW: pass a ready-made trigger from parent
-  trigger?: React.ReactElement; // e.g. <Button variant="destructive" icon={<Trash/>}>Delete</Button>
-
-  // or: render prop (gives you open + state)
-  renderTrigger?: (ctx: {
-    open: () => void;
-    loading: boolean;
-    disabled: boolean;
-  }) => React.ReactNode;
-
-  // Fallback default trigger text (used only if trigger/renderTrigger not provided)
-  triggerLabel?: string;
-
-  className?: string; // extra classes for default trigger
+onConfirm: () => Promise<void> | void;
+title?: string;
+message?: React.ReactNode;
+confirmLabel?: string;
+cancelLabel?: string;
+width?: string;
+open?: boolean;
+onOpenChange?: (open: boolean) => void;
+loading?: boolean;
+disabled?: boolean;
+autoCloseOnSuccess?: boolean;
+trigger?: React.ReactElement;
+renderTrigger?: (ctx: {
+open: () => void;
+loading: boolean;
+disabled: boolean;
+}) => React.ReactNode;
+triggerLabel?: string;
+className?: string;
 };
 
 const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
-  onConfirm,
-  title = "Delete item?",
-  message = "This action cannot be undone.",
-  confirmLabel = "Delete",
-  cancelLabel = "Cancel",
-  width = "max-w-md",
-  open: controlledOpen,
-  onOpenChange,
-  loading: controlledLoading,
-  disabled = false,
-  autoCloseOnSuccess = true,
-  trigger,
-  renderTrigger,
-  triggerLabel = "Delete",
-  className = "",
+onConfirm,
+title = "Are you sure?",
+message = "Do you really want to delete these records? This process cannot be undone.",
+confirmLabel = "Delete",
+cancelLabel = "Cancel",
+width = "max-w-md",
+open: controlledOpen,
+onOpenChange,
+loading: controlledLoading,
+disabled = false,
+autoCloseOnSuccess = true,
+trigger,
+renderTrigger,
+triggerLabel = "Delete",
+className = "",
 }) => {
-  const [unOpen, setUnOpen] = useState(false);
-  const [unLoading, setUnLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+const [unOpen, setUnOpen] = useState(false);
+const [unLoading, setUnLoading] = useState(false);
+const [err, setErr] = useState<string | null>(null);
 
-  const open = controlledOpen ?? unOpen;
-  const setOpen = onOpenChange ?? setUnOpen;
-  const isLoading = controlledLoading ?? unLoading;
+const open = controlledOpen ?? unOpen;
+const setOpen = onOpenChange ?? setUnOpen;
+const isLoading = controlledLoading ?? unLoading;
 
-  const openModal = useCallback(() => {
-    if (disabled) return;
-    setErr(null);
-    setOpen(true);
-  }, [disabled, setOpen]);
+const openModal = useCallback(() => {
+if (disabled) return;
+setErr(null);
+setOpen(true);
+}, [disabled, setOpen]);
 
-  const closeModal = useCallback(() => {
-    if (isLoading) return;
-    setOpen(false);
-    setErr(null);
-  }, [isLoading, setOpen]);
+const closeModal = useCallback(() => {
+if (isLoading) return;
+setOpen(false);
+setErr(null);
+}, [isLoading, setOpen]);
 
-  const handleConfirm = useCallback(async () => {
-    if (controlledLoading === undefined) setUnLoading(true);
-    await onConfirm?.();
-    if (autoCloseOnSuccess) closeModal();
-  }, [onConfirm, autoCloseOnSuccess, closeModal, controlledLoading]);
+const handleConfirm = useCallback(async () => {
+if (controlledLoading === undefined) setUnLoading(true);
+await onConfirm?.();
+if (autoCloseOnSuccess) closeModal();
+}, [onConfirm, autoCloseOnSuccess, closeModal, controlledLoading]);
 
-  const DefaultTrigger = useMemo(
-    () => (
-      <Button
-        variant="destructive"
-        onClick={openModal}
-        disabled={disabled || isLoading}
-        className={className}
-      >
-        {triggerLabel}
-      </Button>
-    ),
-    [openModal, disabled, isLoading, className, triggerLabel],
-  );
+const DefaultTrigger = useMemo(
+() => (
+<Button
+variant="destructive"
+onClick={openModal}
+disabled={disabled || isLoading}
+className={className}
+>
+{triggerLabel} </Button>
+),
+[openModal, disabled, isLoading, className, triggerLabel],
+);
 
-  // Final trigger node (priority: renderTrigger > trigger element > default)
-  const TriggerNode = useMemo(() => {
-    if (renderTrigger) {
-      return renderTrigger({
-        open: openModal,
-        loading: isLoading,
-        disabled: disabled || isLoading,
-      });
-    }
-    if (trigger) {
-      const originalOnClick = (trigger.props as any)?.onClick as
-        | React.MouseEventHandler<any>
-        | undefined;
-      const mergedOnClick: React.MouseEventHandler<any> = (e) => {
-        originalOnClick?.(e);
-        if (!e.defaultPrevented) openModal();
-      };
+const TriggerNode = useMemo(() => {
+if (renderTrigger) {
+return renderTrigger({
+open: openModal,
+loading: isLoading,
+disabled: disabled || isLoading,
+});
+}
+if (trigger) {
+const originalOnClick = (trigger.props as any)?.onClick;
+const mergedOnClick: React.MouseEventHandler<any> = (e) => {
+originalOnClick?.(e);
+if (!e.defaultPrevented) openModal();
+};
+return React.cloneElement(trigger as React.ReactElement<any>, {
+onClick: mergedOnClick,
+disabled: (trigger.props as any)?.disabled ?? (disabled || isLoading),
+loading: (trigger.props as any)?.loading ?? isLoading,
+});
+}
+return DefaultTrigger;
+}, [renderTrigger, trigger, openModal, isLoading, disabled, DefaultTrigger]);
 
-      return React.cloneElement(trigger as React.ReactElement<any>, {
-        onClick: mergedOnClick,
-        disabled: (trigger.props as any)?.disabled ?? (disabled || isLoading),
-        // If your trigger is the shared Button, it will pick these up:
-        loading: (trigger.props as any)?.loading ?? isLoading,
-        "aria-busy": isLoading || undefined,
-      });
-    }
-    return DefaultTrigger;
-  }, [renderTrigger, trigger, openModal, isLoading, disabled, DefaultTrigger]);
+return (
+<>
+{TriggerNode}
 
-  return (
-    <>
-      {TriggerNode}
+  <Modal isOpen={open} onClose={closeModal} width={width} hideHeader>
+    <div className="flex flex-col items-center text-center space-y-4 p-6">
 
-      <Modal isOpen={open} onClose={closeModal} title={title} width={width}>
-        <div className="space-y-4">
-          <div className="text-sm text-gray-700">{message}</div>
+      <div className="w-20 h-20 flex items-center justify-center rounded-full border-4 border-red-400 bg-red-50 text-red-500">
+        <X className="w-10 h-10" />
+      </div>
 
-          {err && (
-            <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-              {err}
-            </div>
-          )}
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              variant="outlined"
-              onClick={closeModal}
-              disabled={isLoading}
-            >
-              {cancelLabel}
-            </Button>
+      <h2 className="text-lg font-semibold text-gray">{title}</h2>
 
-            <Button
-              variant="destructive"
-              onClick={handleConfirm}
-              loading={isLoading} // spinner from parent if controlled, else internal
-              disabled={isLoading}
-            >
-              {confirmLabel}
-            </Button>
-          </div>
+
+      <p className="text-sm text-gray-600">{message}</p>
+
+      {err && (
+        <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 w-full">
+          {err}
         </div>
-      </Modal>
-    </>
-  );
+      )}
+
+
+      <div className="flex justify-center gap-3 pt-2 w-full">
+        <Button
+          variant="outlined"
+          onClick={closeModal}
+          disabled={isLoading}
+          className="min-w-[100px]"
+        >
+          {cancelLabel}
+        </Button>
+
+        <Button
+          variant="destructive"
+          onClick={handleConfirm}
+          loading={isLoading}
+          disabled={isLoading}
+          className="min-w-[100px]"
+        >
+          {confirmLabel}
+        </Button>
+      </div>
+    </div>
+  </Modal>
+</>
+
+
+);
 };
 
 export default ConfirmDelete;

@@ -6,15 +6,14 @@ import {
 } from "../services/storeApi";
 import Loader from "../../../components/Loader";
 import Button from "../../../components/Button";
-import StoreMap from "./StoreMap";
-import { getFsaBadgeUrl } from "../helper/store-helper";
-import { toast } from "react-toastify";
+// import StoreMap from "./StoreMap";
+// import { getFsaBadgeUrl } from "../helper/store-helper";
 import OpeningHoursFormSection from "./OpeningHoursFormSection";
 import { useTheme } from "../../../context/themeContext";
 
 const StoreInformation = () => {
   const { id } = useParams();
-  const { data: store, isLoading } = useGetStoreByIdQuery(id!);
+  const { data: store, isLoading, refetch } = useGetStoreByIdQuery(id!);
   const [updateOpeningHours, { isLoading: updateOpeningHoursLoading }] =
     useUpdateOpeningHoursMutation();
   const { isDarkMode } = useTheme();
@@ -38,9 +37,11 @@ const StoreInformation = () => {
   );
 
   useEffect(() => {
-    if (store?.openingHours) {
+    if (store?.availabilityHour || store?.storeAvailability) {
+      const availabilityData = store.storeAvailability || store.availabilityHour;
+
       const openingMap = Object.fromEntries(
-        store.openingHours.map((h: any) => [h.day, h]),
+        availabilityData.map((h: any) => [h.day, h])
       );
 
       setOpeningHours(
@@ -53,6 +54,25 @@ const StoreInformation = () => {
       );
     }
   }, [store]);
+
+  const handleSaveOpeningHours = async () => {
+    try {
+      const transformedData = openingHours.map((hour) => ({
+        day: hour.day,
+        open: hour.closed ? null : hour.open,
+        close: hour.closed ? null : hour.close,
+        closed: hour.closed,
+      }));
+      await updateOpeningHours({
+        id: store.id,
+        data: { storeAvailability: transformedData },
+      }).unwrap();
+
+      refetch(); 
+    } catch (err: any) {
+      console.error("Failed to update opening hours:", err);
+    }
+  };
 
   if (isLoading) return <Loader />;
   if (!store) return <div className={`p-4 ${isDarkMode ? "text-red-400" : "text-red-500"}`}>Store not found.</div>;
@@ -72,13 +92,11 @@ const StoreInformation = () => {
                 ["Country", store.country],
                 ["Company Name", store.companyName],
                 ["Company Number", store.companyNumber],
-                ["VAT Number", store.vatNumber || "-"],
               ]}
               isDarkMode={isDarkMode}
             />
           </Card>
 
-          {/* Opening Hours */}
           <Card isDarkMode={isDarkMode}>
             <h2 className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}>Opening Hours</h2>
             <OpeningHoursFormSection
@@ -86,31 +104,19 @@ const StoreInformation = () => {
               setOpeningHours={setOpeningHours}
               sameAllDays={sameAllDays}
               setSameAllDays={setSameAllDays}
-            
             />
 
             <div className="flex gap-3 mt-4 flex-end justify-end">
               <Button
                 loading={updateOpeningHoursLoading}
                 disabled={updateOpeningHoursLoading}
-                onClick={async () => {
-                  try {
-                    await updateOpeningHours({
-                      id: store.id,
-                      data: openingHours,
-                    }).unwrap();
-                    toast.success("Store Opening hours updated successfully");
-                  } catch (err: any) {
-                    toast.error(err?.data?.message || "Error occurred");
-                  }
-                }}
+                onClick={handleSaveOpeningHours}
               >
                 Save Hours
               </Button>
             </div>
           </Card>
 
-          {/* Bank Accounts */}
           <Card isDarkMode={isDarkMode}>
             <h2 className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"}`}>Bank Accounts</h2>
             {store.bankDetails?.length === 0 ? (
@@ -120,9 +126,8 @@ const StoreInformation = () => {
                 {store.bankDetails.map((bank) => (
                   <li
                     key={bank.id}
-                    className={`border rounded-lg p-3 ${
-                      isDarkMode ? "bg-slate-700 border-slate-600" : "bg-slate-50 border-gray-200"
-                    }`}
+                    className={`border rounded-lg p-3 ${isDarkMode ? "bg-slate-700 border-slate-600" : "bg-slate-50 border-gray-200"
+                      }`}
                   >
                     <Detail label="Bank" value={bank.bankName} isDarkMode={isDarkMode} />
                     <Detail label="Account Number" value={bank.accountNumber} isDarkMode={isDarkMode} />
@@ -134,12 +139,11 @@ const StoreInformation = () => {
           </Card>
         </div>
 
-        <div className="rounded-xl">
+        {/* <div className="rounded-xl">
           {store.fsa && (
             <Card isDarkMode={isDarkMode}>
-              <h2 className={`text-lg font-semibold mb-3 border-b pb-3 ${
-                isDarkMode ? "text-slate-100 border-slate-600" : "text-gray-800 border-gray-200"
-              }`}>
+              <h2 className={`text-lg font-semibold mb-3 border-b pb-3 ${isDarkMode ? "text-slate-100 border-slate-600" : "text-gray-800 border-gray-200"
+                }`}>
                 FSA Food Hygiene Rating
               </h2>
 
@@ -174,22 +178,19 @@ const StoreInformation = () => {
             </Card>
           )}
           <StoreMap store={store} />
-        </div>
+        </div> */}
       </div>
     </div>
   );
 };
 
-// Simple reusable card container with dark mode support
 const Card = ({ children, isDarkMode }: { children: React.ReactNode; isDarkMode: boolean }) => (
-  <div className={`p-5 rounded-lg shadow ${
-    isDarkMode ? "bg-slate-800 border border-slate-700" : "bg-white border border-gray-200"
-  }`}>
+  <div className={`p-5 rounded-lg shadow ${isDarkMode ? "bg-slate-800 border border-slate-700" : "bg-white border border-gray-200"
+    }`}>
     {children}
   </div>
 );
 
-// Reusable grid layout for basic info with dark mode support
 const GridDetail = ({ data, isDarkMode }: { data: [string, string | undefined][]; isDarkMode: boolean }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
     {data.map(([label, value]) => (
@@ -198,11 +199,10 @@ const GridDetail = ({ data, isDarkMode }: { data: [string, string | undefined][]
   </div>
 );
 
-// One-line label-value pair with dark mode support
 const Detail = ({ label, value, isDarkMode }: { label: string; value?: string; isDarkMode: boolean }) => (
   <div>
     <strong className={isDarkMode ? "text-slate-300" : "text-gray-700"}>{label}:</strong>{" "}
-    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>{value}</span>
+    <span className={isDarkMode ? "text-slate-100" : "text-gray-800"}>{value || "N/A"}</span>
   </div>
 );
 

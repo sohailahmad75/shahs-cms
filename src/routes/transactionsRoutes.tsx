@@ -4,6 +4,7 @@ import BankConnected from "../features/dashboard/BankConnected";
 import BankTransactions from "../features/transactions";
 import TransactionsWrapper from "../features/transactions/TransactionsWrapper";
 import { ROLES } from "../helper";
+import AccountsPage from "../features/finance/AccountsPage";
 
 const transactionsRoutes = [
   {
@@ -18,24 +19,18 @@ const transactionsRoutes = [
         ),
       },
       {
-        path: "/transactions/bank-transactions",
+        path: "/transactions",
         element: (
           <MainLayout>
-            <TransactionsWrapper>
-              <BankTransactions />
-            </TransactionsWrapper>
+            <TransactionsWrapper /> {/* <- renders <Outlet /> */}
           </MainLayout>
         ),
-      },
-      {
-        path: "/transactions/app-transactions",
-        element: (
-          <MainLayout>
-            <TransactionsWrapper>
-              <BankTransactions />
-            </TransactionsWrapper>
-          </MainLayout>
-        ),
+        children: [
+          { index: true, element: <BankTransactions /> }, // default tab
+          { path: "bank-transactions", element: <BankTransactions /> },
+          { path: "app-transactions", element: <BankTransactions /> },
+          { path: "chart-of-accounts", element: <AccountsPage /> },
+        ],
       },
     ],
   },

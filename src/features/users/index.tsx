@@ -9,7 +9,6 @@ import ActionIcon from "../../components/ActionIcon";
 import { UserRole, type UserInfoTypes, type UsersType } from "./users.types";
 import { useTheme } from "../../context/themeContext";
 import { Link } from "react-router-dom";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
 import ConfirmDelete from "../../components/ConfirmDelete";
@@ -20,10 +19,9 @@ import { toast } from "react-toastify";
 
 import {
   useGetNewUsersQuery,
-  useCreateUsersMutation,
-  useUpdateUsersMutation,
   useDeleteUsersMutation,
 } from "./services/UsersApi";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const UsersTypeListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -63,8 +61,6 @@ const UsersTypeListPage: React.FC = () => {
   const [editingUser, setEditingUser] = useState<Partial<UserInfoTypes> | null>(
     null,
   );
-  const [createUser, { isLoading: creating }] = useCreateUsersMutation();
-  const [updateUser, { isLoading: updating }] = useUpdateUsersMutation();
   const [deleteUser] = useDeleteUsersMutation();
 
   const handleEdit = (user: UsersType) => {
@@ -73,6 +69,7 @@ const UsersTypeListPage: React.FC = () => {
       mappedDocuments = (user as any).userDocuments.reduce(
         (acc: any, doc: any) => {
           acc[doc.documentTypeId] = {
+            id: doc.id,
             documentType: doc.documentTypeId,
             fileS3Key: doc.fileS3Key,
             signedUrl: doc.signedUrl,
@@ -185,12 +182,19 @@ const UsersTypeListPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <InputField
+        {/* <InputField
           className="w-72"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search users…"
           name="query"
+        /> */}
+        <DebouncedSearch
+          value={query}
+          onChange={(val) => setQuery(val)}
+          delay={400}
+          placeholder="Search users..."
+          className="w-100"
         />
       </div>
 
@@ -241,7 +245,6 @@ const UsersTypeListPage: React.FC = () => {
           setEditingUser(null);
         }}
         editingUsers={editingUser}
-        isSubmitting={creating || updating}
       />
     </div>
   );

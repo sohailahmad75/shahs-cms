@@ -15,12 +15,24 @@ export const userSchema = (documentsList: any[]) =>
     niRate: Yup.number().min(0).required("NI rate is required"),
     shareCode: Yup.string().required("Share Code is required"),
     type: Yup.mixed().oneOf(["staff", "owner"]).required("Type is required"),
+    staffType: Yup.string().when('type', {
+      is: 'staff',
+      then: (schema) => schema.required('Staff type is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
 
     bankDetails: Yup.array().of(
-      Yup.object({
+      Yup.object().shape({
         bankName: Yup.string().required("Bank name is required"),
-        accountNumber: Yup.string().required("Account Number is required"),
-        sortCode: Yup.string().required("Sort Code is Required"),
+
+        accountNumber: Yup.string()
+          .required("Account Number is required")
+          .matches(/^\d+$/, "Account number must be digits only")
+          .matches(/^\d{16}$/, "Account Number must be exactly 16 digits"),
+
+        sortCode: Yup.string()
+          .required("Sort Code is required")
+          .matches(/^\d{6}$/, "Sort Code must be exactly 6 digits"),
       })
     ),
 
@@ -33,20 +45,37 @@ export const userSchema = (documentsList: any[]) =>
           fileS3Key: doc.isMandatory
             ? Yup.string().required(`${doc.name} Document is required`)
             : Yup.string().nullable(),
-          fileType: Yup.string().when("fileS3Key", {
+
+          fileType: Yup.string().when('fileS3Key', {
             is: (v: string) => !!v,
-            then: (s) => s.required("File type is required"),
-            otherwise: (s) => s.notRequired(),
+            then: (schema) => schema.required('File type is required'),
+            otherwise: (schema) => schema.strip(),
           }),
-          expiresAt: Yup.mixed().nullable().optional(),
+
+          expiresAt: Yup.mixed()
+            .nullable()
+            .optional()
+            .when('fileS3Key', {
+              is: (v: string) => !!v,
+              then: (schema) => schema,
+              otherwise: (schema) => schema.strip(),
+            }),
+
           remindBeforeDays: Yup.number()
-            .typeError("Must be a number")
-            .min(0, "Cannot be negative")
-            .optional(),
-        });
+            .typeError('Must be a number')
+            .min(0, 'Cannot be negative')
+            .nullable()
+            .optional()
+            .when('fileS3Key', {
+              is: (v: string) => !!v,
+              then: (schema) => schema,
+              otherwise: (schema) => schema.strip(),
+            }),
+        }).nullable().optional();
+
         return acc;
       }, {})
-    ),
+    ).nullable().optional(),
   });
 
 
@@ -63,6 +92,7 @@ export const userEmptyInitialValues: UserInfoTypes = {
   niRate: null,
   type: null,
   shareCode: "",
+  staffType:null,
   // niNumber: "",
   bankDetails: [{ bankName: "", accountNumber: "", sortCode: "" }],
 
@@ -124,6 +154,7 @@ export const userStepFieldKeys = {
     "type",
     "shareCode",
     "niNumber",
+    "staffType"
   ],
   account: ["bankDetails"],
   availability: ["openingHours", "sameAllDays"],

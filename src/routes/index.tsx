@@ -1,4 +1,3 @@
-// src/routes/index.tsx
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import authRoutes from "./authRoutes";
 import dashboardRoutes from "./dashboardRoutes";
@@ -10,20 +9,24 @@ import storeRoutes from "./storesRoutes";
 import kioskRoutes from "./kioskRoutes";
 import documentRoutes from "./documentTypeRoutes";
 import usersRoutes from "./usersRoutes";
-import inventoryRoutes from "./inventoryRoutes";
+import salesRoutes from "./salesRoutes";
+import ordersRoutes from "./ordersRoutes";
+import warehouseRoutes from "./warehouseRoutes";
 
 const router = createBrowserRouter([
   ...authRoutes,
   ...dashboardRoutes,
-  ...transactionsRoutes,
   ...reportRoutes,
   ...invoiceRoutes,
-  ...inventoryRoutes,
+  ...salesRoutes,
   ...menuManagerRoutes,
   ...storeRoutes,
   ...kioskRoutes,
   ...documentRoutes,
   ...usersRoutes,
+  ...ordersRoutes,
+  ...transactionsRoutes,
+  ...warehouseRoutes,
   {
     path: "*",
     element: <Navigate to="/dashboard" />,
