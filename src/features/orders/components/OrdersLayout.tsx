@@ -20,7 +20,7 @@ const OrdersLayout = () => {
     if (!Order) return <div className="text-red-500 p-4">Order not found.</div>;
 
     return (
-        <TabbedPageLayout title={`Order #${Order.orderNumber || id}`} tabs={tabs}>
+        <TabbedPageLayout title={`${Order.displayId}`} tabs={tabs}>
             <Outlet />
         </TabbedPageLayout>
     );

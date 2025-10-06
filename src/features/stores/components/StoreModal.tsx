@@ -22,7 +22,8 @@ import {
 import {
   type Store,
   type CreateStoreDto,
-  type UpdateStoreDto
+  type UpdateStoreDto,
+  type OpeningHour
 } from "../store.types";
 
 import {
@@ -96,16 +97,10 @@ const StoreModal = ({
     );
   }, [documentTypes, editingStore]);
 
-  // const [openingHours, setOpeningHours] = useState(
-  //   defaultDays.map((day) => ({
-  //     day,
-  //     open: "11:00 am",
-  //     close: "11:00 pm",
-  //     closed: false,
-  //   }))
-  // );
+  const [sameAllDays, setSameAllDays] = useState(false);
 
-  const [openingHours, setOpeningHours] = useState(
+
+  const [openingHours, setOpeningHours] = useState<OpeningHour[]>(
     defaultDays.map((day) => ({
       day,
       open: "11:00 am",
@@ -113,31 +108,16 @@ const StoreModal = ({
       closed: false,
     }))
   );
-  const [sameAllDays, setSameAllDays] = useState(false);
-
-  // useEffect(() => {
-  //   if (editingStore?.availabilityHour?.length) {
-  //     const dayMap = Object.fromEntries(
-  //       editingStore.availabilityHour.map((h) => [h.day, h])
-  //     );
-
-  //     const mapped = defaultDays.map((day) => ({
-  //       day,
-  //       open: dayMap[day]?.open || "11:00 am",
-  //       close: dayMap[day]?.close || "11:00 pm",
-  //       closed: dayMap[day]?.closed ?? false,
-  //     }));
-
-  //     setOpeningHours(mapped);
-  //   }
-  // }, [editingStore]);
 
   useEffect(() => {
     const source = editingStore?.availabilityHour || editingStore?.storeAvailability;
 
     if (source?.length) {
+
+      const hoursArray = Array.isArray(source) ? source : [source];
+
       const dayMap = Object.fromEntries(
-        source.map((h: any) => [h.day, h])
+        hoursArray.map((h: any) => [h.day, h])
       );
 
       const mapped = defaultDays.map((day) => ({
@@ -188,7 +168,7 @@ const StoreModal = ({
   const mapUpdateDto = (v: any, storeId: string): Partial<UpdateStoreDto> => {
     const updateData: Partial<UpdateStoreDto> = { id: storeId };
 
-    
+
     if (activeStep === 0) {
       updateData.storeBasicInfo = {
         name: v.name,
@@ -216,14 +196,9 @@ const StoreModal = ({
       }));
     }
 
+
     if (activeStep === 2) {
-      // updateData.availabilityHour = openingHours.map((o) => ({
-      //   day: o.day,
-      //   open: o.closed ? null : o.open || null,
-      //   close: o.closed ? null : o.close || null,
-      //   closed: !!o.closed,
-      // }));
-      updateData.storeAvailability = (v.storeAvailability || []).map((o: any) => ({
+      updateData.storeAvailability = openingHours.map((o: any) => ({
         id: o.id || undefined,
         day: o.day,
         open: o.closed ? null : o.open || null,
@@ -295,11 +270,11 @@ const StoreModal = ({
         initialValues={{
           ...createStoreInitialValues,
           ...(editingStore || {}),
-          
+
           storeType: editingStore?.storeType !== undefined
             ? Number(editingStore.storeType)
             : StoreTypeEnum.SHOP,
-         
+
           documents: editingStore?.storeDocuments
             ? (Array.isArray(editingStore.storeDocuments)
               ? editingStore.storeDocuments.reduce((acc: any, doc: any) => {
@@ -349,18 +324,42 @@ const StoreModal = ({
                 );
                 return fields;
               });
+            const getAvailabilityFields = (openingHours: any[]) => {
+              if (sameAllDays) {
+                return ["storeAvailability[0].open", "storeAvailability[0].close", "storeAvailability[0].closed"];
+              }
+              return openingHours.flatMap((_, idx) => [
+                `storeAvailability[${idx}].open`,
+                `storeAvailability[${idx}].close`,
+                `storeAvailability[${idx}].closed`,
+              ]);
+            };
+
 
             const stepKeys =
               currentKey === "account"
                 ? getBankFields(values)
-                : currentKey === "documents"
-                  ? getDocumentFields(documentsList || [])
-                  : storeStepFieldKeys[currentKey as keyof typeof storeStepFieldKeys];
+                : currentKey === "availability"
+                  ? getAvailabilityFields(openingHours)
+                  : currentKey === "documents"
+                    ? getDocumentFields(documentsList || [])
+                    : storeStepFieldKeys[currentKey as keyof typeof storeStepFieldKeys];
 
-            // ✅ Run validation
             await Promise.all(stepKeys.map((k) => setFieldTouched(k, true, true)));
             const allErrors = await validateForm();
-            const stepErrors = stepKeys.filter((k) => getIn(allErrors, k) !== undefined);
+
+
+            const stepErrors = stepKeys.filter((k) => {
+              const error = getIn(allErrors, k);
+              if (!error) return false;
+
+              if (k.includes('storeAvailability') && (k.includes('.open') || k.includes('.close'))) {
+                const dayIndex = parseInt(k.match(/\[(\d+)\]/)?.[1] || '0');
+                const isClosed = getIn(values, `storeAvailability[${dayIndex}].closed`);
+                return !isClosed;
+              }
+              return true;
+            });
 
             if (stepErrors.length) {
               const first = stepErrors[0];
@@ -372,7 +371,7 @@ const StoreModal = ({
               return false;
             }
 
-            // ✅ Create / Update logic
+
             let idForPut = storeId || values.id;
 
             if (currentKey === "basic" && !editingStore && !idForPut) {
@@ -421,13 +420,22 @@ const StoreModal = ({
                 }
               }
 
-              if (currentKey === "availability") {
+               if (current.key === "availability") {
                 const newAvail = mapUpdateDto(values, idForPut).storeAvailability;
-                const oldAvail = editingStore
-                  ? mapUpdateDto(editingStore as Store, idForPut).storeAvailability
-                  : null;
-                if (!oldAvail || shouldUpdate(oldAvail, newAvail)) {
-                  await updateStore({ id: idForPut, data: { storeAvailability: newAvail } }).unwrap();
+
+                const oldAvailRaw = editingStore?.storeAvailability || editingStore?.availabilityHour || [];
+                const oldAvail = oldAvailRaw.map((o: any) => ({
+                  day: o.day,
+                  open: o.closed ? null : o.open || null,
+                  close: o.closed ? null : o.close || null,
+                  closed: !!o.closed,
+                }));
+
+                if (!oldAvail.length || shouldUpdate(oldAvail, newAvail)) {
+                  await updateStore({
+                    id: idForPut,
+                    data: { storeAvailability: newAvail },
+                  }).unwrap();
                 }
               }
 
@@ -540,12 +548,6 @@ const StoreModal = ({
               )}
 
               {current.key === "availability" && (
-                // <OpeningHoursFormSection
-                //   openingHours={openingHours}
-                //   setOpeningHours={setOpeningHours}
-                //   sameAllDays={sameAllDays}
-                //   setSameAllDays={setSameAllDays}
-                // />
                 <OpeningHoursFormSection
                   openingHours={openingHours}
                   setOpeningHours={(updated) => {
@@ -589,43 +591,6 @@ const StoreModal = ({
                               <span className="text-red-500">*</span>
                             )}
                           </label>
-
-                          {/* <FileUploader
-                            value={
-                              values.documents?.[doc.id]?.fileS3Key ||
-                              doc.storeDoc?.fileS3Key ||
-                              ""
-                            }
-                            initialPreview={doc.storeDoc?.signedUrl}
-                            onChange={(fileS3Key) => {
-                              const prevDocs = values.documents || {};
-                              setFieldValue("documents", {
-                                ...prevDocs,
-                                [doc.id]: {
-                                  ...(prevDocs[doc.id] || {}),
-                                  documentType: doc.id,
-                                  fileS3Key,
-                                  fileType:
-                                    prevDocs[doc.id]?.fileType || "all",
-                                  name: doc.name,
-                                },
-                              });
-
-                              if (fileS3Key) {
-                                setTimeout(() => {
-                                  setFieldTouched(
-                                    `documents.${doc.id}.fileS3Key`,
-                                    true,
-                                    true
-                                  );
-                                  validateForm();
-                                }, 100);
-                              }
-                            }}
-                            path="store-documents"
-                            type="all"
-                            pathId={doc.id}
-                          /> */}
 
                           <FileUploader
                             value={values.documents?.[doc.id]?.fileS3Key || ""}
@@ -708,6 +673,7 @@ const StoreModal = ({
                                       ""
                                     )}
                                     onChange={handleChange}
+                                    className="[&_input]:h-[25px]"
                                   />
                                 </div>
                               </div>
@@ -724,14 +690,16 @@ const StoreModal = ({
                   Cancel
                 </Button>
                 <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outlined"
-                    onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
-                    disabled={currentIndex === 0 || isSaving}
-                  >
-                    Back
-                  </Button>
+                  {currentIndex > 0 && (
+                    <Button
+                      type="button"
+                      variant="outlined"
+                      onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
+                      disabled={isSaving}
+                    >
+                      Back
+                    </Button>
+                  )}
                   <Button type="button" onClick={goNext} disabled={isSaving}>
                     {currentIndex < steps.length - 1
                       ? "Next"

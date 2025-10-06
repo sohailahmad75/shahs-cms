@@ -14,55 +14,22 @@ import { useGetAllMutation } from "../features/users/services/UsersApi";
 import { useGetPresignedProductUrlMutation } from "../features/sales/products/services/productApi";
 
 interface FileUploaderProps {
-  /** The S3 key */
   value: string;
-  /**
-   * onChange can be used in two ways:
-   *  - onChange(key)
-   *  - onChange(key, fileName)
-   */
   onChange: (key: string, fileName?: string) => void;
-  /** Type of file to upload */
   type?: "image" | "file" | "all";
-  /** Upload path "menu-categories" | "menu-items" | "menu-banner" | "menu-modifier-options" | "store-documents" | "users-documents" */
   path: string;
-  /** Signed URL (or any URL) to show initial preview for edit mode */
   initialPreview?: string;
-
   error?: string | null;
-  /** e.g., storeId when path === "store-documents" */
   pathId?: string;
-
-  /** size preset: 1 = small, 4 = extra large */
   size?: 1 | 2 | 3 | 4;
   fit?: "cover" | "contain";
 }
 
 const SIZE_PRESETS = {
-  1: {
-    height: "h-20 sm:h-24 md:h-28",
-    icon: "w-5 h-5",
-    font: "text-xs",
-    padding: "p-2 sm:p-3 md:p-4",
-  },
-  2: {
-    height: "h-32 sm:h-36 md:h-45",
-    icon: "w-6 h-6",
-    font: "text-sm",
-    padding: "p-3",
-  },
-  3: {
-    height: "h-32 sm:h-40 md:h-48",
-    icon: "w-8 h-8",
-    font: "text-base",
-    padding: "p-4",
-  },
-  4: {
-    height: "h-40 sm:h-56 md:h-64",
-    icon: "w-10 h-10",
-    font: "text-lg",
-    padding: "p-5",
-  },
+  1: { height: "h-20 sm:h-24 md:h-28", icon: "w-5 h-5", font: "text-xs", padding: "p-2 sm:p-3 md:p-4" },
+  2: { height: "h-32 sm:h-36 md:h-45", icon: "w-6 h-6", font: "text-sm", padding: "p-3" },
+  3: { height: "h-32 sm:h-40 md:h-48", icon: "w-8 h-8", font: "text-base", padding: "p-4" },
+  4: { height: "h-40 sm:h-56 md:h-64", icon: "w-10 h-10", font: "text-lg", padding: "p-5" },
 } as const;
 
 const FileUploader: React.FC<FileUploaderProps> = ({
@@ -90,13 +57,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
   const isImageType = (fileType: string) => fileType.startsWith("image/");
 
-  const getPreviewSource = () => {
-    if (localPreviewUrl) return localPreviewUrl; // new uploaded preview
-    if (initialPreview) return initialPreview; // passed preview (signed URL)
-    return null;
-    // If neither, and value holds a non-image key, we show a doc icon + filename.
-  };
-
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
@@ -108,10 +68,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       if (isImage) {
         const localUrl = URL.createObjectURL(file);
         setLocalPreviewUrl(localUrl);
-        setFileName(null);
+        setFileName(file.name);
       } else {
         setFileName(file.name);
-        setLocalPreviewUrl(null);
+        setLocalPreviewUrl(URL.createObjectURL(file));
       }
 
       try {
@@ -128,21 +88,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               path,
             }).unwrap();
             break;
-
           case "store-documents":
-            if (!pathId) {
-              const errorMessage =
-                "Store ID is required for store document uploads.";
-              toast.error(errorMessage);
-              throw new Error(errorMessage);
-            }
+            if (!pathId) throw new Error("Store ID is required for store document uploads.");
             presigned = await getPresignedStoreDocUrl({
               fileName: file.name,
               fileType: file.type,
               storeId: pathId,
             }).unwrap();
             break;
-
           case "users-documents":
             presigned = await getPresignedAll({
               fileName: file.name,
@@ -164,7 +117,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         await uploadToS3(presigned.url, file);
 
         toast.success("File uploaded successfully");
-        // Support both onChange signatures: (key) and (key, fileName)
         onChange(presigned.key, file.name);
       } catch (err) {
         console.error(err);
@@ -175,14 +127,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         setIsUploading(false);
       }
     },
-    [
-      getPresignedStoreDocUrl,
-      getPresignedUrl,
-      getPresignedAll,
-      onChange,
-      path,
-      pathId,
-    ],
+    [getPresignedStoreDocUrl, getPresignedUrl, getPresignedAll, onChange, path, pathId]
   );
 
   const removeFile = () => {
@@ -192,29 +137,71 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     onChange("", "");
   };
 
-  // const acceptedTypes: Accept =
-  //   type === "image"
-  //     ? { "image/*": [".jpeg", ".jpg", ".png", ".webp"] }
-  //     : { "*/*": [] };
-
   const acceptedTypes: Accept =
     type === "image"
       ? {
-          "image/jpeg": [".jpeg", ".jpg"],
-          "image/png": [".png"],
-          "image/webp": [".webp"],
-        }
+        "image/jpeg": [".jpeg", ".jpg"],
+        "image/png": [".png"],
+        "image/webp": [".webp"],
+      }
       : {};
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: acceptedTypes,
     maxFiles: 1,
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 10 * 1024 * 1024,
   });
 
-  const previewSrc = getPreviewSource();
   const fitClass = `object-${fit}`;
+
+  const renderPreview = () => {
+    const src = localPreviewUrl || initialPreview;
+    const name = fileName || initialPreview?.split("/").pop() || "File uploaded";
+
+    if (!src) return null;
+
+
+    if (
+      (fileName && fileName.toLowerCase().endsWith(".pdf")) ||
+      (src && src.toLowerCase().includes(".pdf"))
+    ) {
+      return (
+        <iframe
+          src={src}
+          className="w-full h-full rounded-lg"
+          title="PDF Preview"
+        />
+      );
+    }
+
+    
+    if (name.endsWith(".xls") || name.endsWith(".xlsx")) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full">
+          <DocumentIcon className={`${icon} text-green-600`} />
+          <span className="text-gray-700 text-sm mt-2">{name}</span>
+          <a
+            href={src}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 underline text-xs mt-1"
+          >
+            Open Excel
+          </a>
+        </div>
+      );
+    }
+
+   
+    return (
+      <img
+        src={src}
+        alt="Uploaded Preview"
+        className={`w-full h-full ${fitClass} rounded-lg`}
+      />
+    );
+  };
 
   return (
     <>
@@ -223,22 +210,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           <div
             className={`absolute inset-0 group border rounded-md ${padding} bg-gray-50`}
           >
-            {previewSrc ? (
-              <img
-                src={previewSrc}
-                alt="Uploaded Preview"
-                className={`w-full h-full ${fitClass} rounded-lg`}
-              />
-            ) : (
-              <div className={`w-full h-full flex items-center gap-2 ${font}`}>
-                <DocumentIcon className={`${icon} text-gray-500`} />
-                <span className="text-gray-700 break-all">
-                  {fileName ||
-                    initialPreview?.split("/").pop() ||
-                    "File uploaded"}
-                </span>
-              </div>
-            )}
+            {renderPreview()}
 
             <button
               type="button"
@@ -251,13 +223,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         ) : (
           <div
             {...getRootProps()}
-            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${
-              error
-                ? "border-red-500 bg-red-50"
-                : isDragActive
-                  ? "border-orange-100 bg-orange-05"
-                  : "border-gray-300 hover:border-orange-100"
-            }`}
+            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${error
+              ? "border-red-500 bg-red-50"
+              : isDragActive
+                ? "border-orange-100 bg-orange-05"
+                : "border-gray-300 hover:border-orange-100"
+              }`}
           >
             <input {...getInputProps()} />
             {isUploading ? (

@@ -7,13 +7,14 @@ import type { Order } from "./helpers/ordersHelpers";
 import Loader from "../../components/Loader";
 import { Link } from "react-router-dom";
 import EyeOpen from "../../assets/styledIcons/EyeOpen";
-import InputField from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import { useTheme } from "../../context/themeContext";
 import FilterBar from "../../components/FilterBar";
 import { orderFiltersConfig } from "./helpers/ordersFilters";
 import { useServerTable } from "../../hooks/useServerTable";
 import ActionIcon from "../../components/ActionIcon";
+import { formatOrderDate } from "../../components/helper/dateFormat";
+import DebouncedSearch from "../../components/DebounceSerach";
 
 const OrderListPage: React.FC = () => {
     const { isDarkMode } = useTheme();
@@ -52,29 +53,33 @@ const OrderListPage: React.FC = () => {
             ),
         },
         { key: "displayId", label: "Order Number", sortable: true },
-        {
-            key: "customer",
-            label: "Customer Name",
-            sortable: true,
-            render: (_, row) => (
-                <span>{`${row.customer.firstName} ${row.customer.lastName}`}</span>
-            ),
-        },
-        {
-            key: "customer",
-            label: "Email",
-            render: (_, row) => <span>{row.customer.email}</span>,
-        },
+        // {
+        //     key: "customer",
+        //     label: "Email",
+        //     render: (_, row) => <span>{row.customer.email}</span>,
+        // },
         { key: "provider", label: "Provider", sortable: true },
-        { key: "totalAmount", label: "Total Amount", sortable: true },
+        {
+            key: "totalAmount",
+            label: "Total Amount",
+            sortable: true,
+            render: (value) => {
+                if (typeof value === "number") {
+                    return new Intl.NumberFormat("en-GB", {
+                        style: "currency",
+                        currency: "GBP",
+                    }).format(value);
+                }
+                return "£0.00";
+            }
+        },
+
         {
             key: "createdAt",
             label: "Order Date",
             sortable: true,
             render: (value) =>
-                typeof value === "string"
-                    ? new Date(value).toLocaleDateString("en-CA") 
-                    : ""
+                typeof value === "string" ? formatOrderDate(value) : "",
         },
 
         {
@@ -103,12 +108,12 @@ const OrderListPage: React.FC = () => {
             </div>
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <InputField
-                    className="w-72"
+                <DebouncedSearch
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(val) => setQuery(val)}
+                    delay={400}
                     placeholder="Search orders…"
-                    name="query"
+                    className="w-100"
                 />
             </div>
 
