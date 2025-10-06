@@ -85,20 +85,6 @@ export const productApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/products/${id}`, method: "DELETE" }),
       invalidatesTags: [{ type: "Products", id: "LIST" }],
     }),
-
-    getPresignedProductUrl: builder.mutation<
-      { url: string; key: string; method: string },
-      {
-        fileName: string;
-        fileType: string;
-      }
-    >({
-      query: (body) => ({
-        url: "inventory/products/presigned-url",
-        method: "PUT",
-        body,
-      }),
-    }),
   }),
   overrideExisting: false,
 });
@@ -109,5 +95,4 @@ export const {
   useCreateProductMutation,
   useUpdateProductsMutation,
   useDeleteProductMutation,
-  useGetPresignedProductUrlMutation,
 } = productApi;

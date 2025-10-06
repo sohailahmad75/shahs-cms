@@ -165,7 +165,7 @@ const ProductListPage: React.FC = () => {
   return (
     <div className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <h1 className="text-xl font-bold">Warehouse Products</h1>
+        <h1 className="text-xl font-bold">Products</h1>
 
         <Button
           onClick={() => {

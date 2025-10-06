@@ -159,7 +159,6 @@ const AccountsPage: React.FC = () => {
     {
       key: "openingBalance",
       label: "Opening balance",
-      align: "right",
       render: (_v, row) => (
         <span className="tabular-nums">{fmtGBP(row.openingBalance)}</span>
       ),

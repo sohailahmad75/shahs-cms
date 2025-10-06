@@ -242,8 +242,8 @@ const AccountModal: React.FC<Props> = ({ isOpen, onClose, editing }) => {
                     name="isSub"
                     label="Make this a subaccount"
                     checked={!!values.isSub}
-                    onChange={(checked: boolean) => {
-                      setFieldValue("isSub", checked);
+                    onChange={(checked) => {
+                      setFieldValue("isSub", checked.target.checked);
                       if (!checked) setFieldValue("parentId", "");
                     }}
                   />

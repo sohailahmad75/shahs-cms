@@ -11,6 +11,7 @@ import Loader from "./Loader";
 import { uploadToS3 } from "../helper";
 import { useGetPresignedStoreDocUrlMutation } from "../services/documentApi";
 import { useGetAllMutation } from "../features/users/services/UsersApi";
+import { useGetPresignedProductUrlMutation } from "../features/sales/products/services/productApi";
 
 interface FileUploaderProps {
   /** The S3 key */
@@ -83,6 +84,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const [getPresignedStoreDocUrl] = useGetPresignedStoreDocUrlMutation();
   const [getPresignedAll] = useGetAllMutation();
 
+  const [getPresignedProductUrl] = useGetPresignedProductUrlMutation();
+
   const { height, icon, font, padding } = SIZE_PRESETS[size];
 
   const isImageType = (fileType: string) => fileType.startsWith("image/");
@@ -147,6 +150,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({
             }).unwrap();
             break;
 
+          case "product-image":
+            presigned = await getPresignedProductUrl({
+              fileName: file.name,
+              fileType: file.type,
+            }).unwrap();
+            break;
+
           default:
             throw new Error(`Unsupported path: ${path}`);
         }
@@ -172,7 +182,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       onChange,
       path,
       pathId,
-    ]
+    ],
   );
 
   const removeFile = () => {
@@ -187,16 +197,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   //     ? { "image/*": [".jpeg", ".jpg", ".png", ".webp"] }
   //     : { "*/*": [] };
 
-
   const acceptedTypes: Accept =
     type === "image"
       ? {
-        "image/jpeg": [".jpeg", ".jpg"],
-        "image/png": [".png"],
-        "image/webp": [".webp"]
-      }
+          "image/jpeg": [".jpeg", ".jpg"],
+          "image/png": [".png"],
+          "image/webp": [".webp"],
+        }
       : {};
-
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -225,7 +233,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               <div className={`w-full h-full flex items-center gap-2 ${font}`}>
                 <DocumentIcon className={`${icon} text-gray-500`} />
                 <span className="text-gray-700 break-all">
-                  {fileName || initialPreview?.split("/").pop() || "File uploaded"}
+                  {fileName ||
+                    initialPreview?.split("/").pop() ||
+                    "File uploaded"}
                 </span>
               </div>
             )}
@@ -241,12 +251,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         ) : (
           <div
             {...getRootProps()}
-            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${error
+            className={`absolute inset-0 border-2 border-dashed rounded-lg ${padding} text-center cursor-pointer transition-colors ${
+              error
                 ? "border-red-500 bg-red-50"
                 : isDragActive
                   ? "border-orange-100 bg-orange-05"
                   : "border-gray-300 hover:border-orange-100"
-              }`}
+            }`}
           >
             <input {...getInputProps()} />
             {isUploading ? (

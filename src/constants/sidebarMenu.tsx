@@ -151,6 +151,31 @@ export const sidebarMenu: SidebarMenu[] = [
     roles: [ROLES.SUPER_ADMIN],
   },
   {
+    id: "warehouse",
+    name: "Warehouse",
+    icon: <InventoryIcon />,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    panel: {
+      title: "Warehouse",
+      children: [
+        {
+          id: "warehouse-products",
+          name: "Warehouse Products",
+          link: "/warehouse/products",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <ProductsIcon />,
+        },
+        {
+          id: "warehouse-product-categories",
+          name: "Warehouse Product Categories",
+          link: "/warehouse/product-categories",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <ProductsIcon />,
+        },
+      ],
+    },
+  },
+  {
     id: "settings",
     name: "Settings",
     icon: <SettingIcon />,

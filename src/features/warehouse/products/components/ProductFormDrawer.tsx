@@ -17,7 +17,6 @@ import DatePickerField from "../../../../components/DatePickerField";
 import FileUploader from "../../../../components/FileUploader";
 import { useGetProductFinanceOptionsQuery } from "../../../finance/services/financeAccountApi";
 import { useGetProductCategoriesQuery } from "../../productCategories/services/productCategoryApi";
-import { UOM_OPTIONS, VISIBILITY_OPTIONS } from "../helper/product-list";
 
 interface ProductFormDrawerProps {
   selectedType: "stock" | "non-stock" | "service";
@@ -105,12 +104,6 @@ const qbValidation = Yup.object({
   categoryId: Yup.string().optional(),
   purchaseTaxCode: Yup.string().optional(),
   preferredSupplierId: Yup.string().optional(),
-  uom: Yup.mixed<"kg" | "g" | "ltr" | "ml" | "pcs">()
-    .oneOf(["kg", "g", "ltr", "ml", "pcs"])
-    .required("UOM is required"),
-  visibility: Yup.mixed<"warehouse" | "store">()
-    .oneOf(["warehouse", "store"])
-    .optional(),
   // s3Key: Yup.string().required("Product image is required"),
 });
 
@@ -137,8 +130,6 @@ const getDefaultValues = (type: string) => ({
   preferredSupplierId: "",
   isInventoryItem: type === "stock",
   isActive: true,
-  uom: "",
-  visibility: "store",
 });
 
 export default function ProductFormDrawer({
@@ -347,7 +338,7 @@ export default function ProductFormDrawer({
                     setFieldTouched("s3Key", true, true);
                   }}
                   type="image"
-                  path="product-image"
+                  path="menu-items"
                   initialPreview={(editingProduct as any)?.signedUrl || ""}
                   error={
                     touched.s3Key && (errors as any).s3Key
@@ -376,47 +367,6 @@ export default function ProductFormDrawer({
                 error={
                   touched.categoryId && (errors as any).categoryId
                     ? ((errors as any).categoryId as string)
-                    : ""
-                }
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Unit of Measure (UOM)
-              </label>
-              <SelectField
-                name="uom"
-                value={String(values.uom || "")}
-                onChange={(e: any) => {
-                  setFieldValue("uom", e.target.value);
-                  setFieldTouched("uom", true, true);
-                }}
-                options={UOM_OPTIONS}
-                error={
-                  touched.uom && (errors as any).uom
-                    ? ((errors as any).uom as string)
-                    : ""
-                }
-              />
-            </div>
-
-            {/* Visibility (new) */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Visibility
-              </label>
-              <SelectField
-                name="visibility"
-                value={String(values.visibility || "")}
-                onChange={(e: any) => {
-                  setFieldValue("visibility", e.target.value);
-                  setFieldTouched("visibility", true, true);
-                }}
-                options={VISIBILITY_OPTIONS}
-                error={
-                  touched.visibility && (errors as any).visibility
-                    ? ((errors as any).visibility as string)
                     : ""
                 }
               />

@@ -1,7 +1,6 @@
 // FILE: src/features/finance/services/financeAccountApi.ts
 import { baseApi } from "../../../services/baseApi";
 
-
 export type AccountType =
   | "current_assets"
   | "tangible_assets"
@@ -38,7 +37,7 @@ export const financeAccountApi = baseApi.injectEndpoints({
       query: (args) => {
         const p = new URLSearchParams();
         if (args?.q) p.set("q", args.q);
-        if (args?.accountType) p.set("account_type", args.accountType); // map to snake for BE
+        if (args?.accountType) p.set("accountType", args.accountType); // map to snake for BE
         if (args?.parentId !== undefined)
           p.set("parent_id", String(args.parentId ?? ""));
         return { url: `/finance/accounts?${p.toString()}`, method: "GET" };
@@ -49,7 +48,7 @@ export const financeAccountApi = baseApi.injectEndpoints({
     // Options used by product form
     getProductFinanceOptions: b.query<
       any,
-      { account_type: string; detail_type: string } & { group?: string }
+      { accountType: string; detailType: string } & { group?: string }
     >({
       query: (q) => ({
         url: "/finance/accounts/product-finance-options",
@@ -73,7 +72,9 @@ export const financeAccountApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (_r, _e, _a) => [{ type: "FinanceAccounts", id: "LIST" }],
+      invalidatesTags: (_r, _e, _a) => [
+        { type: "FinanceAccounts", id: "LIST" },
+      ],
     }),
     deleteAccount: b.mutation<{ success: boolean }, string>({
       query: (id) => ({ url: `/finance/accounts/${id}`, method: "DELETE" }),
