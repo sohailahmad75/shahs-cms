@@ -25,22 +25,22 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # Write the private key to a file and lock permissions
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
 
+      # Upload build to server (rsync over ssh with our key file)
       - name: Deploy files to Lightsail
         run: |
-          rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }}" \
+          rsync -avz --delete \
+            -e "ssh -i key.pem -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
             dist/ ${{ secrets.SSH_USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/dist/
 
+      # Restart Apache
       - name: Restart Apache
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            sudo /opt/bitnami/ctlscript.sh restart apache
+        run: |
+          ssh -i key.pem -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.HOST }} \
+            'sudo /opt/bitnami/ctlscript.sh restart apache'
