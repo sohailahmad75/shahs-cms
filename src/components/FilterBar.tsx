@@ -115,7 +115,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         }}
                         name={key}
                         placeholder={label}
-                        className="!w-[120px] !h-[38px] rounded-md"
+                        className="!w-[120px] !h-[38px] rounded-sm"
                         dropdownClassName="!w-[288px] !h-[320px]"
 
                     />
