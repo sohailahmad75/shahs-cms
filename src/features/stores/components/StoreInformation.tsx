@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   useGetStoreByIdQuery,
-  useUpdateOpeningHoursMutation,
+  useUpdateStoresMutation
 } from "../services/storeApi";
 import Loader from "../../../components/Loader";
 import Button from "../../../components/Button";
@@ -15,7 +15,7 @@ const StoreInformation = () => {
   const { id } = useParams();
   const { data: store, isLoading, refetch } = useGetStoreByIdQuery(id!);
   const [updateOpeningHours, { isLoading: updateOpeningHoursLoading }] =
-    useUpdateOpeningHoursMutation();
+    useUpdateStoresMutation();
   const { isDarkMode } = useTheme();
   const defaultHours = [
     "Sunday",
@@ -68,7 +68,7 @@ const StoreInformation = () => {
         data: { storeAvailability: transformedData },
       }).unwrap();
 
-      refetch(); 
+      refetch();
     } catch (err: any) {
       console.error("Failed to update opening hours:", err);
     }
