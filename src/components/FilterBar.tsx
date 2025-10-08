@@ -46,11 +46,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
         if (!value.trim()) return;
 
         setAppliedFilters((prev) => {
-            const exists = prev.some((f) => f.key === key && f.value === value);
-            if (exists) return prev;
-            return [...prev, { key, value }];
+            
+            const newApplied = prev.filter((f) => f.key !== key);
+            return [...newApplied, { key, value }];
         });
     };
+
 
     const removeFilter = (index: number) => {
         setAppliedFilters((prev) => {
@@ -132,12 +133,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         if (e.key === 'Enter') {
                             const value = (e.target as HTMLInputElement).value;
                             if (value.trim()) {
-                                handleFilterChange(key, value); 
+                                handleFilterChange(key, value);
                                 applyFilter(key, value);
                             }
                         }
                     }}
-                   
+
                     name={key}
                 />
             </div>
