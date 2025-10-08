@@ -6,7 +6,7 @@ import { useTheme } from "../context/themeContext";
 import ArrowIcon from "../assets/styledIcons/ArrowIcon";
 import ShahsIcon from "../assets/styledIcons/ShahsIcon";
 import ShahsLogo from "../assets/styledIcons/ShahsLogo";
-import { sidebarMenu } from "../constants";
+import { sidebarMenu } from "../constants/sidebarMenu";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -106,7 +106,7 @@ const Sidebar = ({
                         onClick={() =>
                           setActivePanel(activePanel === id ? null : id)
                         }
-                        className={`w-full flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all
+                        className={`w-full flex items-center cursor-pointer ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all
                 ${
                   isItemActive
                     ? `${isDarkMode ? "bg-slate-900 text-primary-100" : "bg-orange-200 text-orange-100"} font-semibold`
@@ -148,7 +148,7 @@ const Sidebar = ({
                   <li key={id} className="mt-auto">
                     <button
                       onClick={() => setActivePanel(isItemActive ? null : id)}
-                      className={`w-full flex items-center ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all
+                      className={`w-full flex items-center cursor-pointer ${isCollapsed ? "justify-center" : "gap-3 px-4"} py-2 rounded-md transition-all
               ${
                 isItemActive
                   ? `${isDarkMode ? "bg-slate-900 text-primary-100" : "bg-orange-200 text-orange-100"} font-semibold`

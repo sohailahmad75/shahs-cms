@@ -3,12 +3,22 @@ import { useFormikContext } from "formik";
 import InputField from "../../../components/InputField";
 import SelectField from "../../../components/SelectField";
 import DatePickerField from "../../../components/DatePickerField";
-import type { UserInfoTypes } from "../users.types";
+import type { UserInfoTypes, UserTypeStaffKind } from "../users.types";
+import { useTheme } from "../../../context/themeContext";
 
 type Props = {
   onTypeChange?: (nextType: UserInfoTypes["type"]) => void;
   typeOptions?: { label: string; value: UserInfoTypes["type"] }[];
 };
+
+const staffTypeOptions: { value: UserTypeStaffKind; label: string }[] = [
+  { value: "full_time", label: "Full Time" },
+  { value: "student", label: "Student" },
+  { value: "sponsored", label: "Sponsored" },
+  { value: "psw", label: "PSW" },
+  { value: "asylum", label: "Asylum" },
+  { value: "other", label: "Other" },
+];
 
 const BasicInfoForm: React.FC<Props> = ({
   onTypeChange,
@@ -17,24 +27,24 @@ const BasicInfoForm: React.FC<Props> = ({
     { label: "Owner", value: "owner" },
   ],
 }) => {
+  const { isDarkMode } = useTheme();
   const { values, handleChange, setFieldValue, errors, touched } =
     useFormikContext<UserInfoTypes>();
 
-  const handleType = (e: any) => {
-    const nextType = (e?.target?.value ?? e) as UserInfoTypes["type"];
+  // YEH NEW HANDLERS BANAYEN
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextType = e.target.value as UserInfoTypes["type"];
     setFieldValue("type", nextType);
+    // Staff type reset karen jab user type change ho
+    if (nextType !== "staff") {
+      setFieldValue("staffType", "");
+    }
     onTypeChange?.(nextType);
   };
 
-  // const formatDateOnly = (dateString?: string | null) => {
-  //   if (!dateString) return "";
-  //   try {
-  //     return new Date(dateString).toISOString().split("T")[0]; // yyyy-MM-dd
-  //   } catch {
-  //     return "";
-  //   }
-  // };
-
+  const handleStaffTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFieldValue("staffType", e.target.value as UserTypeStaffKind);
+  };
 
   const formatDateOnly = (dateString?: string | null) => {
     if (!dateString) return "";
@@ -45,12 +55,11 @@ const BasicInfoForm: React.FC<Props> = ({
     }
   };
 
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          First Name <span className="text-red-500">*</span>
+          First Name <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="firstName"
@@ -63,7 +72,7 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Surname <span className="text-red-500">*</span>
+          Surname <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="surName"
@@ -76,7 +85,7 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Email <span className="text-red-500">*</span>
+          Email <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="email"
@@ -89,7 +98,7 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Phone <span className="text-red-500">*</span>
+          Phone <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="phone"
@@ -102,7 +111,7 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Street <span className="text-red-500">*</span>
+          Street <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="street"
@@ -115,7 +124,7 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          City <span className="text-red-500">*</span>
+          City <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="city"
@@ -128,7 +137,7 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Postcode <span className="text-red-500">*</span>
+          Postcode <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="postcode"
@@ -138,9 +147,10 @@ const BasicInfoForm: React.FC<Props> = ({
           error={touched.postcode ? (errors.postcode as string) : ""}
         />
       </div>
+
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Date of Birth <span className="text-red-500">*</span>
+          Date of Birth <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <DatePickerField
           name="dateOfBirth"
@@ -151,12 +161,11 @@ const BasicInfoForm: React.FC<Props> = ({
           }}
           error={touched.dateOfBirth ? (errors.dateOfBirth as string) : ""}
         />
-
       </div>
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Cash-in Rate <span className="text-red-500">*</span>
+          Cash-in Rate <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="cashInRate"
@@ -170,7 +179,7 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          NI Rate <span className="text-red-500">*</span>
+          NI Rate <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="niRate"
@@ -182,22 +191,9 @@ const BasicInfoForm: React.FC<Props> = ({
         />
       </div>
 
-      {/* <div>
-        <label className="text-sm font-medium text-gray-700 mb-1 block">
-          NI Number <span className="text-red-500">*</span>
-        </label>
-        <InputField
-          name="niNumber"
-          placeholder="Enter NI number"
-          value={String(values.niNumber ?? "")}
-          onChange={handleChange}
-          error={touched.niNumber ? (errors.niNumber as string) : ""}
-        />
-      </div> */}
-
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Share Code <span className="text-red-500">*</span>
+          Share Code <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <InputField
           name="shareCode"
@@ -210,16 +206,32 @@ const BasicInfoForm: React.FC<Props> = ({
 
       <div>
         <label className="text-sm font-medium text-gray-700 mb-1 block">
-          Type <span className="text-red-500">*</span>
+          Type <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
         </label>
         <SelectField
           name="type"
           value={values.type}
-          onChange={handleType}
+          onChange={handleTypeChange}
           options={typeOptions}
           error={touched.type ? (errors.type as string) : ""}
         />
       </div>
+
+
+      {values.type === "staff" && (
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1 block">
+            Staff Type <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
+          </label>
+          <SelectField
+            name="staffType"
+            value={values.staffType}
+            onChange={handleStaffTypeChange}
+            options={staffTypeOptions}
+            error={touched.staffType ? (errors.staffType as string) : ""}
+          />
+        </div>
+      )}
     </div>
   );
 };

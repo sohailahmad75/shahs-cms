@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { useTheme } from "../context/themeContext";
 import { useNavigate } from "react-router-dom";
-import { sidebarMenu } from "../constants";
+import { sidebarMenu } from "../constants/sidebarMenu";
 
 interface Props {
   children: React.ReactNode;

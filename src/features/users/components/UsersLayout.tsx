@@ -11,6 +11,7 @@ const UsersLayout = () => {
     const tabs = useMemo(
         () => [
             { label: "Users Information", path: `/users/${id}` },
+            { label: "Users Documents", path: `/users/${id}/documents` },
 
         ],
         [id],

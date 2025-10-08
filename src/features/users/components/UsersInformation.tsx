@@ -20,6 +20,17 @@ const UsersInformation = () => {
                 Users not found.
             </div>
         );
+    const getRoleName = (role: number) => {
+        switch (role) {
+            case 1:
+                return "Owner"
+            case 3:
+                return "Staff"
+            default:
+                return "Unknown"
+        }
+    }
+
 
     return (
         <div className={`mx-auto ${isDarkMode ? "bg-slate-950" : "bg-white"}`}>
@@ -43,51 +54,52 @@ const UsersInformation = () => {
                                 ["Cash In Rate", Users.cashInRate],
                                 ["NI Rate", Users.NiRate],
                                 ["Share Code", Users.shareCode],
-                                ["Role", String(Users.role)],
-                                // ["Status", String(Users.statusId)],
+                                ["Role", getRoleName(Number(Users.role))],
                             ]}
                             isDarkMode={isDarkMode}
                         />
                     </Card>
 
-                    {/* Availability Hours */}
-                    <Card isDarkMode={isDarkMode}>
-                        <h2
-                            className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"
-                                }`}
-                        >
-                            Availability Hours
-                        </h2>
 
-                        {Users.availabilityHours && Users.availabilityHours.length > 0 ? (
-                            <ul className="divide-y divide-gray-200 mt-3">
-                                {Users.availabilityHours.map((hour: any) => (
-                                    <li
-                                        key={hour.day}
-                                        className={`flex justify-between py-2 ${isDarkMode ? "text-slate-200" : "text-gray-700"
-                                            }`}
-                                    >
-                                        <span className="font-medium">{hour.day}</span>
-                                        {hour.closed ? (
-                                            <span className="italic text-red-500">Closed</span>
-                                        ) : (
-                                            <span>
-                                                {hour.open} - {hour.close}
-                                            </span>
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p
-                                className={isDarkMode ? "text-slate-400" : "text-gray-500"}
+                  
+                    {Number(Users.role) !== 1 && (
+                        <Card isDarkMode={isDarkMode}>
+                            <h2
+                                className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-800"
+                                    }`}
                             >
-                                No opening hours available.
-                            </p>
-                        )}
-                    </Card>
+                                Availability Hours
+                            </h2>
 
-                    {/* Bank Accounts */}
+                            {Users.availabilityHours && Users.availabilityHours.length > 0 ? (
+                                <ul className="divide-y divide-gray-200 mt-3">
+                                    {Users.availabilityHours.map((hour: any) => (
+                                        <li
+                                            key={hour.day}
+                                            className={`flex justify-between py-2 ${isDarkMode ? "text-slate-200" : "text-gray-700"
+                                                }`}
+                                        >
+                                            <span className="font-medium">{hour.day}</span>
+                                            {hour.closed ? (
+                                                <span className="italic text-red-500">Closed</span>
+                                            ) : (
+                                                <span>
+                                                    {hour.open} - {hour.close}
+                                                </span>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className={isDarkMode ? "text-slate-400" : "text-gray-500"}>
+                                    No opening hours available.
+                                </p>
+                            )}
+                        </Card>
+                    )}
+
+
+                    
                     <Card isDarkMode={isDarkMode}>
                         <h2
                             className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
@@ -126,65 +138,6 @@ const UsersInformation = () => {
                                             value={bank.sortCode}
                                             isDarkMode={isDarkMode}
                                         />
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </Card>
-
-                    {/* Documents */}
-                    <Card isDarkMode={isDarkMode}>
-                        <h2
-                            className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
-                                }`}
-                        >
-                            Documents
-                        </h2>
-                        {Users.userDocuments?.length === 0 ? (
-                            <p
-                                className={isDarkMode ? "text-slate-400" : "text-gray-500"}
-                            >
-                                No documents uploaded.
-                            </p>
-                        ) : (
-                            <ul className="space-y-3">
-                                {Users.userDocuments.map((doc: any) => (
-                                    <li
-                                        key={doc.id}
-                                        className={`border rounded-lg p-3 ${isDarkMode
-                                            ? "bg-slate-700 border-slate-600"
-                                            : "bg-slate-50 border-gray-200"
-                                            }`}
-                                    >
-                                        <Detail
-                                            label="Name"
-                                            value={doc.name}
-                                            isDarkMode={isDarkMode}
-                                        />
-                                        <Detail
-                                            label="Type ID"
-                                            value={doc.documentTypeId}
-                                            isDarkMode={isDarkMode}
-                                        />
-                                        <Detail
-                                            label="Expires At"
-                                            value={doc.expiresAt ? new Date(
-                                                doc.expiresAt
-                                            ).toLocaleDateString() : "N/A"}
-                                            isDarkMode={isDarkMode}
-                                        />
-                                        {doc.signedUrl && (
-                                            <div className="mt-2">
-                                                <a
-                                                    href={doc.signedUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-500 hover:text-blue-700 underline"
-                                                >
-                                                    View Document
-                                                </a>
-                                            </div>
-                                        )}
                                     </li>
                                 ))}
                             </ul>

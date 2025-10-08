@@ -6,15 +6,11 @@ on:
 
 jobs:
   deploy:
-    name: Build & Deploy to Lightsail
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
@@ -29,25 +25,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build project
-        run: npm run build
+      - run: npm run build
+ 
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d > key.pem
+          chmod 600 key.pem
 
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Test SSH (should print OK-SSH)
+        run: |
+          ssh -i key.pem -p "${{ secrets.SSH_PORT }}" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
+            "${{ secrets.SSH_USER }}@${{ secrets.HOST }}" 'echo OK-SSH'
 
       - name: Deploy files to Lightsail
         run: |
-          rsync -avz --delete -e "ssh -p ${{ secrets.SSH_PORT }}" \
-            dist/ ${{ secrets.SSH_USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/dist/
+          rsync -avz --delete \
+            -e "ssh -i key.pem -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o IdentitiesOnly=yes" \
+            dist/ "${{ secrets.SSH_USER }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}/dist/"
 
       - name: Restart Apache
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            sudo /opt/bitnami/ctlscript.sh restart apache
+        run: |
+          ssh -i key.pem -p "${{ secrets.SSH_PORT }}" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
+            "${{ secrets.SSH_USER }}@${{ secrets.HOST }}" 'sudo /opt/bitnami/ctlscript.sh restart apache'
