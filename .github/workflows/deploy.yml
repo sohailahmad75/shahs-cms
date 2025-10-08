@@ -25,12 +25,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - run: npm run build:prod
- 
+      - name: Build (production)
+        run: |
+          set -e
+          npm run build:prod
+          (grep -RIn "localhost" dist && exit 1) || echo "✅ no localhost refs"
+          grep -RIn "${{ secrets.VITE_API_BASE_URL }}" dist || true
+
       - name: Prepare SSH key
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d > key.pem
           chmod 600 key.pem
+
+      - name: Ensure target dir exists
+        run: |
+          ssh -i key.pem -p "${{ secrets.SSH_PORT }}" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
+            "${{ secrets.SSH_USER }}@${{ secrets.HOST }}" 'mkdir -p "${{ secrets.TARGET_DIR }}/dist"'
 
       - name: Test SSH (should print OK-SSH)
         run: |
