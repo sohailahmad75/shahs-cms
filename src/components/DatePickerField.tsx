@@ -11,6 +11,8 @@ type Props = {
   isRange?: boolean;
   error?: string;
   placeholder?: string;
+  className?: string; 
+  dropdownClassName?: string; 
 };
 
 const DatePickerField: React.FC<Props> = ({
@@ -20,6 +22,8 @@ const DatePickerField: React.FC<Props> = ({
   isRange = false,
   error,
   placeholder = "Select date",
+  className = "", 
+  dropdownClassName = "", 
 }) => {
   const [show, setShow] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -29,7 +33,6 @@ const DatePickerField: React.FC<Props> = ({
     left: 0,
     width: 0,
   });
-
 
   const getRangeStateFromValue = () => {
     if (isRange && Array.isArray(value)) {
@@ -48,19 +51,16 @@ const DatePickerField: React.FC<Props> = ({
 
   const [rangeState, setRangeState] = useState(getRangeStateFromValue());
 
- 
   useEffect(() => {
     setRangeState(getRangeStateFromValue());
   }, [value]);
 
-  // const formatDate = (date: Date) => date.toISOString().split("T")[0];
   const formatDate = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
-
 
   const displayValue = isRange
     ? Array.isArray(value)
@@ -131,7 +131,7 @@ const DatePickerField: React.FC<Props> = ({
         className={`w-full px-4 py-2 border rounded-lg transition outline-none cursor-pointer ${error
           ? "border-orange-100 focus:border-orange-100"
           : "border-gray-300 focus:border-orange-100"
-          }`}
+          } ${className}`} 
         placeholder={placeholder}
         value={displayValue}
         onClick={() => setShow((prev) => !prev)}
@@ -141,10 +141,11 @@ const DatePickerField: React.FC<Props> = ({
         createPortal(
           <div
             ref={dropdownRef}
-            className="absolute z-50 mt-2 bg-white shadow-xl rounded-lg"
+            className={`absolute z-50 mt-2 bg-white shadow-xl rounded-lg ${dropdownClassName}`} // <-- custom dropdown
             style={{
               top: dropdownPosition.top,
               left: dropdownPosition.left,
+              width: dropdownPosition.width,
             }}
           >
             {isRange ? (

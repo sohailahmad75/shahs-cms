@@ -46,7 +46,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         if (!value.trim()) return;
 
         setAppliedFilters((prev) => {
-            
+
             const newApplied = prev.filter((f) => f.key !== key);
             return [...newApplied, { key, value }];
         });
@@ -115,6 +115,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         }}
                         name={key}
                         placeholder={label}
+                        className="!w-[120px] !h-[38px] rounded-md"
+                        dropdownClassName="!w-[288px] !h-[320px]"
+
                     />
                 </div>
             );
