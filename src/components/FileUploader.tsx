@@ -22,6 +22,8 @@ interface FileUploaderProps {
   pathId?: string;
   size?: 1 | 2 | 3 | 4;
   fit?: "cover" | "contain";
+  isUploadingAny?: boolean;
+  setIsUploadingAny?: (val: boolean) => void;
 }
 
 const SIZE_PRESETS = {
@@ -37,6 +39,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   type = "image",
   path,
   initialPreview,
+  setIsUploadingAny,
+  isUploadingAny,
   error,
   pathId,
   size = 2,
@@ -60,6 +64,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       if (!file) return;
 
       setIsUploading(true);
+      setIsUploadingAny?.(true);
 
       const isImage = isImageType(file.type);
       if (isImage) {
@@ -114,9 +119,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         onChange("", "");
       } finally {
         setIsUploading(false);
+         setIsUploadingAny?.(false); 
       }
     },
-    [getPresignedStoreDocUrl, getPresignedUrl, getPresignedAll, onChange, path, pathId]
+    [getPresignedStoreDocUrl, getPresignedUrl, getPresignedAll, onChange, path, pathId , setIsUploadingAny]
   );
 
   const removeFile = () => {
@@ -140,6 +146,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     accept: acceptedTypes,
     maxFiles: 1,
     maxSize: 10 * 1024 * 1024,
+    disabled: isUploadingAny || isUploading,
   });
 
   const fitClass = `object-${fit}`;

@@ -54,6 +54,7 @@ const UsersTypeModal = ({
 
   const [createUser, createStatus] = useCreateUsersMutation();
   const [updateUser, updateStatus] = useUpdateUsersMutation();
+  const [isUploadingAny, setIsUploadingAny] = useState(false);
 
 
   const shouldUpdate = (oldVal: any, newVal: any) => !isEqual(oldVal, newVal);
@@ -687,6 +688,8 @@ const UsersTypeModal = ({
                             path="users-documents"
                             type="all"
                             pathId={doc.id}
+                            isUploadingAny={isUploadingAny}
+                            setIsUploadingAny={setIsUploadingAny}
                           />
 
 
