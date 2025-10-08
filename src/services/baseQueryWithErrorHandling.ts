@@ -16,7 +16,7 @@ type CustomExtraOptions = {
 };
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
+  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3001",
   credentials: "include",
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
