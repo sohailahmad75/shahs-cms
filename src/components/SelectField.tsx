@@ -17,6 +17,7 @@ type SelectFieldProps = {
   error?: string;
   disabled?: boolean;
   darkMode?: boolean;
+  className?: string;
 };
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -28,6 +29,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   error,
   disabled,
   darkMode = false,
+  className = "",
 }) => {
   const { isDarkMode: themeDarkMode } = useTheme();
   const finalDarkMode = darkMode || themeDarkMode;
@@ -48,7 +50,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
     if (!wrapperRef.current) return;
 
     const rect = wrapperRef.current.getBoundingClientRect();
-    const dropdownHeight = Math.min(200, 40 * options.length); 
+    const dropdownHeight = Math.min(200, 40 * options.length);
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
 
@@ -102,14 +104,14 @@ const SelectField: React.FC<SelectFieldProps> = ({
   }, [open, options]);
 
   return (
-    <div className="relative w-full text-sm" ref={wrapperRef}>
+    <div className={`relative  text-sm ${className}`} ref={wrapperRef}>
 
       <div
         className={`flex items-center justify-between border rounded px-4 py-2 transition-colors duration-200 w-full ${error
-            ? "border-red-500"
-            : finalDarkMode
-              ? "border-slate-600 focus-within:border-slate-400"
-              : "border-gray-300 focus-within:border-orange-500"
+          ? "border-red-500"
+          : finalDarkMode
+            ? "border-slate-600 focus-within:border-slate-400"
+            : "border-gray-300 focus-within:border-orange-500"
           } ${disabled
             ? finalDarkMode
               ? "bg-slate-700 cursor-not-allowed text-slate-400"
@@ -122,12 +124,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
       >
         <span
           className={`truncate ${selectedOption
-              ? finalDarkMode
-                ? "text-slate-200"
-                : "text-gray-800"
-              : finalDarkMode
-                ? "text-slate-400"
-                : "text-gray-400"
+            ? finalDarkMode
+              ? "text-slate-200"
+              : "text-gray-800"
+            : finalDarkMode
+              ? "text-slate-400"
+              : "text-gray-400"
             }`}
         >
           {selectedOption?.label || placeholder}
@@ -135,16 +137,16 @@ const SelectField: React.FC<SelectFieldProps> = ({
         <ArrowIcon
           size={18}
           className={`ml-2 transition-transform ${open
-              ? "rotate-180 " +
-              (finalDarkMode ? "text-slate-200" : "text-orange-500")
-              : finalDarkMode
-                ? "text-slate-400"
-                : "text-gray-400"
+            ? "rotate-180 " +
+            (finalDarkMode ? "text-slate-200" : "text-orange-500")
+            : finalDarkMode
+              ? "text-slate-400"
+              : "text-gray-400"
             } ${disabled ? "opacity-50" : ""}`}
         />
       </div>
 
-      {/* Dropdown rendered in portal */}
+     
       {open &&
         !disabled &&
         typeof document !== "undefined" &&
@@ -152,8 +154,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
           <div
             ref={dropdownRef}
             className={`absolute z-50 border rounded shadow-lg max-h-60 overflow-y-auto animate-fadeIn p-2 text-sm ${finalDarkMode
-                ? "bg-slate-800 border-slate-600"
-                : "bg-white border-gray-200"
+              ? "bg-slate-800 border-slate-600"
+              : "bg-white border-gray-200"
               }`}
             style={{
               top: dropdownPosition.top,
@@ -167,12 +169,12 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 <div
                   key={opt.value}
                   className={`px-4 py-2 text-xs cursor-pointer transition duration-150 rounded mb-1 ${isSelected
-                      ? finalDarkMode
-                        ? "bg-slate-950 text-white font-medium"
-                        : "bg-orange-500 text-white font-medium"
-                      : finalDarkMode
-                        ? "text-slate-200 hover:bg-slate-700"
-                        : "text-gray-700 hover:bg-orange-50"
+                    ? finalDarkMode
+                      ? "bg-slate-950 text-white font-medium"
+                      : "bg-orange-500 text-white font-medium"
+                    : finalDarkMode
+                      ? "text-slate-200 hover:bg-slate-700"
+                      : "text-gray-700 hover:bg-orange-50"
                     }`}
                   onClick={() => {
                     onChange({
