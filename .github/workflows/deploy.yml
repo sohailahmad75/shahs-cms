@@ -15,9 +15,18 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - run: npm ci
-      - run: npm run build
+      - name: Create .env.production
+        run: |
+          cat > .env.production <<'EOF'
+          VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+          VITE_ENV=production
+          EOF
 
+      - name: Install dependencies
+        run: npm ci
+
+      - run: npm run build
+ 
       - name: Prepare SSH key
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d > key.pem
