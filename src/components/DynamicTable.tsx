@@ -1,16 +1,23 @@
 import React from "react";
 import { useTheme } from "../../src/context/themeContext";
 
+// export interface Column<T> {
+//   key: keyof T | "actions" | "index";
+//   label: string;
+//   render?: (value: T[keyof T], row: T, index?: number) => React.ReactNode;
+//   className?: string;
+// }
+
 export interface Column<T> {
   key: keyof T | "actions" | "index";
   label: string;
   render?: (value: T[keyof T], row: T, index?: number) => React.ReactNode;
   renderHeader?: () => React.ReactNode;
   className?: string;
+
   sortable?: boolean;
   sortKey?: string;
 }
-
 export type SortDir = "asc" | "desc" | null;
 
 interface DynamicTableProps<T> {
@@ -24,6 +31,7 @@ interface DynamicTableProps<T> {
   emptyStateMessage?: string;
   emptyStateSubMessage?: string;
   minHeight?: string;
+
   sort?: { key: string | null; direction: SortDir };
   onSortChange?: (s: { key: string | null; direction: SortDir }) => void;
 }
@@ -39,6 +47,7 @@ export function DynamicTable<T>({
   emptyStateSubMessage = "There are currently no records to display. Try adding some data or adjusting your filters.",
   maxHeight = "800px",
   minHeight = "400px",
+  // NEW
   sort,
   onSortChange,
 }: DynamicTableProps<T>) {
@@ -76,89 +85,84 @@ export function DynamicTable<T>({
 
   return (
     <div>
-      
-      <div className="hidden md:block">
-        <div
-          className={`rounded-lg border overflow-hidden ${isDarkMode ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}
-          style={{ maxHeight, minHeight }}
-        >
-          <div className="overflow-auto h-full">
-            <table className={`min-w-full table-auto ${tableClassName || ""}`}>
-              <thead
-                className={`sticky top-0 z-10 border-b ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"} ${headerClassName || ""}`}
-              >
-                <tr>
-                  {columns.map((col, idx) => {
-                    const isSortable = !!col.sortable;
-                    const sortKey = col.sortKey ?? String(col.key);
-                    const header = col.renderHeader ? (
-                      col.renderHeader()
-                    ) : (
-                      <div
-                        className={`flex items-center gap-1 ${isSortable ? "cursor-pointer select-none" : ""}`}
-                        onClick={() => handleHeaderClick(col)}
-                      >
-                        {col.label}
-                        {isSortable && (
-                          <span className="text-xs">{indicator(sortKey)}</span>
-                        )}
-                      </div>
-                    );
-
-                    return (
-                      <th
-                        key={idx}
-                        className={`px-4 py-3 text-left text-sm font-medium whitespace-nowrap ${isDarkMode ? "text-slate-300" : "text-slate-600"} ${col.className || ""}`}
-                        onClick={() => !col.renderHeader && handleHeaderClick(col)}
-                      >
-                        {header}
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-
-              <tbody
-                className={`divide-y ${isDarkMode ? "bg-slate-900 divide-slate-800" : "bg-white divide-slate-200"}`}
-              >
-                {data.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length} className="p-6 text-center italic">
-                      {EmptyState}
-                    </td>
-                  </tr>
+      <div
+        className={`hidden md:block rounded-lg border overflow-auto ${isDarkMode ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}
+        style={{ maxHeight, minHeight }}
+      >
+        <table className={`min-w-full table-auto ${tableClassName || ""}`}>
+          <thead
+            className={`sticky top-0 z-10 border-b ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"} ${headerClassName || ""}`}
+          >
+            <tr>
+              {columns.map((col, idx) => {
+                const isSortable = !!col.sortable;
+                const sortKey = col.sortKey ?? String(col.key);
+                const header = col.renderHeader ? (
+                  col.renderHeader()
                 ) : (
-                  data.map((row, index) => (
-                    <tr
-                      key={String(row[rowKey] as unknown as string)}
-                      className={`${rowClassName || ""} ${isDarkMode ? "hover:bg-slate-800 text-slate-300" : "hover:bg-gray-50 text-slate-700"}`}
-                    >
-                      {columns.map((col, idx) => (
-                        <td key={idx} className="px-4 py-4 text-sm whitespace-nowrap">
-                          {col.key === "actions"
-                            ? (col.render?.(undefined as T[keyof T], row, index) ??
-                              null)
-                            : col.key === "index"
-                              ? (col.render?.(
-                                undefined as T[keyof T],
-                                row,
-                                index,
-                              ) ?? null)
-                              : col.render
-                                ? col.render(row[col.key], row, index)
-                                : (row[col.key] as unknown as React.ReactNode)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  <div
+                    className={`flex items-center gap-1 ${isSortable ? "cursor-pointer select-none" : ""}`}
+                    onClick={() => handleHeaderClick(col)}
+                  >
+                    {col.label}
+                    {isSortable && (
+                      <span className="text-xs">{indicator(sortKey)}</span>
+                    )}
+                  </div>
+                );
+
+                return (
+                  <th
+                    key={idx}
+                    className={`px-4 py-3 text-left text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-600"} ${col.className || ""}`}
+                    onClick={() => !col.renderHeader && handleHeaderClick(col)}
+                  >
+                    {header}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+
+          <tbody
+            className={`divide-y ${isDarkMode ? "bg-slate-900 divide-slate-800" : "bg-white divide-slate-200"}`}
+          >
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} className="p-6 text-center italic">
+                  {EmptyState}
+                </td>
+              </tr>
+            ) : (
+              data.map((row, index) => (
+                <tr
+                  key={String(row[rowKey] as unknown as string)}
+                  className={`${rowClassName || ""} ${isDarkMode ? "hover:bg-slate-800 text-slate-300" : "hover:bg-gray-50 text-slate-700"}`}
+                >
+                  {columns.map((col, idx) => (
+                    <td key={idx} className="px-4 py-4 text-sm">
+                      {col.key === "actions"
+                        ? (col.render?.(undefined as T[keyof T], row, index) ??
+                          null)
+                        : col.key === "index"
+                          ? (col.render?.(
+                              undefined as T[keyof T],
+                              row,
+                              index,
+                            ) ?? null)
+                          : col.render
+                            ? col.render(row[col.key], row, index)
+                            : (row[col.key] as unknown as React.ReactNode)}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-    
+      {/* Mobile cards (unchanged) */}
       <div className="md:hidden space-y-4">
         {data.length === 0 ? (
           <div
@@ -175,12 +179,12 @@ export function DynamicTable<T>({
               {columns.map((col, idx) => (
                 <div key={idx} className="flex justify-between py-1 gap-4">
                   <span
-                    className={`text-sm font-medium whitespace-nowrap ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}
+                    className={`text-sm font-medium ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}
                   >
                     {col.label}
                   </span>
                   <span
-                    className={`text-sm text-right break-words ${isDarkMode ? "text-slate-300" : "text-slate-800"}`}
+                    className={`text-sm ${isDarkMode ? "text-slate-300" : "text-slate-800"}`}
                   >
                     {col.key === "actions"
                       ? (col.render?.(undefined as T[keyof T], row, index) ??
