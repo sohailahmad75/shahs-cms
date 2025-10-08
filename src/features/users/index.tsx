@@ -218,6 +218,8 @@ const UsersTypeListPage: React.FC = () => {
               tableClassName="bg-white"
               sort={sort}
               onSortChange={setSort}
+              maxHeight="100%" 
+              minHeight="auto"
             />
           </div>
 
