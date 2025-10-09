@@ -9,7 +9,6 @@ import Button from "../../../components/Button";
 import { useTheme } from "../../../context/themeContext";
 import { DraggableRow } from "./DraggableRow";
 import InvoiceHeader from "./InvoiceHeader";
-import { InvoiceLineHeader } from "./InvoiceLineHeader";
 import { InvoiceTotal } from "./InvoiceTotal";
 import type {
   InvoiceFormValues,
@@ -62,7 +61,6 @@ const InvoiceSchema = Yup.object().shape({
   ),
 });
 
-// Memoized component with proper types
 const MemoizedDraggableRow = memo<DraggableRowProps>(DraggableRow);
 
 const InvoiceModal: React.FC<InvoiceModalProps> = ({
@@ -91,7 +89,6 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
   const calculateTotal = useCallback((items: InvoiceItem[]) =>
     items.reduce((acc, item) => acc + Number(item.qty) * Number(item.rate), 0), []);
 
-  // Memoized form component with proper types
   const InvoiceForm = useCallback(({
     values,
     handleChange,
@@ -101,18 +98,36 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
     handleChange: any;
     setFieldValue: (field: string, value: any) => void;
   }) => (
-    <Form className="space-y-6">
-      <InvoiceHeader
-        values={values}
-        handleChange={handleChange}
-        setFieldValue={setFieldValue}
-        customerOptions={customerOptions}
-      />
+    <Form className="space-y-8">
+ 
+      <div className={`rounded-2xl p-6 border ${isDarkMode ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-gray-50"} shadow-sm`}>
+        <h3 className={`text-xl font-semibold mb-4 ${isDarkMode ? "text-slate-100" : "text-orange-600"}`}>Invoice Details</h3>
+        <InvoiceHeader
+          values={values}
+          handleChange={handleChange}
+          setFieldValue={setFieldValue}
+          customerOptions={customerOptions}
+        />
+      </div>
 
-      <div className="mt-8">
-        <InvoiceLineHeader isDarkMode={isDarkMode} />
+      <div className={`rounded-2xl p-6 border ${isDarkMode ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"} shadow-sm`}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className={`text-lg font-semibold ${isDarkMode ? "text-slate-100" : "text-orange-600"} `}>Line Items</h3>
+          <Button
+            type="button"
+            onClick={() =>
+              setFieldValue("items", [
+                ...values.items,
+                { serviceDate: "", product: "", description: "", qty: 1, rate: 0 },
+              ])
+            }
+          >
+            + Add Item
+          </Button>
+        </div>
+
         <FieldArray name="items">
-          {({ push, remove, move }) => (
+          {({ move, remove }) => (
             <DndContext
               collisionDetection={closestCenter}
               onDragEnd={({ active, over }) => {
@@ -138,34 +153,26 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
                   />
                 ))}
               </SortableContext>
-
-              <button
-                type="button"
-                onClick={() =>
-                  push({
-                    serviceDate: "",
-                    product: "",
-                    description: "",
-                    qty: 1,
-                    rate: 0,
-                  })
-                }
-                className="text-sm text-blue-600 mt-3 hover:underline"
-              >
-                + Add Line
-              </button>
             </DndContext>
           )}
         </FieldArray>
       </div>
 
+   
       <InvoiceTotal total={calculateTotal(values.items)} />
 
-      <div className="flex justify-end space-x-3 pt-4">
-        <Button type="button" onClick={onClose} disabled={isSubmitting}>
+      <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+        <Button
+          type="button"
+          onClick={onClose}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
-        <Button type="submit" loading={isSubmitting}>
+        <Button
+          type="submit"
+          loading={isSubmitting}
+        >
           {editingInvoice ? "Update Invoice" : "Create Invoice"}
         </Button>
       </div>
