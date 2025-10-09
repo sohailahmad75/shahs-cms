@@ -37,13 +37,13 @@ export const invoiceFiltersConfig = [
     },
     {
         key: 'createdDate',
-        label: 'Created Date',
+        label: 'Created',
         type: 'date' as const,
         isRange: true,
     },
     {
         key: 'paymentDate',
-        label: 'Payment Date',
+        label: 'Payment',
         type: 'date' as const,
         isRange: true,
     },
