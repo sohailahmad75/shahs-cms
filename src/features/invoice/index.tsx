@@ -1,5 +1,4 @@
-// InvoiceListPage.jsx
-import React, { useState } from "react";
+import  { useState } from "react";
 import Button from "../../components/Button";
 import { DynamicTable } from "../../components/DynamicTable";
 import Loader from "../../components/Loader";
@@ -13,6 +12,7 @@ import FilterBar from "../../components/FilterBar";
 import { useServerTable } from "../../hooks/useServerTable";
 import { toast } from "react-toastify";
 import DebouncedSearch from "../../components/DebounceSerach";
+import { invoiceFiltersConfig } from "./helpers/invoiceFilters";
 
 const InvoiceListPage = () => {
   const { isDarkMode } = useTheme();
@@ -27,33 +27,33 @@ const InvoiceListPage = () => {
     sort,
     setSort,
     setPage,
-    queryParams,
+    // queryParams,
   } = useServerTable();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Simulate API calls - replace with actual APIs
+
   const handleSubmit = async (values) => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
+    
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       if (editingInvoice) {
-        // Update invoice
+       
         console.log("Updating invoice:", values);
         toast.success("Invoice updated successfully");
       } else {
-        // Create invoice
+       
         console.log("Creating invoice:", values);
         toast.success("Invoice created successfully");
       }
 
       setModalOpen(false);
       setEditingInvoice(null);
-      // Refresh your invoices list here
+    
     } catch (error) {
       toast.error("Failed to save invoice");
     } finally {
@@ -63,10 +63,9 @@ const InvoiceListPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      // Simulate delete API call
+      
       await new Promise(resolve => setTimeout(resolve, 500));
       toast.success("Invoice deleted successfully");
-      // Refresh your invoices list here
     } catch {
       toast.error("Failed to delete invoice");
     }
@@ -124,7 +123,7 @@ const InvoiceListPage = () => {
     },
   ];
 
-  // Sample data - replace with actual data from API
+  
   const sampleInvoices = [
     {
       id: 1,
@@ -162,16 +161,16 @@ const InvoiceListPage = () => {
         />
       </div>
 
-      {/* Add filters if needed */}
-      {/* <div className="mb-8 mt-8">
+     
+      <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={invoiceFiltersConfig}
           onApplyFilters={setFilters}
           onClearAll={clearFilters}
         />
-      </div> */}
+      </div>
 
-      {false ? ( // Replace with your loading state
+      {false ? ( 
         <Loader />
       ) : (
         <>
