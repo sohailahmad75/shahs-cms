@@ -2,6 +2,18 @@
 
 export const invoiceFiltersConfig = [
     {
+        key: 'createdDate',
+        label: 'Created',
+        type: 'date' as const,
+        isRange: true,
+    },
+    {
+        key: 'paymentDate',
+        label: 'Payment',
+        type: 'date' as const,
+        isRange: true,
+    },
+    {
         key: 'store',
         label: 'Store',
         type: 'select' as const,
@@ -34,17 +46,5 @@ export const invoiceFiltersConfig = [
             { label: 'Overdue', value: 'overdue' },
             { label: 'Cancelled', value: 'cancelled' },
         ],
-    },
-    {
-        key: 'createdDate',
-        label: 'Created',
-        type: 'date' as const,
-        isRange: true,
-    },
-    {
-        key: 'paymentDate',
-        label: 'Payment',
-        type: 'date' as const,
-        isRange: true,
     },
 ];
