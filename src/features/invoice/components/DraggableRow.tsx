@@ -1,56 +1,103 @@
-import { FastField } from "formik";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useTheme } from "../../../context/themeContext";
+import { useFormikContext } from "formik";
 import InputField from "../../../components/InputField";
 import SelectField from "../../../components/SelectField";
 import DatePickerField from "../../../components/DatePickerField";
+import { memo, useCallback } from "react";
+import type { DraggableRowProps } from "../helpers/invoiceHelpers";
 
-export const DraggableRow = ({ item, index, onRemove, productOptions }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({ id: index });
+export const DraggableRow = memo<DraggableRowProps>(({
+    id,
+    item,
+    index,
+    onRemove,
+    productOptions
+}) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+        useSortable({ id });
 
     const { isDarkMode } = useTheme();
-    const style = { transform: CSS.Transform.toString(transform), transition };
+    const { setFieldValue } = useFormikContext();
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1
+    };
+
+ 
+    const handleServiceDateChange = useCallback((val: string) => {
+        setFieldValue(`items[${index}].serviceDate`, val);
+    }, [setFieldValue, index]);
+
+    const handleProductChange = useCallback((val: string) => {
+        setFieldValue(`items[${index}].product`, val);
+    }, [setFieldValue, index]);
+
+    const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setFieldValue(`items[${index}].description`, e.target.value);
+    }, [setFieldValue, index]);
+
+    const handleQtyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setFieldValue(`items[${index}].qty`, Number(e.target.value));
+    }, [setFieldValue, index]);
+
+    const handleRateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setFieldValue(`items[${index}].rate`, Number(e.target.value));
+    }, [setFieldValue, index]);
 
     return (
         <div
             ref={setNodeRef}
             style={style}
             className={`grid grid-cols-8 gap-2 items-center border border-gray-200 rounded-md px-3 py-2 ${isDarkMode ? "bg-slate-950" : "bg-white"
-                } shadow-sm mb-2`}
-            {...attributes}
-            {...listeners}
+                } shadow-sm mb-2 ${isDragging ? 'z-10' : ''}`}
         >
-            <span className="cursor-grab text-gray-400 select-none">☰</span>
+            <span
+                className="cursor-grab text-gray-400 select-none hover:text-gray-600"
+                {...attributes}
+                {...listeners}
+            >
+                ☰
+            </span>
 
-            <FastField
+            <DatePickerField
                 name={`items[${index}].serviceDate`}
-                component={DatePickerField}
+                value={item.serviceDate}
+                onChange={handleServiceDateChange}
             />
 
-            <FastField
+            <SelectField
                 name={`items[${index}].product`}
-                component={SelectField}
+                value={item.product}
                 options={productOptions}
+                onChange={handleProductChange}
+                placeholder="Select product"
             />
 
-            <FastField
+            <InputField
                 name={`items[${index}].description`}
-                component={InputField}
+                value={item.description}
                 placeholder="Description"
+                onChange={handleDescriptionChange}
             />
 
-            <FastField
+            <InputField
                 name={`items[${index}].qty`}
-                component={InputField}
                 type="number"
+                value={item.qty}
+                onChange={handleQtyChange}
+
             />
 
-            <FastField
+            <InputField
                 name={`items[${index}].rate`}
-                component={InputField}
                 type="number"
+                value={item.rate}
+                onChange={handleRateChange}
+
+
             />
 
             <div className="font-semibold text-right text-gray-700">
@@ -60,10 +107,12 @@ export const DraggableRow = ({ item, index, onRemove, productOptions }) => {
             <button
                 type="button"
                 onClick={onRemove}
-                className="text-red-500 hover:text-red-700 text-lg"
+                className="text-red-500 hover:text-red-700 text-lg transition-colors"
             >
                 ✕
             </button>
         </div>
     );
-};
+});
+
+DraggableRow.displayName = 'DraggableRow';
