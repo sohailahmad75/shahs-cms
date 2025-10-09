@@ -6,6 +6,7 @@ import { ROLES } from "../helper";
 import ProductListPage from "../features/sales/products";
 import ProductCategoryListPage from "../features/sales/productCategories/ProductCategoryListPage";
 import ProductsWrapper from "../features/sales/products/ProductsWrapper";
+import StoreOrdersListPage from "../features/sales/storeOrders/storeOrdersListPage";
 
 const salesRoutes = [
   {
@@ -24,6 +25,7 @@ const salesRoutes = [
           { index: true, element: <ProductListPage /> },
           { path: "products", element: <ProductListPage /> },
           { path: "product-categories", element: <ProductCategoryListPage /> },
+          { path: "store-orders", element: <StoreOrdersListPage /> },
         ],
       },
     ],

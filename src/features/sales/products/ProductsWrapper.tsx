@@ -2,8 +2,8 @@ import type { PropsWithChildren } from "react";
 import TabbedPageLayout from "../../../components/TabbedPageLayout";
 
 const transactionTabs = [
-  { label: "Invoices", path: "/sales/invoices" },
-  { label: "Products & services", path: "/sales/products" },
+  // { label: "Invoices", path: "/sales/invoices" },
+  // { label: "Products & services", path: "/sales/products" },
   // { label: "Product Categories", path: "/sales/product-categories" },
 ];
 

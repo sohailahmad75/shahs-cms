@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { useGetOrderByIdQuery } from "../services/orderApi";
 import Loader from "../../../components/Loader";
 import { useTheme } from "../../../context/themeContext";
-import type { CartItem, Modifier } from "../helpers/ordersHelpers";
 import { renderTypeBadge } from "../../../components/statusBadge";
 
 const OrderInformation = () => {
@@ -54,54 +53,49 @@ const OrderInformation = () => {
                         />
                     </Card>
 
-                    `<Card isDarkMode={isDarkMode}>
+                    <Card isDarkMode={isDarkMode}>
                         <h2
                             className={`font-semibold text-lg mb-3 ${isDarkMode ? "text-slate-100" : "text-gray-800"
                                 }`}
                         >
                             Cart Items
                         </h2>
-                        {order.cart && order.cart.length > 0 ? (
+                        {order.items && order.items.length > 0 ? (
                             <ul className="space-y-3">
-                                {order.cart.map((item: CartItem) => (
+                                {order.items.map((item) => (
                                     <li
                                         key={item.itemId}
-                                        className={`border rounded-lg p-3 ${isDarkMode
-                                            ? "bg-slate-700 border-slate-600"
-                                            : "bg-slate-50 border-gray-200"
+                                        className={`border rounded-lg p-3 ${isDarkMode ? "bg-slate-700 border-slate-600" : "bg-slate-50 border-gray-200"
                                             }`}
                                     >
                                         <Detail
                                             label="Item"
-                                            value={`${item.name} ($${item.price}) x ${item.quantity}`}
+                                            value={`${item.name} (${formatCurrency(Number(item.price))}) x ${item.quantity}`}
                                             isDarkMode={isDarkMode}
                                         />
                                         <Detail
                                             label="Final Price"
-                                            value={`$${item.finalPrice}`}
+                                            value={formatCurrency(Number(item.finalPrice))}
                                             isDarkMode={isDarkMode}
                                         />
 
                                         {/* Modifiers */}
-                                        {item.modifiers.length > 0 && (
+                                        {item.modifiers && item.modifiers.length > 0 && (
                                             <div className="mt-2 ml-4">
-                                                <h4
-                                                    className={`font-medium ${isDarkMode ? "text-slate-200" : "text-gray-700"
-                                                        }`}
-                                                >
+                                                <h4 className={`font-medium ${isDarkMode ? "text-slate-200" : "text-gray-700"}`}>
                                                     Modifiers
                                                 </h4>
-                                                {item.modifiers.map((mod: Modifier) => (
+                                                {item.modifiers.map((mod) => (
                                                     <div key={mod.modifierId} className="ml-3 mt-1">
                                                         <Detail
                                                             label="Modifier"
-                                                            value={`${capitalizeFirst(mod.modifierType)}`}
+                                                            value={`${capitalizeFirst(mod.modifierType)} - ${mod.modifierName}`}
                                                             isDarkMode={isDarkMode}
                                                         />
                                                         <ul className="list-disc list-inside ml-4">
                                                             {mod.modifierOptions.map((opt) => (
                                                                 <li key={opt.optionId}>
-                                                                    Qty: {opt.quantity} - {formatCurrency(opt.totalPrice)}
+                                                                    {opt.optionName} x {opt.quantity} = {formatCurrency(Number(opt.totalPrice))}
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -113,13 +107,12 @@ const OrderInformation = () => {
                                 ))}
                             </ul>
                         ) : (
-                            <p
-                                className={isDarkMode ? "text-slate-400" : "text-gray-500"}
-                            >
+                            <p className={isDarkMode ? "text-slate-400" : "text-gray-500"}>
                                 No cart items available.
                             </p>
                         )}
-                    </Card>`
+                    </Card>
+
 
                 </div>
             </div>
