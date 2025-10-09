@@ -8,33 +8,35 @@ import DatePickerField from "../../../components/DatePickerField";
 import { memo, useCallback } from "react";
 import type { DraggableRowProps } from "../helpers/invoiceHelpers";
 
-export const DraggableRow = memo<DraggableRowProps>(({
-    id,
-    item,
-    index,
-    onRemove,
-    productOptions
+export const DraggableRow = memo<DraggableRowProps>(({ 
+  id, 
+  item, 
+  index, 
+  onRemove, 
+  productOptions 
 }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
         useSortable({ id });
 
     const { isDarkMode } = useTheme();
     const { setFieldValue } = useFormikContext();
-    const style = {
-        transform: CSS.Transform.toString(transform),
+    const style = { 
+        transform: CSS.Transform.toString(transform), 
         transition,
-        opacity: isDragging ? 0.5 : 1
+        opacity: isDragging ? 0.5 : 1 
     };
 
- 
+
+    const handleProductChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFieldValue(`items[${index}].product`, e.target.value);
+    }, [setFieldValue, index]);
+
+    
     const handleServiceDateChange = useCallback((val: string) => {
         setFieldValue(`items[${index}].serviceDate`, val);
     }, [setFieldValue, index]);
 
-    const handleProductChange = useCallback((val: string) => {
-        setFieldValue(`items[${index}].product`, val);
-    }, [setFieldValue, index]);
-
+    
     const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setFieldValue(`items[${index}].description`, e.target.value);
     }, [setFieldValue, index]);
@@ -51,10 +53,11 @@ export const DraggableRow = memo<DraggableRowProps>(({
         <div
             ref={setNodeRef}
             style={style}
-            className={`grid grid-cols-8 gap-2 items-center border border-gray-200 rounded-md px-3 py-2 ${isDarkMode ? "bg-slate-950" : "bg-white"
-                } shadow-sm mb-2 ${isDragging ? 'z-10' : ''}`}
+            className={`grid grid-cols-8 gap-2 items-center border border-gray-200 rounded-md px-3 py-2 ${
+                isDarkMode ? "bg-slate-950" : "bg-white"
+            } shadow-sm mb-2 ${isDragging ? 'z-10' : ''}`}
         >
-            <span
+            <span 
                 className="cursor-grab text-gray-400 select-none hover:text-gray-600"
                 {...attributes}
                 {...listeners}
@@ -68,11 +71,12 @@ export const DraggableRow = memo<DraggableRowProps>(({
                 onChange={handleServiceDateChange}
             />
 
+          
             <SelectField
                 name={`items[${index}].product`}
                 value={item.product}
                 options={productOptions}
-                onChange={handleProductChange}
+                onChange={handleProductChange} 
                 placeholder="Select product"
             />
 
@@ -88,7 +92,7 @@ export const DraggableRow = memo<DraggableRowProps>(({
                 type="number"
                 value={item.qty}
                 onChange={handleQtyChange}
-
+                
             />
 
             <InputField
@@ -96,8 +100,6 @@ export const DraggableRow = memo<DraggableRowProps>(({
                 type="number"
                 value={item.rate}
                 onChange={handleRateChange}
-
-
             />
 
             <div className="font-semibold text-right text-gray-700">

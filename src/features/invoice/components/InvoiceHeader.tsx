@@ -22,9 +22,13 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({
     const labelClass = `${isDarkMode ? "text-slate-100" : "text-gray-700"
         } text-sm font-medium mb-1 block`;
 
+    const handleCustomerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFieldValue("customer", e.target.value);
+    };
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
+          
             <div>
                 <label className={labelClass}>
                     Customer <span className="text-red-500">*</span>
@@ -33,12 +37,12 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({
                     name="customer"
                     value={values.customer}
                     options={customerOptions}
-                    onChange={(val) => setFieldValue("customer", val)}
+                    onChange={handleCustomerChange} 
                     placeholder="Select customer"
                 />
             </div>
 
-
+        
             <div>
                 <label className={labelClass}>
                     Email <span className="text-red-500">*</span>
@@ -52,7 +56,7 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({
                 />
             </div>
 
-
+            
             <div>
                 <label className={labelClass}>
                     Invoice Date <span className="text-red-500">*</span>
@@ -64,7 +68,7 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({
                 />
             </div>
 
-
+           
             <div>
                 <label className={labelClass}>
                     Due Date <span className="text-red-500">*</span>
