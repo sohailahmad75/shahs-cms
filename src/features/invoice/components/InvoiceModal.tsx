@@ -8,7 +8,7 @@ import Loader from "../../../components/Loader";
 import Button from "../../../components/Button";
 import { useTheme } from "../../../context/themeContext";
 import { DraggableRow } from "./DraggableRow";
-import { InvoiceHeader } from "./InvoiceHeader";
+import InvoiceHeader from "./InvoiceHeader";
 import { InvoiceLineHeader } from "./InvoiceLineHeader";
 import { InvoiceTotal } from "./InvoiceTotal";
 import type { InvoiceFormValues, InvoiceItem } from "../helpers/invoiceHelpers";
@@ -102,13 +102,18 @@ const InvoiceModal = ({
           enableReinitialize
           onSubmit={onSubmit}
         >
-          {({ values, setFieldValue }) => (
+          {({ values, handleChange, setFieldValue }) => (
             <Form className="space-y-6">
               <InvoiceHeader
                 values={values}
+
+
+                handleChange={handleChange}
                 setFieldValue={setFieldValue}
                 customerOptions={customerOptions}
               />
+
+
 
               <div className="mt-8">
                 <InvoiceLineHeader isDarkMode={isDarkMode} />
