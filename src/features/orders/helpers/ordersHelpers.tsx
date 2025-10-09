@@ -1,6 +1,7 @@
 import type { Meta } from "../../../types"
 
 export interface Order {
+    items: any
     orderNumber: string
     id: string
     displayId: string
