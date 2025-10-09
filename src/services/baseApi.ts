@@ -20,6 +20,7 @@ export const baseApi = createApi({
     "MenuItem",
     "DocumentsType",
     "Orders",
+    "OrdersStore",
     "Products",
     "Product",
   ],
