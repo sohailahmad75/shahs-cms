@@ -35,186 +35,188 @@ const AccountManagement: React.FC = () => {
     };
 
     const handleChangePassword = () => {
-        
+
     };
 
     return (
-        <div className="flex bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
-
-
-            <div className="w-1/3 p-6 border-r border-gray-200 flex flex-col gap-6">
-                <h2 className="text-sm font-semibold text-gray-700">Account Management</h2>
-
-                <FileUploader
-                    value={profileImageKey}
-                    onChange={handleProfileImageChange}
-                    type="image"
-                    path="users-documents"
-                    initialPreview="https://images.unsplash.com/photo-1548142813-c3483ebb7c74?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                    size={4}
-                    fit="cover"
-                    isUploadingAny={isUploadingAny}
-                    setIsUploadingAny={setIsUploadingAny}
-                />
-
-         
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Old Password</label>
-                        <InputField
-                            type="password"
-                            name="oldPassword"
-                            value={formData.oldPassword}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                        <InputField
-                            type="password"
-                            name="newPassword"
-                            value={formData.newPassword}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <Button
-                        onClick={handleChangePassword}
-                        className="w-full"
-                        disabled={isUploadingAny}
-                    >
-                        {isUploadingAny ? 'Uploading...' : 'Change Password'}
-                    </Button>
-                </div>
+        <>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+                <h1 className="text-xl font-bold">Profile Settings</h1>
             </div>
+            <div className="flex bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
+                <div className="w-1/3 p-6 border-r border-gray-200 flex flex-col gap-6">
+                    <h2 className="text-sm font-semibold text-gray-700">Account Management</h2>
 
-       
-            <div className="w-2/3 p-6 space-y-6">
-            
-                <div>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-4">Profile Information</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                    <FileUploader
+                        value={profileImageKey}
+                        onChange={handleProfileImageChange}
+                        type="image"
+                        path="users-documents"
+                        initialPreview="https://images.unsplash.com/photo-1548142813-c3483ebb7c74?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                        size={4}
+                        fit="cover"
+                        isUploadingAny={isUploadingAny}
+                        setIsUploadingAny={setIsUploadingAny}
+                    />
+
+
+                    <div className="space-y-4">
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Username</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Old Password</label>
                             <InputField
-                                type="text"
-                                name="username"
-                                value={formData.username}
+                                type="password"
+                                name="oldPassword"
+                                value={formData.oldPassword}
                                 onChange={handleInputChange}
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">First Name</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
                             <InputField
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
+                                type="password"
+                                name="newPassword"
+                                value={formData.newPassword}
                                 onChange={handleInputChange}
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Nickname</label>
-                            <InputField
-                                type="text"
-                                name="nickname"
-                                value={formData.nickname}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Role</label>
-                            <SelectField
-                                name="role"
-                                value={formData.role}
-                                onChange={handleInputChange}
-                                options={[
-                                    { value: "Subscriber", label: "Subscriber" },
-                                    { value: "Editor", label: "Editor" },
-                                    { value: "Admin", label: "Admin" }
-                                ]}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Last Name</label>
-                            <InputField
-                                type="text"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Display Name Publicly as</label>
-                            <InputField
-                                type="text"
-                                name="displayName"
-                                value={formData.displayName}
-                                onChange={handleInputChange}
-                            />
-                        </div>
+                        <Button
+                            onClick={handleChangePassword}
+                            className="w-full"
+                            disabled={isUploadingAny}
+                        >
+                            {isUploadingAny ? 'Uploading...' : 'Change Password'}
+                        </Button>
                     </div>
                 </div>
 
-               
-                <div>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-4">Contact Info</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Email (required)</label>
-                            <InputField
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">WhatsApp</label>
-                            <InputField
-                                type="text"
-                                name="whatsapp"
-                                value={formData.whatsapp}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Website</label>
-                            <InputField
-                                type="text"
-                                name="website"
-                                value={formData.website}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Telegram</label>
-                            <InputField
-                                type="text"
-                                name="telegram"
-                                value={formData.telegram}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                    </div>
-                </div>
 
-             
-                <div>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-4">About the User</h3>
+                <div className="w-2/3 p-6 space-y-6">
+
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Biographical Info</label>
-                        <InputField
-                            name="bio"
-                            type="textarea"
-                            value={formData.bio}
-                            onChange={handleInputChange}
-                            rows={5}
-                            placeholder="Write your bio..."
-                        />
+                        <h3 className="text-sm font-semibold text-gray-700 mb-4">Profile Information</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Username</label>
+                                <InputField
+                                    type="text"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">First Name</label>
+                                <InputField
+                                    type="text"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Nickname</label>
+                                <InputField
+                                    type="text"
+                                    name="nickname"
+                                    value={formData.nickname}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Role</label>
+                                <SelectField
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleInputChange}
+                                    options={[
+                                        { value: "Subscriber", label: "Subscriber" },
+                                        { value: "Editor", label: "Editor" },
+                                        { value: "Admin", label: "Admin" }
+                                    ]}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Last Name</label>
+                                <InputField
+                                    type="text"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Display Name Publicly as</label>
+                                <InputField
+                                    type="text"
+                                    name="displayName"
+                                    value={formData.displayName}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-              
-                {/* <div className="flex justify-end pt-4">
+
+                    <div>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-4">Contact Info</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Email (required)</label>
+                                <InputField
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">WhatsApp</label>
+                                <InputField
+                                    type="text"
+                                    name="whatsapp"
+                                    value={formData.whatsapp}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Website</label>
+                                <InputField
+                                    type="text"
+                                    name="website"
+                                    value={formData.website}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Telegram</label>
+                                <InputField
+                                    type="text"
+                                    name="telegram"
+                                    value={formData.telegram}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-4">About the User</h3>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1">Biographical Info</label>
+                            <InputField
+                                name="bio"
+                                type="textarea"
+                                value={formData.bio}
+                                onChange={handleInputChange}
+                                rows={5}
+                                placeholder="Write your bio..."
+                            />
+                        </div>
+                    </div>
+
+
+                    {/* <div className="flex justify-end pt-4">
                     <Button
                         className="px-6 py-2"
                         disabled={isUploadingAny}
@@ -222,8 +224,9 @@ const AccountManagement: React.FC = () => {
                         {isUploadingAny ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </div> */}
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
