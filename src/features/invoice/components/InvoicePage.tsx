@@ -3,13 +3,15 @@ import { Formik, Form, FieldArray } from "formik";
 import * as Yup from "yup";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import Loader from "../../../components/Loader";
-import Button from "../../../components/Button";
+import { toast } from "react-toastify";
 import { useTheme } from "../../../context/themeContext";
 import { DraggableRow } from "./DraggableRow";
 import InvoiceHeader from "./InvoiceHeader";
 import { InvoiceTotal } from "./InvoiceTotal";
-import { toast } from "react-toastify";
+import Loader from "../../../components/Loader";
+import Button from "../../../components/Button";
+import { PlusIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+
 
 interface InvoiceItem {
   serviceDate: string;
@@ -34,7 +36,6 @@ interface DraggableRowProps {
   onRemove: () => void;
   productOptions: { label: string; value: string }[];
 }
-
 
 const productOptions = [
   { label: "Burger", value: "burger" },
@@ -74,7 +75,6 @@ const InvoiceSchema = Yup.object().shape({
 
 const MemoizedDraggableRow = memo<DraggableRowProps>(DraggableRow);
 
-
 const InvoicePage: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [initialValues, setInitialValues] = useState<InvoiceFormValues>(emptyInitialValues);
@@ -97,12 +97,9 @@ const InvoicePage: React.FC = () => {
   const handleSubmit = async (values: InvoiceFormValues) => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Invoice Submitted ✅", values);
       toast.success("Invoice saved successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to save invoice!");
     } finally {
       setIsSubmitting(false);
@@ -111,10 +108,21 @@ const InvoicePage: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen p-8 ${isDarkMode ? "bg-slate-900 text-slate-100" : "bg-gray-50 text-gray-900"}`}
+      className={`min-h-screen transition-colors duration-500 ${isDarkMode ? "bg-slate-950 text-gray-600" : "bg-gray-50 text-gray-900"
+        }`}
     >
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Create Invoice</h1>
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center gap-3">
+            <ClipboardDocumentListIcon className={`w-9 h-9 ${isDarkMode ? "text-slate-100" : "text-gray-600"
+              }`} />
+            <div>
+              <h1 className={`${isDarkMode ? "text-slate-100" : "text-gray-500"
+                } text-3xl font-bold tracking-tight`}>Create Invoice</h1>
+              <p className="text-sm text-gray-500">Simple and elegant invoice editor</p>
+            </div>
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-12">
@@ -128,27 +136,27 @@ const InvoicePage: React.FC = () => {
             onSubmit={handleSubmit}
           >
             {({ values, handleChange, setFieldValue }) => (
-              <Form className="space-y-8">
-
-                <div
-                  className={`rounded-2xl p-6 border shadow-sm ${isDarkMode ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
-                    }`}
-                >
+              <Form className="space-y-12">
+                <section className="space-y-4">
+                  <h2 className={`text-lg font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-600"
+                    }  uppercase tracking-wide`}>
+                    Customer Details
+                  </h2>
                   <InvoiceHeader
                     values={values}
                     handleChange={handleChange}
                     setFieldValue={setFieldValue}
                     customerOptions={customerOptions}
                   />
-                </div>
+                </section>
 
 
-                <div
-                  className={`rounded-2xl p-6 border shadow-sm ${isDarkMode ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
-                    }`}
-                >
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-orange-600">Line Items</h3>
+                <section className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className={`text-lg font-semibold ${isDarkMode ? "text-slate-100" : "text-gray-600"
+                      }  uppercase tracking-wide`}>
+                      Invoice Items
+                    </h2>
                     <Button
                       type="button"
                       onClick={() =>
@@ -158,7 +166,8 @@ const InvoicePage: React.FC = () => {
                         ])
                       }
                     >
-                      + Add Item
+                      <PlusIcon className="w-4 h-4" />
+                      Add Item
                     </Button>
                   </div>
 
@@ -177,31 +186,38 @@ const InvoicePage: React.FC = () => {
                           items={values.items.map((_, i) => i)}
                           strategy={verticalListSortingStrategy}
                         >
-                          {values.items.map((item, index) => (
-                            <MemoizedDraggableRow
-                              key={`item-${index}`}
-                              id={index}
-                              index={index}
-                              item={item}
-                              onRemove={() => remove(index)}
-                              productOptions={productOptions}
-                            />
-                          ))}
+                          <div className="divide-y divide-gray-200 dark:divide-gray-700 space-y-4">
+                            {values.items.map((item, index) => (
+                              <MemoizedDraggableRow
+                                key={`item-${index}`}
+                                id={index}
+                                index={index}
+                                item={item}
+                                onRemove={() => remove(index)}
+                                productOptions={productOptions}
+                              />
+                            ))}
+                          </div>
                         </SortableContext>
                       </DndContext>
                     )}
                   </FieldArray>
-                </div>
+                </section>
 
 
-                <InvoiceTotal total={calculateTotal(values.items)} />
+                <section className="pt-10 border-t border-gray-300 dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <InvoiceTotal total={calculateTotal(values.items)} isDarkMode={isDarkMode} />
 
+                  <div className="flex justify-end">
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
 
-                <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                  <Button type="submit" loading={isSubmitting}>
-                    Save Invoice
-                  </Button>
-                </div>
+                    >
+                      {isSubmitting ? "Saving..." : "Save Invoice"}
+                    </Button>
+                  </div>
+                </section>
               </Form>
             )}
           </Formik>
