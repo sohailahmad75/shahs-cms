@@ -3,6 +3,7 @@ import InputField from '../../components/InputField';
 import SelectField from '../../components/SelectField';
 import Button from '../../components/Button';
 import FileUploader from '../../components/FileUploader';
+import { useTheme } from '../../context/themeContext';
 
 const AccountManagement: React.FC = () => {
     const [formData, setFormData] = useState({
@@ -23,6 +24,7 @@ const AccountManagement: React.FC = () => {
 
     const [profileImageKey, setProfileImageKey] = useState<string>('');
     const [isUploadingAny, setIsUploadingAny] = useState(false);
+    const { isDarkMode } = useTheme();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -40,9 +42,9 @@ const AccountManagement: React.FC = () => {
 
     return (
         <>
-            <div className="flex bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
+            <div className={`${isDarkMode ? "bg-slate-900" : "bg-white"} flex  rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto`}>
                 <div className="w-1/3 p-6 border-r border-gray-200 flex flex-col gap-6">
-                    <h2 className="text-sm font-semibold text-gray-700">Account Management</h2>
+                    <h2 className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-semibold`}>Account Management</h2>
 
                     <FileUploader
                         value={profileImageKey}
@@ -59,7 +61,7 @@ const AccountManagement: React.FC = () => {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Old Password</label>
+                            <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Old Password</label>
                             <InputField
                                 type="password"
                                 name="oldPassword"
@@ -68,7 +70,7 @@ const AccountManagement: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                            <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>New Password</label>
                             <InputField
                                 type="password"
                                 name="newPassword"
@@ -90,10 +92,10 @@ const AccountManagement: React.FC = () => {
                 <div className="w-2/3 p-6 space-y-6">
 
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-700 mb-4">Profile Information</h3>
+                        <h3 className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-semibold mb-4`}>Profile Information</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Username</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Username</label>
                                 <InputField
                                     type="text"
                                     name="username"
@@ -102,7 +104,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">First Name</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>First Name</label>
                                 <InputField
                                     type="text"
                                     name="firstName"
@@ -111,7 +113,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Nickname</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Nickname</label>
                                 <InputField
                                     type="text"
                                     name="nickname"
@@ -120,7 +122,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Role</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`} >Role</label>
                                 <SelectField
                                     name="role"
                                     value={formData.role}
@@ -133,7 +135,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Last Name</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Last Name</label>
                                 <InputField
                                     type="text"
                                     name="lastName"
@@ -142,7 +144,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Display Name Publicly as</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Display Name Publicly as</label>
                                 <InputField
                                     type="text"
                                     name="displayName"
@@ -155,10 +157,10 @@ const AccountManagement: React.FC = () => {
 
 
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-700 mb-4">Contact Info</h3>
+                        <h3 className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-semibold mb-4`}>Contact Info</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Email (required)</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Email (required)</label>
                                 <InputField
                                     type="email"
                                     name="email"
@@ -167,7 +169,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">WhatsApp</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>WhatsApp</label>
                                 <InputField
                                     type="text"
                                     name="whatsapp"
@@ -176,7 +178,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Website</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Website</label>
                                 <InputField
                                     type="text"
                                     name="website"
@@ -185,7 +187,7 @@ const AccountManagement: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Telegram</label>
+                                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Telegram</label>
                                 <InputField
                                     type="text"
                                     name="telegram"
@@ -198,9 +200,9 @@ const AccountManagement: React.FC = () => {
 
 
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-700 mb-4">About the User</h3>
+                        <h3 className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-semibold mb-4`}>About the User</h3>
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Biographical Info</label>
+                            <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} block text-sm font-medium mb-1`}>Biographical Info</label>
                             <InputField
                                 name="bio"
                                 type="textarea"
