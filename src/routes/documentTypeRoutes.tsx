@@ -2,6 +2,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import { ROLES } from "../helper";
 import DocumentTypeListPage from "../features/documentType";
+import AccountManagement from "../features/profileSettings";
 
 const documentRoutes = [
   {
@@ -12,6 +13,14 @@ const documentRoutes = [
         element: (
           <MainLayout>
             <DocumentTypeListPage />
+          </MainLayout>
+        ),
+      },
+      {
+        path: "/setting/profile-settings",
+        element: (
+          <MainLayout>
+            <AccountManagement />
           </MainLayout>
         ),
       },
