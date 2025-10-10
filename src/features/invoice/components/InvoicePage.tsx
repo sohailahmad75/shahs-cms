@@ -94,7 +94,7 @@ const InvoicePage: React.FC = () => {
     []
   );
 
-  const handleSubmit = async (values: InvoiceFormValues) => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
