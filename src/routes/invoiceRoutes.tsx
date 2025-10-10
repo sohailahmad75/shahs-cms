@@ -1,17 +1,37 @@
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import { ROLES } from "../helper";
-import Invoice from "../features/invoice";
+import InvoiceListPage from "../features/invoice";
+import InvoicePage from "../features/invoice/components/InvoicePage";
 
 const invoiceRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />,
+    path: "/invoices",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />
+    ),
     children: [
       {
-        path: "/invoices",
+        index: true,
         element: (
           <MainLayout>
-            <Invoice />
+            <InvoiceListPage />
+          </MainLayout>
+        ),
+      },
+      {
+        path: "create",
+        element: (
+          <MainLayout>
+            <InvoicePage />
+          </MainLayout>
+        ),
+      },
+      {
+        path: "edit/:id",
+        element: (
+          <MainLayout>
+            <InvoicePage />
           </MainLayout>
         ),
       },
