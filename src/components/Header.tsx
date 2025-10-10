@@ -75,7 +75,7 @@ export default function Header({ isMobile, openSidebar }: Props) {
             {
               label: "Profile",
               onClick: () => {
-                navigate("/profile");
+                navigate("/setting/profile-settings");
               },
             },
             {

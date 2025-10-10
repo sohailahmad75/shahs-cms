@@ -1,4 +1,3 @@
-// src/routes/salesRoutes.tsx
 import { Outlet } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -6,7 +5,7 @@ import { ROLES } from "../helper";
 import ProductListPage from "../features/sales/products";
 import ProductCategoryListPage from "../features/sales/productCategories/ProductCategoryListPage";
 import ProductsWrapper from "../features/sales/products/ProductsWrapper";
-import StoreOrdersListPage from "../features/sales/storeOrders/storeOrdersListPage";
+import StoreOrdersListPage from "../features/sales/storeOrders/StoreOrdersListPage";
 
 const salesRoutes = [
   {

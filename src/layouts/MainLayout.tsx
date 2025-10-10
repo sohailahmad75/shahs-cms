@@ -38,7 +38,7 @@ export default function MainLayout({ children }: Props) {
     return () => window.removeEventListener("resize", applySize);
   }, []);
 
-  // Auto-navigate to first child when a panel opens
+  
   useEffect(() => {
     if (!isSidebarOpen || !activePanel) return;
     const active = sidebarMenu.find((m) => m.id === activePanel);

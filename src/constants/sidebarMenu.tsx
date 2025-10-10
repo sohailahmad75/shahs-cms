@@ -9,9 +9,11 @@ import DocumentIcon from "../assets/styledIcons/DocumentIcon";
 import UserIcon from "../assets/styledIcons/UserIcon";
 import { ROLES, type UserRole } from "../helper";
 import type { JSX } from "react";
-import InventoryIcon from "../assets/styledIcons/InventoryIcon";
+// import InventoryIcon from "../assets/styledIcons/InventoryIcon";
 import ProductsIcon from "../assets/styledIcons/ProductsIcon";
 import OrdersIcon from "../assets/styledIcons/ordersIcon";
+import ProfileSettingIcon from "../assets/styledIcons/ProfileSettingIcon";
+import SalesIcon from "../assets/styledIcons/SalesIcon";
 
 export type SidebarMenu = {
   id: string;
@@ -93,7 +95,7 @@ export const sidebarMenu: SidebarMenu[] = [
   {
     id: "sales",
     name: "Sales",
-    icon: <InventoryIcon />,
+    icon: <SalesIcon />,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
     panel: {
       title: "Sales",
@@ -196,6 +198,13 @@ export const sidebarMenu: SidebarMenu[] = [
           link: "/setting/document-type",
           roles: [ROLES.SUPER_ADMIN],
           icon: <DocumentIcon />,
+        },
+        {
+          id: "profile-settings",
+          name: "Profile Settings",
+          link: "/setting/profile-settings",
+          roles: [ROLES.SUPER_ADMIN],
+          icon: <ProfileSettingIcon size={26}/>,
         },
       ],
     },

@@ -3,7 +3,11 @@ export const renderTypeBadge = (type: string) => {
     let label = type;
 
     switch (type) {
-        case "dine-in":
+        case "pickup":
+            bgColor = "bg-yellow-500";
+            label = "Pickup";
+            break;
+        case "":
             bgColor = "bg-green-500";
             label = "Dine In";
             break;

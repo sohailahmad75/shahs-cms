@@ -1,7 +1,10 @@
+import { Outlet } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import { ROLES } from "../helper";
-import Invoice from "../features/invoice";
+
+import InvoiceListPage from "../features/invoice";
+import InvoicePage from "../features/invoice/components/InvoicePage";
 
 const invoiceRoutes = [
   {
@@ -11,9 +14,14 @@ const invoiceRoutes = [
         path: "/invoices",
         element: (
           <MainLayout>
-            <Invoice />
+            <Outlet />
           </MainLayout>
         ),
+        children: [
+          { index: true, element: <InvoiceListPage /> },
+          { path: "create", element: <InvoicePage /> },
+          { path: "edit/:id", element: <InvoicePage /> },
+        ],
       },
     ],
   },

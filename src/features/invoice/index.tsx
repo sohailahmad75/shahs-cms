@@ -1,8 +1,8 @@
-import  { useState } from "react";
+import { useState } from "react";
 import Button from "../../components/Button";
 import { DynamicTable } from "../../components/DynamicTable";
 import Loader from "../../components/Loader";
-import InvoiceModal from "./components/InvoiceModal";
+import InvoiceModal from "./components/InvoicePage";
 import EditIcon from "../../assets/styledIcons/EditIcon";
 import TrashIcon from "../../assets/styledIcons/TrashIcon";
 import ActionIcon from "../../components/ActionIcon";
@@ -13,6 +13,7 @@ import { useServerTable } from "../../hooks/useServerTable";
 import { toast } from "react-toastify";
 import DebouncedSearch from "../../components/DebounceSerach";
 import { invoiceFiltersConfig } from "./helpers/invoiceFilters";
+import { useNavigate } from "react-router-dom";
 
 const InvoiceListPage = () => {
   const { isDarkMode } = useTheme();
@@ -33,27 +34,31 @@ const InvoiceListPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
+  const handleCreateInvoice = () => {
+    navigate("create");
+  };
 
   const handleSubmit = async (values) => {
     setIsSubmitting(true);
     try {
-    
+
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       if (editingInvoice) {
-       
+
         console.log("Updating invoice:", values);
         toast.success("Invoice updated successfully");
       } else {
-       
+
         console.log("Creating invoice:", values);
         toast.success("Invoice created successfully");
       }
 
       setModalOpen(false);
       setEditingInvoice(null);
-    
+
     } catch (error) {
       toast.error("Failed to save invoice");
     } finally {
@@ -63,7 +68,7 @@ const InvoiceListPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      
+
       await new Promise(resolve => setTimeout(resolve, 500));
       toast.success("Invoice deleted successfully");
     } catch {
@@ -123,7 +128,7 @@ const InvoiceListPage = () => {
     },
   ];
 
-  
+
   const sampleInvoices = [
     {
       id: 1,
@@ -141,12 +146,7 @@ const InvoiceListPage = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl font-bold">Invoices</h1>
-        <Button
-          onClick={() => {
-            setEditingInvoice(null);
-            setModalOpen(true);
-          }}
-        >
+        <Button onClick={handleCreateInvoice}>
           Create Invoice
         </Button>
       </div>
@@ -161,7 +161,7 @@ const InvoiceListPage = () => {
         />
       </div>
 
-     
+
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={invoiceFiltersConfig}
@@ -170,7 +170,7 @@ const InvoiceListPage = () => {
         />
       </div>
 
-      {false ? ( 
+      {false ? (
         <Loader />
       ) : (
         <>
@@ -195,7 +195,7 @@ const InvoiceListPage = () => {
         </>
       )}
 
-      <InvoiceModal
+      {/* <InvoiceModal
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);
@@ -204,7 +204,7 @@ const InvoiceListPage = () => {
         onSubmit={handleSubmit}
         editingInvoice={editingInvoice}
         isSubmitting={isSubmitting}
-      />
+      /> */}
     </div>
   );
 };
