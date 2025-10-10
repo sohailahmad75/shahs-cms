@@ -40,9 +40,6 @@ const AccountManagement: React.FC = () => {
 
     return (
         <>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-                <h1 className="text-xl font-bold">Profile Settings</h1>
-            </div>
             <div className="flex bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
                 <div className="w-1/3 p-6 border-r border-gray-200 flex flex-col gap-6">
                     <h2 className="text-sm font-semibold text-gray-700">Account Management</h2>
