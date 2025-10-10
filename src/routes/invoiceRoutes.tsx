@@ -1,39 +1,27 @@
+import { Outlet } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import { ROLES } from "../helper";
+
 import InvoiceListPage from "../features/invoice";
 import InvoicePage from "../features/invoice/components/InvoicePage";
 
 const invoiceRoutes = [
   {
-    path: "/invoices",
-    element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />
-    ),
+    element: <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]} />,
     children: [
       {
-        index: true,
+        path: "/invoices",
         element: (
           <MainLayout>
-            <InvoiceListPage />
+            <Outlet />
           </MainLayout>
         ),
-      },
-      {
-        path: "create",
-        element: (
-          <MainLayout>
-            <InvoicePage />
-          </MainLayout>
-        ),
-      },
-      {
-        path: "edit/:id",
-        element: (
-          <MainLayout>
-            <InvoicePage />
-          </MainLayout>
-        ),
+        children: [
+          { index: true, element: <InvoiceListPage /> },
+          { path: "create", element: <InvoicePage /> },
+          { path: "edit/:id", element: <InvoicePage /> },
+        ],
       },
     ],
   },
