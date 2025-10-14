@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import CloseIcon from "../../../../assets/styledIcons/CloseIcon";
@@ -9,13 +9,13 @@ import NonStockIcon from "../../../../assets/styledIcons/NonStockIcon";
 import StockIcon from "../../../../assets/styledIcons/StockIcon";
 import ServiceIcon from "../../../../assets/styledIcons/ServiceIcon";
 
-// Themed controls (have internal error rendering)
+
 import InputField from "../../../../components/InputField";
 import SelectField from "../../../../components/SelectField";
 import CheckboxField from "../../../../components/CheckboxField";
 import DatePickerField from "../../../../components/DatePickerField";
 
-// ✅ Your dropzone + S3 uploader
+
 import FileUploader from "../../../../components/FileUploader";
 
 interface ProductFormDrawerProps {
@@ -26,7 +26,7 @@ interface ProductFormDrawerProps {
   editingProduct?: Partial<Product>;
   isSubmitting?: boolean;
 
-  // Option sources
+
   categoryOptions?: { value: string; label: string }[];
   vatOptions?: { value: string; label: string }[];
   incomeAccountOptions?: { value: string; label: string }[];
@@ -51,7 +51,7 @@ const defaultOptions = {
   suppliers: [{ value: "", label: "Select a preferred supplier" }],
 };
 
-// ✅ Validation (unchanged, s3Key optional)
+
 const qbValidation = Yup.object({
   name: Yup.string().trim().required("Name is required"),
   sku: Yup.string().trim().required("Item/Service code is required"),
@@ -111,38 +111,36 @@ const qbValidation = Yup.object({
   purchaseTaxCode: Yup.string().optional(),
   preferredSupplierId: Yup.string().optional(),
 
-  // If you want to make image required, uncomment:
-  // s3Key: Yup.string().required("Product image is required"),
 });
 
 const getDefaultValues = (type: string) => ({
-  // header
+
   name: "",
   sku: "",
   categoryId: "",
-  // image
-  s3Key: "", // ✅ add image key to form values
-  // stock section
+
+  s3Key: "",
+
   initialQuantity: undefined as number | undefined,
   initialAsOf: "",
   reorderPoint: undefined as number | undefined,
   stockAssetAccount: "Stock Asset",
-  // descriptions
+
   salesDescription: "",
   purchaseDescription: "",
-  // sales
+
   salesPrice: undefined as number | undefined,
   incomeAccount: "Sales of Product Income",
   salesVatInclusive: false,
   salesVatCode: "S_20",
-  // purchasing
+
   purchaseCost: undefined as number | undefined,
   expenseAccount: "cost_of_sales",
   purchaseTaxInclusive: false,
   purchaseTaxCode: "NO_VAT",
-  // supplier
+
   preferredSupplierId: "",
-  // flags
+
   isInventoryItem: type === "stock",
   isActive: true,
 });
@@ -167,7 +165,7 @@ export default function ProductFormDrawer({
 
   const initialValues = useMemo(() => {
     const defaults = getDefaultValues(selectedType);
-    // If you keep a signed URL for preview on edit, make sure `editingProduct` includes it (e.g., `editingProduct.signedUrl`)
+
     return { ...defaults, ...(editingProduct || {}) };
   }, [selectedType, editingProduct]);
 
@@ -178,7 +176,7 @@ export default function ProductFormDrawer({
     <div
       className={`p-6 h-full overflow-y-auto ${isDarkMode ? "bg-slate-900 text-slate-100" : "bg-white"}`}
     >
-      {/* Header */}
+
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-slate-700">
         <div className="flex items-center">
           <div className="mr-4 rounded-full p-3 flex items-center justify-center text-orange-100 border border-orange-100 bg-orange-500/10">
@@ -204,11 +202,10 @@ export default function ProductFormDrawer({
         </div>
 
         <button
-          className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${
-            isDarkMode
+          className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${isDarkMode
               ? "text-slate-100 hover:text-slate-200"
               : "text-gray-600 hover:text-orange-500"
-          }`}
+            }`}
           onClick={onClose}
           aria-label="Close drawer"
         >
@@ -234,7 +231,7 @@ export default function ProductFormDrawer({
           handleSubmit,
         }) => (
           <Form onSubmit={handleSubmit} className="space-y-6">
-            {/* Row: Name + Image */}
+
             <div className="grid grid-cols-1 md:grid-cols-[1fr_140px] gap-4">
               <div className="flex flex-col gap-4">
                 <InputField
@@ -263,22 +260,21 @@ export default function ProductFormDrawer({
                 />
               </div>
 
-              {/* ✅ Functional Image Upload */}
+
               <div className="flex flex-col items-center gap-2">
                 <FileUploader
-                  // store key in form state
+
                   value={values.s3Key || ""}
                   onChange={(key: string) => {
                     setFieldValue("s3Key", key);
                     setFieldTouched("s3Key", true, true);
                   }}
                   type="image"
-                  // pick the path your backend expects for product images
-                  // examples from your uploader: "menu-items", "menu-categories", etc.
+
                   path="menu-items"
-                  // if you have a signed URL on the edit payload, pass it here
+
                   initialPreview={(editingProduct as any)?.signedUrl || ""}
-                  // show any validation error if you decide to require s3Key
+
                   error={
                     touched.s3Key && (errors as any).s3Key
                       ? ((errors as any).s3Key as string)
@@ -290,7 +286,7 @@ export default function ProductFormDrawer({
               </div>
             </div>
 
-            {/* Category */}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Category
@@ -313,10 +309,10 @@ export default function ProductFormDrawer({
 
             <hr className="my-7 border-gray-300" />
 
-            {/* STOCK SECTION */}
+
             {isStock && (
               <>
-                {/* Initial qty */}
+
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-2 items-center md:items-center pe-0 md:pe-10">
                   <p
                     className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
@@ -338,7 +334,7 @@ export default function ProductFormDrawer({
                   />
                 </div>
 
-                {/* As of date */}
+
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-4 items-center md:items-center pe-0 md:pe-10">
                   <p
                     className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
@@ -360,7 +356,7 @@ export default function ProductFormDrawer({
                   />
                 </div>
 
-                {/* Reorder point */}
+
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_18rem] gap-2 md:gap-4 items-center md:items-center pe-0 md:pe-10">
                   <p
                     className={`text-sm font-semibold text-center ${finalDarkMode ? "text-slate-200" : "text-gray-800"}`}
@@ -382,7 +378,7 @@ export default function ProductFormDrawer({
 
                 <hr className="my-7 border-gray-300" />
 
-                {/* Stock asset account */}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                     Stock asset account
@@ -397,7 +393,7 @@ export default function ProductFormDrawer({
                     options={stockAssetAccountOptions}
                     error={
                       touched.stockAssetAccount &&
-                      (errors as any).stockAssetAccount
+                        (errors as any).stockAssetAccount
                         ? ((errors as any).stockAssetAccount as string)
                         : ""
                     }
@@ -408,7 +404,7 @@ export default function ProductFormDrawer({
 
             <hr className="my-7 border-gray-300" />
 
-            {/* Sales description */}
+
             <InputField
               type="textarea"
               label="Description"
@@ -419,7 +415,7 @@ export default function ProductFormDrawer({
               onChange={handleChange}
             />
 
-            {/* Sales price + Income account */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InputField
                 label="Sales price/rate"
@@ -454,7 +450,7 @@ export default function ProductFormDrawer({
               </div>
             </div>
 
-            {/* Inclusive of VAT + VAT code */}
+
             <div className="mb-4">
               <CheckboxField
                 name="salesVatInclusive"
@@ -485,7 +481,7 @@ export default function ProductFormDrawer({
 
             <hr className="my-7 border-gray-300" />
 
-            {/* Purchasing information */}
+
             <div>
               <h4 className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                 Purchasing information
@@ -500,7 +496,7 @@ export default function ProductFormDrawer({
               />
             </div>
 
-            {/* Cost + Expense account */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InputField
                 label="Cost"
@@ -535,7 +531,7 @@ export default function ProductFormDrawer({
               </div>
             </div>
 
-            {/* Inclusive of purchase tax + Purchase tax */}
+
             <div className="mb-4">
               <CheckboxField
                 name="purchaseTaxInclusive"
@@ -564,7 +560,7 @@ export default function ProductFormDrawer({
               />
             </div>
 
-            {/* Preferred Supplier */}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Preferred Supplier
@@ -579,14 +575,14 @@ export default function ProductFormDrawer({
                 options={supplierOptions}
                 error={
                   touched.preferredSupplierId &&
-                  (errors as any).preferredSupplierId
+                    (errors as any).preferredSupplierId
                     ? ((errors as any).preferredSupplierId as string)
                     : ""
                 }
               />
             </div>
 
-            {/* Save (theme’d) */}
+
             <div className="pt-2">
               <button
                 type="submit"
