@@ -1,4 +1,3 @@
-// src/features/products/components/ProductCategoryModal.tsx
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import Modal from "../../../../components/Modal";
@@ -9,22 +8,22 @@ import InputField from "../../../../components/InputField";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: Pick<ProductCategory, "name">) => void | Promise<void>;
+  onSubmit: (values: Pick<ProductCategory, "name" | "description">) => void | Promise<void>;
   editingCategory?: Partial<ProductCategory>;
   isSubmitting?: boolean;
 };
 
 const Schema = Yup.object({
-  sku: Yup.string()
-    .trim()
-    .min(2, "Too short")
-    .max(160, "Too long")
-    .required("Name is required"),
   name: Yup.string()
     .trim()
     .min(2, "Too short")
     .max(160, "Too long")
     .required("Name is required"),
+  description: Yup.string()
+    .trim()
+    .min(2, "Too short")
+    .max(500, "Too long")
+    .optional(),
 });
 
 export default function ProductCategoryModal({
@@ -43,7 +42,7 @@ export default function ProductCategoryModal({
       <Formik
         initialValues={{
           name: editingCategory?.name ?? "",
-          sku: editingCategory?.sku ?? "",
+          description: editingCategory?.description ?? "",
         }}
         validationSchema={Schema}
         onSubmit={async (vals) => {
@@ -54,20 +53,22 @@ export default function ProductCategoryModal({
         {({ values, handleChange, handleSubmit, errors, touched }) => (
           <Form className="space-y-4" onSubmit={handleSubmit}>
             <InputField
-              label="SKU"
-              name="sku"
-              value={values.name}
-              onChange={handleChange}
-              error={touched.sku ? (errors.sku as string) : undefined}
-              placeholder="e.g., Wraps"
-            />
-            <InputField
               label="Category Name"
               name="name"
               value={values.name}
               onChange={handleChange}
               error={touched.name ? (errors.name as string) : undefined}
               placeholder="e.g., Wraps"
+            />
+            <InputField
+              label="Description"
+              name="description"
+              value={values.description}
+              onChange={handleChange}
+              error={touched.description ? (errors.description as string) : undefined}
+              placeholder="e.g., Category for all wrap products"
+              type="textarea"
+              rows={3}
             />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outlined" onClick={onClose}>

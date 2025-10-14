@@ -8,6 +8,7 @@ export const baseApi = createApi({
     "Menus",
     "MenuCategory",
     "MenuModifiers",
+    "ProductCategory",
     "Stores",
     "Kiosks",
     "Documents",
