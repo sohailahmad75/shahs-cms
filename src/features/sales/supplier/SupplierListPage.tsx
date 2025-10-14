@@ -95,7 +95,7 @@ const SupplierListPage: React.FC = () => {
           <ConfirmDelete
             onConfirm={async () => {
               await deleteCategory(row.id).unwrap();
-              toast.success("Category deleted");
+              toast.success("Supplier deleted");
             }}
             renderTrigger={({ open }) => (
               <ActionIcon

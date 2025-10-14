@@ -37,7 +37,7 @@ export default function SupplierModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingCategory?.id ? "Edit Category" : "Add Category"}
+      title={editingCategory?.id ? "Edit Supplier" : "Add Supplier"}
     >
       <Formik
         initialValues={{
@@ -53,7 +53,7 @@ export default function SupplierModal({
         {({ values, handleChange, handleSubmit, errors, touched }) => (
           <Form className="space-y-4" onSubmit={handleSubmit}>
             <InputField
-              label="Category Name"
+              label="Supplier Name"
               name="name"
               value={values.name}
               onChange={handleChange}
