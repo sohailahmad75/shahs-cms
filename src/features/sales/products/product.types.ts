@@ -8,13 +8,24 @@ export interface Product {
   salesPrice: number;
   salesVatInclusive?: boolean;
   salesVatRate?: number;
+  salesVatCode?: string; 
+  salesDescription?: string; 
   incomeAccount?: string;
   purchaseCost: number;
   purchaseTaxInclusive?: boolean;
   purchaseTaxRate?: number;
+  purchaseTaxCode?: string;
+  purchaseDescription?: string; 
   expenseAccount?: string;
+  preferredSupplierId?: string; 
+
+
   stockAssetAccount?: string;
   reorderPoint?: number;
+  initialQuantity?: number;
+  initialAsOf?: string; 
+
+
   unit?: string;
   s3Key?: string | null;
   isInventoryItem: boolean;
