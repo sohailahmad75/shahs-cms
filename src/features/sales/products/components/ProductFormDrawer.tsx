@@ -4,7 +4,8 @@ import * as Yup from "yup";
 import CloseIcon from "../../../../assets/styledIcons/CloseIcon";
 import { useTheme } from "../../../../context/themeContext";
 import type { Product } from "../product.types";
-
+import ReusableAsyncSelect from "../../../../components/aysncSelect";
+import { useGetProductCategoriesQuery } from "../../productCategories/services/productCategoryApi";
 import NonStockIcon from "../../../../assets/styledIcons/NonStockIcon";
 import StockIcon from "../../../../assets/styledIcons/StockIcon";
 import ServiceIcon from "../../../../assets/styledIcons/ServiceIcon";
@@ -203,8 +204,8 @@ export default function ProductFormDrawer({
 
         <button
           className={`transition duration-200 ease-in-out hover:scale-110 cursor-pointer ${isDarkMode
-              ? "text-slate-100 hover:text-slate-200"
-              : "text-gray-600 hover:text-orange-500"
+            ? "text-slate-100 hover:text-slate-200"
+            : "text-gray-600 hover:text-orange-500"
             }`}
           onClick={onClose}
           aria-label="Close drawer"
@@ -287,7 +288,7 @@ export default function ProductFormDrawer({
             </div>
 
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Category
               </label>
@@ -305,7 +306,29 @@ export default function ProductFormDrawer({
                     : ""
                 }
               />
+            </div> */}
+            <div>
+              <ReusableAsyncSelect
+                label="Category"
+                placeholder="Search or select category..."
+                value={values.categoryId}
+                onChange={(selected: any) => {
+                  setFieldValue("categoryId", selected?.value || "");
+                  setFieldTouched("categoryId", true, true);
+                }}
+                useQueryHook={({ search, page }) =>
+                  useGetProductCategoriesQuery({ search, page })
+                }
+                getOptionLabel={(item: any) => item.name}
+                getOptionValue={(item: any) => item.id}
+              />
+              {touched.categoryId && (errors as any).categoryId && (
+                <div className="text-red-500 text-xs mt-1">
+                  {(errors as any).categoryId}
+                </div>
+              )}
             </div>
+
 
             <hr className="my-7 border-gray-300" />
 
