@@ -121,6 +121,13 @@ export const sidebarMenu: SidebarMenu[] = [
           roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
           icon: <ProductsIcon />,
         },
+         {
+          id: "sales-suppliers",
+          name: "Suppliers",
+          link: "/sales/suppliers",
+          roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+          icon: <ProductsIcon />,
+        },
       ],
     },
   },

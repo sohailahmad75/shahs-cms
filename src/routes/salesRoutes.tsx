@@ -6,6 +6,7 @@ import ProductListPage from "../features/sales/products";
 import ProductCategoryListPage from "../features/sales/productCategories/ProductCategoryListPage";
 import ProductsWrapper from "../features/sales/products/ProductsWrapper";
 import StoreOrdersListPage from "../features/sales/storeOrders/StoreOrdersListPage";
+import SupplierListPage from "../features/sales/supplier/SupplierListPage";
 
 const salesRoutes = [
   {
@@ -25,6 +26,7 @@ const salesRoutes = [
           { path: "products", element: <ProductListPage /> },
           { path: "product-categories", element: <ProductCategoryListPage /> },
           { path: "store-orders", element: <StoreOrdersListPage /> },
+          { path: "suppliers", element: <SupplierListPage /> },
         ],
       },
     ],
