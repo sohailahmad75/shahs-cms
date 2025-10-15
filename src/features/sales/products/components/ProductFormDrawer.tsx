@@ -154,7 +154,6 @@ export default function ProductFormDrawer({
   editingProduct,
   isSubmitting = false,
 
-  categoryOptions = defaultOptions.categories,
   vatOptions = defaultOptions.vat,
   incomeAccountOptions = defaultOptions.income,
   expenseAccountOptions = defaultOptions.expense,
@@ -287,26 +286,6 @@ export default function ProductFormDrawer({
               </div>
             </div>
 
-
-            {/* <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Category
-              </label>
-              <SelectField
-                name="categoryId"
-                value={String(values.categoryId || "")}
-                onChange={(e: any) => {
-                  setFieldValue("categoryId", e.target.value);
-                  setFieldTouched("categoryId", true, true);
-                }}
-                options={categoryOptions}
-                error={
-                  touched.categoryId && (errors as any).categoryId
-                    ? ((errors as any).categoryId as string)
-                    : ""
-                }
-              />
-            </div> */}
             <div>
               <ReusableAsyncSelect
                 label="Category"
@@ -316,8 +295,8 @@ export default function ProductFormDrawer({
                   setFieldValue("categoryId", selected?.value || "");
                   setFieldTouched("categoryId", true, true);
                 }}
-                useQueryHook={({ search, page }) =>
-                  useGetProductCategoriesQuery({ search, page })
+                useQueryHook={({ query, page }) =>
+                  useGetProductCategoriesQuery({ query, page })
                 }
                 getOptionLabel={(item: any) => item.name}
                 getOptionValue={(item: any) => item.id}
