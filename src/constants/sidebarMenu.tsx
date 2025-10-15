@@ -9,11 +9,12 @@ import DocumentIcon from "../assets/styledIcons/DocumentIcon";
 import UserIcon from "../assets/styledIcons/UserIcon";
 import { ROLES, type UserRole } from "../helper";
 import type { JSX } from "react";
-// import InventoryIcon from "../assets/styledIcons/InventoryIcon";
-import ProductsIcon from "../assets/styledIcons/ProductsIcon";
 import OrdersIcon from "../assets/styledIcons/ordersIcon";
 import ProfileSettingIcon from "../assets/styledIcons/ProfileSettingIcon";
 import SalesIcon from "../assets/styledIcons/SalesIcon";
+import { ProductBoxIcon } from "../assets/styledIcons/ProductIcon";
+import { CategoriesIcon, GroceryIcon } from "../assets/styledIcons/ProductCategories";
+import { DeliverySupplierIcon } from "../assets/styledIcons/SupplierIcon";
 
 export type SidebarMenu = {
   id: string;
@@ -105,28 +106,28 @@ export const sidebarMenu: SidebarMenu[] = [
           name: "Products",
           link: "/sales/products",
           roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-          icon: <ProductsIcon />,
+          icon: <ProductBoxIcon size={22}/>,
         },
         {
           id: "sales-product-categories",
           name: "Product Categories",
           link: "/sales/product-categories",
           roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-          icon: <ProductsIcon />,
+          icon: <CategoriesIcon size={20}/>,
         },
         {
           id: "sales-store-orders",
           name: "Store Orders",
           link: "/sales/store-orders",
           roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-          icon: <ProductsIcon />,
+          icon: <GroceryIcon size={22} />,
         },
-         {
+        {
           id: "sales-suppliers",
           name: "Suppliers",
           link: "/sales/suppliers",
           roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-          icon: <ProductsIcon />,
+          icon: <DeliverySupplierIcon size={20}/>,
         },
       ],
     },
@@ -186,7 +187,7 @@ export const sidebarMenu: SidebarMenu[] = [
           name: "Profile Settings",
           link: "/setting/profile-settings",
           roles: [ROLES.SUPER_ADMIN],
-          icon: <ProfileSettingIcon size={26}/>,
+          icon: <ProfileSettingIcon size={26} />,
         },
       ],
     },
