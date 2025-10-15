@@ -16,9 +16,9 @@ import { toast } from "react-toastify";
 import { useTheme } from "../../../context/themeContext";
 import type { Supplier } from "./Supplier.types";
 import {
-  useGetSupplierQuery,
-  useCreateSupplierMutation,
-  useUpdateSupplierMutation,
+  useGetNewAllSupplierQuery,
+  usePostSupplierMutation,
+  usePutSupplierMutation,
   useDeleteSupplierMutation,
 } from "./services/SupplierApi";
 import SupplierModal from "./components/SuuplierModal";
@@ -51,12 +51,12 @@ const SupplierListPage: React.FC = () => {
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
-  } = useGetSupplierQuery(queryParams);
+  } = useGetNewAllSupplierQuery(queryParams);
 
   const [createCategory, { isLoading: creating }] =
-    useCreateSupplierMutation();
+    usePostSupplierMutation();
   const [updateCategory, { isLoading: updating }] =
-    useUpdateSupplierMutation();
+    usePutSupplierMutation();
   const [deleteCategory] = useDeleteSupplierMutation();
   const rows = resp.data as Supplier[];
   const meta = resp.meta;
@@ -125,7 +125,6 @@ const SupplierListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search */}
       <div className="mb-4">
         <InputField
           className="w-72"
