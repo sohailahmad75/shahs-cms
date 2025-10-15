@@ -8,7 +8,7 @@ type SortDir = "ASC" | "DESC";
 export interface GetCategoriesArgs {
   page?: number;
   perPage?: number;
-  query?: string; // search by name
+  query?: string;
   sort?: "name" | "createdAt" | "updatedAt";
   sortDir?: SortDir;
 }
@@ -38,12 +38,12 @@ export const productCategoryApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result?.data
           ? [
-              ...result.data.map(({ id }) => ({
-                type: "ProductCategory" as const,
-                id,
-              })),
-              { type: "ProductCategory" as const, id: "LIST" },
-            ]
+            ...result.data.map(({ id }) => ({
+              type: "ProductCategory" as const,
+              id,
+            })),
+            { type: "ProductCategory" as const, id: "LIST" },
+          ]
           : [{ type: "ProductCategory" as const, id: "LIST" }],
     }),
 
@@ -55,13 +55,13 @@ export const productCategoryApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "ProductCategory", id: "LIST" }],
     }),
 
-    updateProductCategory: builder.mutation<
+    updateCategory: builder.mutation<
       ProductCategory,
       { id: string; data: Pick<ProductCategory, "name"> }
     >({
       query: ({ id, data }) => ({
         url: `/inventory/categories/${id}`,
-        method: "PATCH",
+        method: "PUT",
         body: data,
       }),
       invalidatesTags: (_r, _e, { id }) => [
@@ -80,6 +80,6 @@ export const productCategoryApi = baseApi.injectEndpoints({
 export const {
   useGetProductCategoriesQuery,
   useCreateProductCategoryMutation,
-  useUpdateProductCategoryMutation,
+  useUpdateCategoryMutation,
   useDeleteProductCategoryMutation,
 } = productCategoryApi;

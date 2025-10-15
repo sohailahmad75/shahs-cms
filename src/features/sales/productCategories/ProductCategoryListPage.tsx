@@ -21,7 +21,7 @@ import type { ProductCategory } from "./productCategory.types";
 import {
   useGetProductCategoriesQuery,
   useCreateProductCategoryMutation,
-  useUpdateProductCategoryMutation,
+  useUpdateCategoryMutation,
   useDeleteProductCategoryMutation,
 } from "./services/productCategoryApi";
 
@@ -58,7 +58,7 @@ const ProductCategoryListPage: React.FC = () => {
   const [createCategory, { isLoading: creating }] =
     useCreateProductCategoryMutation();
   const [updateCategory, { isLoading: updating }] =
-    useUpdateProductCategoryMutation();
+    useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteProductCategoryMutation();
   const rows = resp.data as ProductCategory[];
   const meta = resp.meta;
