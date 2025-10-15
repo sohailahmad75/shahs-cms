@@ -46,8 +46,8 @@ const ProductDrawerManager = ({
       const payload = {
         ...values,
         productType: selectedType,
-        sku: values.sku || values.itemCode,
-        itemCode: values.itemCode || values.sku,
+
+        itemCode: values.itemCode,
       };
 
       if (editingProduct?.id) {

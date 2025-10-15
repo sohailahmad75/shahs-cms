@@ -103,7 +103,6 @@ const ProductListPage: React.FC = () => {
       label: "#",
       render: (_v, _r, i) => <span>{apiPageIndexBase + (i ?? 0) + 1}</span>,
     },
-    { key: "sku", label: "SKU", sortable: true },
     { key: "name", label: "Name", sortable: true },
     {
       key: "salesPrice",

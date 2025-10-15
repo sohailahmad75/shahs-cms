@@ -1,6 +1,5 @@
 export interface Product {
   id: string;
-  sku: string;
   name: string;
   itemCode?: string | null;
   categoryId?: string | null;
