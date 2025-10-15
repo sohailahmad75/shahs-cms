@@ -31,6 +31,9 @@ const validationSchema = Yup.object({
     .oneOf(["store", "warehouse"], "Invalid usage")
     .required("Usage is required"),
   categoryId: Yup.string().required("Category is required"),
+  productType: Yup.string()
+    .oneOf(["stock", "non-stock", "service"], "Invalid product type")
+    .required("Product type is required"),
 
   initialQuantity: Yup.number()
     .transform((v, o) => (o === "" || o === null ? undefined : v))
@@ -65,6 +68,7 @@ const getDefaultValues = (type: string) => {
     uom: "kg",
     usage: "store",
     categoryId: "",
+    productType: type,
     initialQuantity: undefined,
     salesPrice: undefined,
     purchaseCost: undefined,
@@ -134,7 +138,6 @@ export default function ProductFormDrawer({
         {({ values, errors, touched, handleChange, setFieldValue, handleSubmit }) => (
           <Form onSubmit={handleSubmit} className="space-y-6">
 
-
             <InputField
               label="Name"
               required
@@ -144,7 +147,6 @@ export default function ProductFormDrawer({
               error={touched.name && errors.name ? errors.name : ""}
             />
 
-
             <InputField
               label="Item Code"
               required
@@ -153,7 +155,6 @@ export default function ProductFormDrawer({
               onChange={handleChange}
               error={touched.itemCode && errors.itemCode ? errors.itemCode : ""}
             />
-
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
@@ -173,7 +174,6 @@ export default function ProductFormDrawer({
                 error={touched.uom && errors.uom ? errors.uom : ""}
               />
             </div>
-
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
@@ -210,7 +210,6 @@ export default function ProductFormDrawer({
               )}
             </div>
 
-
             {isStock && (
               <>
                 <InputField
@@ -220,7 +219,6 @@ export default function ProductFormDrawer({
                   type="number"
                   value={values.initialQuantity ?? ""}
                   onChange={handleChange}
-
                 />
 
                 <InputField
@@ -229,11 +227,9 @@ export default function ProductFormDrawer({
                   type="number"
                   value={values.reorderPoint ?? ""}
                   onChange={handleChange}
-
                 />
               </>
             )}
-
 
             <InputField
               label="Sales Description"
@@ -253,7 +249,6 @@ export default function ProductFormDrawer({
               rows={2}
             />
 
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InputField
                 label="Sales Price"
@@ -266,13 +261,10 @@ export default function ProductFormDrawer({
                 label="Purchase Cost"
                 name="purchaseCost"
                 type="number"
-
                 value={values.purchaseCost ?? ""}
                 onChange={handleChange}
-
               />
             </div>
-
 
             <div>
               <ReusableAsyncSelect
@@ -290,7 +282,6 @@ export default function ProductFormDrawer({
               />
             </div>
 
-         
             <div className="pt-2">
               <button
                 type="submit"

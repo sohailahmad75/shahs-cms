@@ -8,22 +8,23 @@ export interface Product {
   salesPrice: number;
   salesVatInclusive?: boolean;
   salesVatRate?: number;
-  salesVatCode?: string; 
-  salesDescription?: string; 
+  salesVatCode?: string;
+  salesDescription?: string;
   incomeAccount?: string;
   purchaseCost: number;
   purchaseTaxInclusive?: boolean;
   purchaseTaxRate?: number;
   purchaseTaxCode?: string;
-  purchaseDescription?: string; 
+  purchaseDescription?: string;
   expenseAccount?: string;
-  preferredSupplierId?: string; 
+  preferredSupplierId?: string;
+  productType: string
 
 
   stockAssetAccount?: string;
   reorderPoint?: number;
   initialQuantity?: number;
-  initialAsOf?: string; 
+  initialAsOf?: string;
 
 
   unit?: string;

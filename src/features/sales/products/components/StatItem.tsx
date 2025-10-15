@@ -1,7 +1,6 @@
 import React from "react";
 import LowStockIcon from "../../../../assets/styledIcons/LowStockIcon";
 import StockOut from "../../../../assets/styledIcons/StockOut";
-// Optional: your CloseIcon. If you don't have one, the component will render "×".
 import CloseIcon from "../../../../assets/styledIcons/CloseIcon";
 
 type StatKind = "LOW" | "OUT" | null;
@@ -9,11 +8,8 @@ type StatKind = "LOW" | "OUT" | null;
 type StockStatsHeaderProps = {
   lowCount: number;
   outCount: number;
-  /** Controlled active stat (optional). If omitted, the component manages its own state. */
   activeStat?: StatKind;
-  /** Called whenever the active stat changes (LOW/OUT/null). */
   onChange?: (next: StatKind) => void;
-  /** Optional wrapper classes for spacing/layout. */
   className?: string;
 };
 
@@ -24,7 +20,6 @@ export const StockStatsHeader: React.FC<StockStatsHeaderProps> = ({
   onChange,
   className = "",
 }) => {
-  // Support both controlled and uncontrolled modes
   const [internal, setInternal] = React.useState<StatKind>(null);
   const isControlled = typeof activeStat !== "undefined";
   const value = isControlled ? activeStat : internal;
@@ -54,7 +49,6 @@ export const StockStatsHeader: React.FC<StockStatsHeaderProps> = ({
         onClear={() => setValue(null)}
       />
 
-      {/* Divider (hidden on small screens) */}
       <div className="hidden md:block h-14 w-px bg-slate-200" />
 
       <StatItem
@@ -111,7 +105,6 @@ const StatItem: React.FC<StatItemProps> = ({
       >
         <span
           className={[
-            // responsive sizes for the circle
             "relative grid place-items-center rounded-full text-white",
             "w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20",
             "ring-2",
@@ -125,7 +118,6 @@ const StatItem: React.FC<StatItemProps> = ({
           ].join(" ")}
         >
           <span className="pointer-events-none absolute inset-0 rounded-full bg-white/10" />
-          {/* smaller icon on mobile, larger on md+ */}
           <span className="md:hidden">{renderIcon(24)}</span>
           <span className="hidden md:block">{renderIcon(34)}</span>
         </span>
@@ -134,7 +126,6 @@ const StatItem: React.FC<StatItemProps> = ({
           <h2
             className={[
               "leading-none font-semibold",
-              // responsive number size
               "text-2xl sm:text-[26px] md:text-3xl",
               isDimmed ? countDimColor : countColor,
             ].join(" ")}
@@ -144,7 +135,6 @@ const StatItem: React.FC<StatItemProps> = ({
           <p
             className={[
               "mt-1 uppercase tracking-widest",
-              // smaller label on mobile
               "text-[10px] sm:text-xs",
               isDimmed ? "text-slate-400" : "text-slate-500",
             ].join(" ")}
@@ -154,7 +144,6 @@ const StatItem: React.FC<StatItemProps> = ({
         </div>
       </button>
 
-      {/* Clear only for the active one, and keep it compact */}
       {isActive && (
         <button
           type="button"

@@ -6,7 +6,7 @@ import {
   type SortDir,
 } from "../../../components/DynamicTable";
 import Loader from "../../../components/Loader";
-import ProductModal from "./components/ProductModal";
+
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import EditIcon from "../../../assets/styledIcons/EditIcon";
@@ -22,19 +22,14 @@ import { productFiltersConfig } from "./helper/product-list";
 import type { Product } from "./product.types";
 import {
   useGetProductsQuery,
-  useCreateProductMutation,
-  useUpdateProductsMutation,
   useDeleteProductMutation,
 } from "./services/productApi";
-import StockOut from "../../../assets/styledIcons/StockOut";
-import LowStockIcon from "../../../assets/styledIcons/LowStockIcon";
-import CloseIcon from "../../../assets/styledIcons/CloseIcon";
+
 import { StockStatsHeader } from "./components/StatItem";
 import ProductDrawerManager from "./components/ProductModal";
 
 const ProductListPage: React.FC = () => {
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(
     null,
   );
@@ -44,7 +39,6 @@ const ProductListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // unified sort state for DynamicTable + API
   const [sort, setSort] = useState<{ key: string | null; direction: SortDir }>({
     key: null,
     direction: null,
@@ -68,9 +62,6 @@ const ProductListPage: React.FC = () => {
     },
     isLoading,
   } = useGetProductsQuery(queryParams);
-
-  const [createProduct, { isLoading: creating }] = useCreateProductMutation();
-  const [updateProduct, { isLoading: updating }] = useUpdateProductsMutation();
   const [deleteProduct] = useDeleteProductMutation();
 
   const products = resp.data as Product[];
@@ -84,17 +75,16 @@ const ProductListPage: React.FC = () => {
 
   const [activeStat, setActiveStat] = useState<"LOW" | "OUT" | null>(null);
 
-  // When the active stat changes, update your filters (optional)
   const handleChange = (next: "LOW" | "OUT" | null) => {
     setActiveStat(next);
     if (next === "LOW") {
-      setFilters((f) => ({ ...f, stockStatus: "LOW" })); // adjust key
+      setFilters((f) => ({ ...f, stockStatus: "LOW" }));
       setPage(1);
     } else if (next === "OUT") {
       setFilters((f) => ({ ...f, stockStatus: "OUT" }));
       setPage(1);
     } else {
-      setFilters(({ stockStatus, ...rest }) => rest); // clear
+      setFilters(({ stockStatus, ...rest }) => rest);
     }
   };
 
@@ -123,10 +113,15 @@ const ProductListPage: React.FC = () => {
     },
     { key: "unit", label: "Unit", sortable: true },
     {
-      key: "isInventoryItem",
+      key: "productType",
       label: "Type",
       sortable: true,
-      render: (v) => (v ? "Stock" : "Service"),
+      render: (v) => {
+        if (v === "stock") return "Stock";
+        if (v === "non-stock") return "Non-Stock";
+        if (v === "service") return "Service";
+        return "-";
+      },
     },
     {
       key: "isActive",
@@ -174,30 +169,17 @@ const ProductListPage: React.FC = () => {
     <div className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <h1 className="text-xl font-bold">Products</h1>
-        {/* <Button
-          onClick={() => {
-            setEditingProduct(null);
-            setModalOpen(true);
-          }}
-        >
-          Add Product
-        </Button> */}
 
         <Button
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={() => {
+            setEditingProduct(null);
+            setIsDrawerOpen(true);
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded"
         >
           Add Product
         </Button>
-        {isDrawerOpen && (
-          <ProductDrawerManager
-            isOpen={isDrawerOpen}
-            onClose={() => setIsDrawerOpen(false)}
-          />
-        )}
-
       </div>
-
 
       <StockStatsHeader
         lowCount={21}
@@ -206,7 +188,6 @@ const ProductListPage: React.FC = () => {
         onChange={handleChange}
       />
 
-      {/* Search */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <InputField
@@ -222,7 +203,6 @@ const ProductListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={productFiltersConfig as any}
@@ -269,29 +249,16 @@ const ProductListPage: React.FC = () => {
         </>
       )}
 
-      <ProductModal
-        isOpen={modalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          setEditingProduct(null);
-        }}
-        editingProduct={editingProduct ?? undefined}
-        isSubmitting={creating || updating}
-        onSubmit={async (values: Partial<Product>) => {
-          if (editingProduct?.id) {
-            await updateProduct({
-              id: editingProduct.id,
-              data: values,
-            }).unwrap();
-            toast.success("Product updated");
-          } else {
-            await createProduct(values).unwrap();
-            toast.success("Product created");
-          }
-          setModalOpen(false);
-          setEditingProduct(null);
-        }}
-      />
+      {isDrawerOpen && (
+        <ProductDrawerManager
+          isOpen={isDrawerOpen}
+          onClose={() => {
+            setIsDrawerOpen(false);
+            setEditingProduct(null);
+          }}
+          editingProduct={editingProduct || undefined}
+        />
+      )}
     </div>
   );
 };

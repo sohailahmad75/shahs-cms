@@ -14,24 +14,23 @@ interface ProductDrawerManagerProps {
   editingProduct?: Partial<Product>;
 }
 
+type ProductType = "stock" | "non-stock" | "service";
+
 const ProductDrawerManager = ({
   isOpen,
   onClose,
   editingProduct,
 }: ProductDrawerManagerProps) => {
-  const [selectedType, setSelectedType] = useState<string | null>(
-    editingProduct
-      ? editingProduct.isInventoryItem
-        ? "stock"
-        : "service"
-      : null,
+
+  const [selectedType, setSelectedType] = useState<ProductType | null>(
+    editingProduct?.productType as ProductType || null
   );
 
   const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductsMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSelectType = (type: string) => {
+  const handleSelectType = (type: ProductType) => {
     setSelectedType(type);
   };
 
@@ -46,7 +45,7 @@ const ProductDrawerManager = ({
     try {
       const payload = {
         ...values,
-        isInventoryItem: selectedType === "stock",
+        productType: selectedType,
         sku: values.sku || values.itemCode,
         itemCode: values.itemCode || values.sku,
       };
