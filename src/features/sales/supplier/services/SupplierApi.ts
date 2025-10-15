@@ -15,7 +15,7 @@ export interface GetCategoriesArgs {
 
 export const SupplierApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getNewAllSupplier: builder.query<
+    getSupplier: builder.query<
       PaginatedResponse<Supplier>,
       GetCategoriesArgs | void
     >({
@@ -33,7 +33,7 @@ export const SupplierApi = baseApi.injectEndpoints({
         if (query) p.set("query", query);
         if (sort) p.set("sort", sort);
         if (sortDir) p.set("sortDir", sortDir);
-        return { url: `/suppliers?${p.toString()}`, method: "GET" };
+        return { url: `/inventory/categories?${p.toString()}`, method: "GET" };
       },
       providesTags: (result) =>
         result?.data
@@ -47,21 +47,21 @@ export const SupplierApi = baseApi.injectEndpoints({
           : [{ type: "Supplier" as const, id: "LIST" }],
     }),
 
-    postSupplier: builder.mutation<
+    createSupplier: builder.mutation<
       Supplier,
       Pick<Supplier, "name">
     >({
-      query: (body) => ({ url: "/suppliers", method: "POST", body }),
+      query: (body) => ({ url: "/inventory/categories", method: "POST", body }),
       invalidatesTags: [{ type: "Supplier", id: "LIST" }],
     }),
 
-    putSupplier: builder.mutation<
+    updateSupplier: builder.mutation<
       Supplier,
       { id: string; data: Pick<Supplier, "name"> }
     >({
       query: ({ id, data }) => ({
-        url: `/suppliers/${id}`,
-        method: "PUT",
+        url: `/inventory/categories/${id}`,
+        method: "PATCH",
         body: data,
       }),
       invalidatesTags: (_r, _e, { id }) => [
@@ -71,15 +71,15 @@ export const SupplierApi = baseApi.injectEndpoints({
     }),
 
     deleteSupplier: builder.mutation<{ success: boolean }, string>({
-      query: (id) => ({ url: `/suppliers/${id}`, method: "DELETE" }),
+      query: (id) => ({ url: `/inventory/categories/${id}`, method: "DELETE" }),
       invalidatesTags: [{ type: "Supplier", id: "LIST" }],
     }),
   }),
 });
 
 export const {
-  useGetNewAllSupplierQuery,
-  usePostSupplierMutation,
-  usePutSupplierMutation,
+  useGetSupplierQuery,
+  useCreateSupplierMutation,
+  useUpdateSupplierMutation,
   useDeleteSupplierMutation,
 } = SupplierApi;
