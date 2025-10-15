@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
 import AsyncSelect from "react-select/async";
+import { useTheme } from "../context/themeContext";
 
 interface AsyncSelectProps {
     label?: string;
@@ -9,6 +10,8 @@ interface AsyncSelectProps {
     useQueryHook: (args: { query: string; page: number }) => any;
     getOptionLabel?: (item: any) => string;
     getOptionValue?: (item: any) => string;
+    darkMode?: boolean;
+    className?: string;
 }
 
 const PAGE_SIZE = 20;
@@ -37,7 +40,12 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
     useQueryHook,
     getOptionLabel = (item) => item?.name ?? "",
     getOptionValue = (item) => item?.id ?? "",
+    darkMode = false,
+    className = "",
 }) => {
+    const { isDarkMode: themeDarkMode } = useTheme();
+    const finalDarkMode = darkMode || themeDarkMode;
+
     const [page, setPage] = useState(1);
     const [inputValue, setInputValue] = useState("");
     const [options, setOptions] = useState<any[]>([]);
@@ -56,7 +64,6 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
             console.log("Searching for:", input);
 
             try {
-
                 const result = await refetch();
                 const data = result.data;
 
@@ -101,16 +108,107 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
         }
     };
 
-
     const currentValue = options.find((item) => getOptionValue(item) === value);
     const formattedValue = currentValue ? {
         label: getOptionLabel(currentValue),
         value: getOptionValue(currentValue),
     } : null;
 
+
+    const customStyles = {
+        control: (base: any, state: any) => ({
+            ...base,
+            borderRadius: 8,
+            borderColor: finalDarkMode
+                ? state.isFocused ? "#94a3b8" : "#475569"
+                : state.isFocused ? "#f97316" : "#d1d5db",
+            backgroundColor: finalDarkMode ? "#1e293b" : "#ffffff",
+            minHeight: 42,
+            boxShadow: state.isFocused
+                ? finalDarkMode
+                    ? "0 0 0 1px #94a3b8"
+                    : "0 0 0 1px #f97316"
+                : "none",
+            "&:hover": {
+                borderColor: finalDarkMode ? "#94a3b8" : "#f97316",
+            },
+        }),
+        menu: (base: any) => ({
+            ...base,
+            borderRadius: 8,
+            backgroundColor: finalDarkMode ? "#1e293b" : "#ffffff",
+            border: finalDarkMode ? "1px solid #475569" : "1px solid #d1d5db",
+            boxShadow: finalDarkMode
+                ? "0 4px 6px -1px rgba(0, 0, 0, 0.5)"
+                : "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+        }),
+        option: (base: any, state: any) => ({
+            ...base,
+            backgroundColor: state.isSelected
+                ? finalDarkMode ? "#0f172a" : "#f97316"
+                : state.isFocused
+                    ? finalDarkMode ? "#334155" : "#ffedd5"
+                    : finalDarkMode ? "#1e293b" : "#ffffff",
+            color: state.isSelected
+                ? finalDarkMode ? "#ffffff" : "#ffffff"
+                : finalDarkMode ? "#e2e8f0" : "#1f2937",
+            "&:active": {
+                backgroundColor: finalDarkMode ? "#475569" : "#fed7aa",
+            },
+            fontSize: '0.875rem',
+            borderRadius: 4,
+            marginBottom: 2,
+        }),
+        singleValue: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#e2e8f0" : "#1f2937",
+        }),
+        input: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#e2e8f0" : "#1f2937",
+        }),
+        placeholder: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#9ca3af",
+        }),
+        dropdownIndicator: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#6b7280",
+            "&:hover": {
+                color: finalDarkMode ? "#e2e8f0" : "#374151",
+            },
+        }),
+        clearIndicator: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#6b7280",
+            "&:hover": {
+                color: finalDarkMode ? "#e2e8f0" : "#374151",
+            },
+        }),
+        loadingIndicator: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#6b7280",
+        }),
+        noOptionsMessage: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#6b7280",
+        }),
+        loadingMessage: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#6b7280",
+        }),
+    };
+
     return (
-        <div style={{ marginBottom: "1rem" }}>
-            {label && <label className="block mb-1 text-sm font-medium">{label}</label>}
+        <div className={`mb-4 ${className}`}>
+            {label && (
+                <label
+                    className={`block mb-2 text-sm font-medium ${finalDarkMode ? "text-slate-200" : "text-gray-700"
+                        }`}
+                >
+                    {label}
+                </label>
+            )}
             <AsyncSelect
                 cacheOptions
                 defaultOptions
@@ -120,14 +218,28 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
                 onChange={onChange}
                 placeholder={placeholder}
                 isClearable
-                styles={{
-                    control: (base) => ({
-                        ...base,
-                        borderRadius: 8,
-                        borderColor: "#ccc",
-                        minHeight: 42,
-                    }),
-                }}
+                styles={customStyles}
+                theme={(theme) => ({
+                    ...theme,
+                    colors: {
+                        ...theme.colors,
+                        primary: finalDarkMode ? "#334155" : "#f97316", 
+                        primary25: finalDarkMode ? "#334155" : "#ffedd5", 
+                        primary50: finalDarkMode ? "#475569" : "#fed7aa", 
+                        primary75: finalDarkMode ? "#64748b" : "#fdba74",
+                        neutral0: finalDarkMode ? "#1e293b" : "#ffffff", 
+                        neutral5: finalDarkMode ? "#334155" : "#f9fafb",
+                        neutral10: finalDarkMode ? "#475569" : "#f3f4f6",
+                        neutral20: finalDarkMode ? "#475569" : "#d1d5db", 
+                        neutral30: finalDarkMode ? "#64748b" : "#9ca3af",
+                        neutral40: finalDarkMode ? "#94a3b8" : "#6b7280",
+                        neutral50: finalDarkMode ? "#94a3b8" : "#6b7280", 
+                        neutral60: finalDarkMode ? "#cbd5e1" : "#4b5563",
+                        neutral70: finalDarkMode ? "#e2e8f0" : "#374151",
+                        neutral80: finalDarkMode ? "#f1f5f9" : "#1f2937", 
+                        neutral90: finalDarkMode ? "#f8fafc" : "#111827",
+                    },
+                })}
             />
         </div>
     );
