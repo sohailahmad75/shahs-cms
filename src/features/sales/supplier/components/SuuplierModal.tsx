@@ -27,10 +27,6 @@ const Schema = Yup.object({
   phone: Yup.string()
     .trim()
     .min(10, "Phone must be longer than or equal to 10 characters")
-    // .matches(
-    //   /^\+?[1-9]\d{1,14}$/,
-    //   "Phone number must be a valid international format"
-    // )
     .required("Phone is required"),
   address: Yup.string()
     .trim()
@@ -38,10 +34,14 @@ const Schema = Yup.object({
     .required("Address is required"),
   website: Yup.string()
     .trim()
+    .url("Website must be a valid URL")
+    .min(10, "Website must be longer than or equal to 10 characters")
+    .transform((value) => value === "" ? undefined : value)
     .optional(),
   notes: Yup.string()
     .trim()
     .max(500, "Notes must be less than 500 characters")
+    .transform((value) => value === "" ? undefined : value)
     .optional(),
   currency: Yup.string()
     .trim()
@@ -66,13 +66,46 @@ const Schema = Yup.object({
     .default(30),
   taxNumber: Yup.string()
     .trim()
+    .min(5, "Tax number must be longer than or equal to 5 characters")
+    .transform((value) => value === "" ? undefined : value)
     .optional(),
   bankDetails: Yup.string()
     .trim()
+    .min(10, "Bank details must be longer than or equal to 10 characters")
+    .transform((value) => value === "" ? undefined : value)
     .optional(),
   status: Yup.string()
     .oneOf(["active", "inactive"], "Status must be either active or inactive")
     .required("Status is required"),
+}).test('additional-info-validation', '', function (value) {
+  const { website, taxNumber, bankDetails } = value;
+
+  const hasAnyValue = !!website || !!taxNumber || !!bankDetails;
+
+  const hasAllValues = !!website && !!taxNumber && !!bankDetails;
+
+  if (hasAnyValue && !hasAllValues) {
+    if (!website) {
+      return this.createError({
+        path: 'website',
+        message: 'Website is required when Tax Number or Bank Details are provided'
+      });
+    }
+    if (!taxNumber) {
+      return this.createError({
+        path: 'taxNumber',
+        message: 'Tax Number is required when Website or Bank Details are provided'
+      });
+    }
+    if (!bankDetails) {
+      return this.createError({
+        path: 'bankDetails',
+        message: 'Bank Details are required when Website or Tax Number are provided'
+      });
+    }
+  }
+
+  return true;
 });
 
 export default function SupplierModal({
@@ -87,7 +120,6 @@ export default function SupplierModal({
       isOpen={isOpen}
       onClose={onClose}
       title={editingSupplier?.id ? "Edit Supplier" : "Add Supplier"}
-
     >
       <Formik
         initialValues={{
@@ -95,7 +127,7 @@ export default function SupplierModal({
           email: editingSupplier?.email ?? "",
           phone: editingSupplier?.phone ?? "",
           address: editingSupplier?.address ?? "",
-          website: editingSupplier?.website ?? "",
+          website: editingSupplier?.website ?? undefined,
           notes: editingSupplier?.notes ?? "",
           currency: editingSupplier?.currency ?? "GBP",
           balance: editingSupplier?.balance ?? 0,
@@ -103,8 +135,8 @@ export default function SupplierModal({
           defaultVatRate: editingSupplier?.defaultVatRate ?? 0.2,
           contactPerson: editingSupplier?.contactPerson ?? "",
           paymentTerms: editingSupplier?.paymentTerms ?? 30,
-          taxNumber: editingSupplier?.taxNumber ?? "",
-          bankDetails: editingSupplier?.bankDetails ?? "",
+          taxNumber: editingSupplier?.taxNumber ?? undefined,
+          bankDetails: editingSupplier?.bankDetails ?? undefined,
           status: editingSupplier?.status ?? "active",
         }}
         validationSchema={Schema}
@@ -201,7 +233,6 @@ export default function SupplierModal({
                 onChange={handleChange}
                 error={touched.balance ? (errors.balance as string) : undefined}
                 placeholder="0.00"
-
               />
 
               <InputField
@@ -276,7 +307,6 @@ export default function SupplierModal({
                 rows={3}
                 className="md:col-span-2"
               />
-
 
               <div className="md:col-span-2">
                 <div className="flex flex-col gap-2">
