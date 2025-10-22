@@ -1,6 +1,6 @@
 import React from "react";
 import {
-    useGetOrdersStoreQuery,
+    useGetAllOrdersStoreQuery,
 } from "./services/orderStoreAPI";
 import { type Column, DynamicTable } from "../../../components/DynamicTable";
 import type { newOrderStore } from "./helpers/orderStoreHelpers";
@@ -38,7 +38,7 @@ const StoreOrdersListPage: React.FC = () => {
             meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
         },
         isLoading,
-    } = useGetOrdersStoreQuery(queryParams);
+    } = useGetAllOrdersStoreQuery(queryParams);
 
     const orders = ordersResp.data;
     const meta = ordersResp.meta;

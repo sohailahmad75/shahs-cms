@@ -4,7 +4,7 @@ import type { OrderStore, OrderStoreListResponse } from "../helpers/orderStoreHe
 export const ordersApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
 
-        getOrdersStore: builder.query<
+        getAllOrdersStore: builder.query<
             OrderStoreListResponse,
             { page?: number; perPage?: number; query?: string;[key: string]: any }
         >({
@@ -12,7 +12,7 @@ export const ordersApi = baseApi.injectEndpoints({
                 const { page = 1, perPage = 10, query = "", ...filters } = args ?? {}
                 console.log("🔍 Orders API Params:", { page, perPage, query, ...filters });
                 return {
-                    url: "/orders",
+                    url: "/store-orders",
                     params: {
                         page,
                         perPage,
@@ -91,4 +91,4 @@ export const ordersApi = baseApi.injectEndpoints({
     }),
 })
 
-export const { useGetOrdersStoreQuery, useGetOrderStoreByIdQuery } = ordersApi
+export const { useGetAllOrdersStoreQuery, useGetOrderStoreByIdQuery } = ordersApi
