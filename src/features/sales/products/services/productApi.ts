@@ -16,7 +16,7 @@ export interface GetProductsArgs {
   sortDir?: SortDir;
   createdAt?: string;
   stockStatus?: "LOW" | "OUT";
-  [key: string]: any; 
+  [key: string]: any;
 }
 
 export const productApi = baseApi.injectEndpoints({
@@ -46,9 +46,9 @@ export const productApi = baseApi.injectEndpoints({
           }
         };
       },
-      
+
       transformResponse: (resp: any): PaginatedResponse<Product> => {
-      
+
         if (resp && typeof resp === 'object' && resp.data && resp.meta) {
           return {
             data: resp.data,
@@ -131,6 +131,10 @@ export const productApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/products/${id}`, method: "DELETE" }),
       invalidatesTags: [{ type: "Products", id: "LIST" }],
     }),
+    getOneProduct: builder.query<Product, string>({
+      query: (id) => `/inventory/products/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Products", id }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -140,4 +144,5 @@ export const {
   useCreateProductMutation,
   useUpdateOneProductsMutation,
   useDeleteProductMutation,
+  useGetOneProductQuery,
 } = productApi;

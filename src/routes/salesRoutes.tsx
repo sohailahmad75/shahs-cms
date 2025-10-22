@@ -9,6 +9,8 @@ import SupplierListPage from "../features/sales/supplier/SupplierListPage";
 import SupplierLayout from "../features/sales/supplier/components/SupplierLayout";
 import SupplierInformation from "../features/sales/supplier/components/SupplierInformation";
 import { Outlet } from "react-router-dom";
+import ProductLayout from "../features/sales/products/components/ProductLayout";
+import ProductInformation from "../features/sales/products/components/ProductInformation";
 
 const salesRoutes = [
   {
@@ -39,6 +41,18 @@ const salesRoutes = [
               {
                 index: true,
                 element: <SupplierInformation />,
+              },
+            ],
+          },
+          {
+            path: "products/:id",
+            element: (
+              <ProductLayout />
+            ),
+            children: [
+              {
+                index: true,
+                element: <ProductInformation />,
               },
             ],
           },

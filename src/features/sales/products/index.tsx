@@ -152,7 +152,7 @@ const ProductListPage: React.FC = () => {
       label: "Actions",
       render: (_, row) => (
         <div className="flex gap-2">
-          <Link to={`/products/${row.id}`} className="hover:underline">
+          <Link to={`/sales/products/${row.id}`} className="hover:underline">
             <ActionIcon
               className={isDarkMode ? "text-white" : "text-secondary-100"}
               icon={<EyeOpen size={22} />}

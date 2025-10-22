@@ -26,6 +26,15 @@ export interface Product {
   initialQuantity?: number;
   initialAsOf?: string;
   usage?: string;
+  uom?: string;
+  category?: {
+    id: string;
+    name: string;
+  }
+  supplier?: {
+    id: string;
+    name: string;
+  }
 
 
   unit?: string;
