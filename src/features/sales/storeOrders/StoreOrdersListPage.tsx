@@ -3,7 +3,7 @@ import {
     useGetAllOrdersStoreQuery,
 } from "./services/orderStoreAPI";
 import { type Column, DynamicTable } from "../../../components/DynamicTable";
-import type { newOrderStore } from "./helpers/orderStoreHelpers";
+import type { OrderStore } from "./helpers/orderStoreHelpers";
 import Loader from "../../../components/Loader";
 import { Link } from "react-router-dom";
 import EyeOpen from "../../../assets/styledIcons/EyeOpen";
@@ -44,7 +44,18 @@ const StoreOrdersListPage: React.FC = () => {
     const meta = ordersResp.meta;
     const apiPageIndexBase = (meta.page - 1) * meta.perPage;
 
-    const columns: Column<newOrderStore>[] = [
+
+    const calculateTotalAmount = (order: OrderStore): number => {
+        return order.items.reduce((total, item) => {
+            return total + (parseFloat(item.quantity) * parseFloat(item.unitPrice));
+        }, 0);
+    };
+
+    const getDisplayId = (order: OrderStore): string => {
+        return order.displayId || `SO-${order.id.slice(-8).toUpperCase()}`;
+    };
+
+    const columns: Column<OrderStore>[] = [
         {
             key: "index",
             label: "#",
@@ -52,23 +63,51 @@ const StoreOrdersListPage: React.FC = () => {
                 <span>{apiPageIndexBase + (index ?? 0) + 1}</span>
             ),
         },
-        { key: "displayId", label: "Order Number", sortable: true },
-        { key: "provider", label: "Provider", sortable: true },
+        {
+            key: "displayId",
+            label: "Order Number",
+            sortable: true,
+            render: (_, order) => getDisplayId(order)
+        },
+        {
+            key: "statusId",
+            label: "Status",
+            sortable: true,
+            render: (statusId) => {
+                const statusMap: { [key: number]: string } = {
+                    1: "Pending",
+                    2: "Processing",
+                    3: "Completed",
+                    4: "Cancelled"
+                };
+                return statusMap[statusId as number] || "Unknown";
+            }
+        },
         {
             key: "totalAmount",
             label: "Total Amount",
             sortable: true,
-            render: (value) => {
-                if (typeof value === "number") {
-                    return new Intl.NumberFormat("en-GB", {
-                        style: "currency",
-                        currency: "GBP",
-                    }).format(value);
-                }
-                return "£0.00";
+            render: (_, order) => {
+                const total = calculateTotalAmount(order);
+                return new Intl.NumberFormat("en-GB", {
+                    style: "currency",
+                    currency: "GBP",
+                }).format(total);
             }
         },
-
+        {
+            key: "itemCount",
+            label: "Items",
+            sortable: false,
+            render: (_, order) => order.items.length
+        },
+        {
+            key: "requestedDeliveryDate",
+            label: "Delivery Date",
+            sortable: true,
+            render: (value) =>
+                typeof value === "string" ? formatOrderDate(value) : "",
+        },
         {
             key: "createdAt",
             label: "Order Date",
@@ -76,25 +115,23 @@ const StoreOrdersListPage: React.FC = () => {
             render: (value) =>
                 typeof value === "string" ? formatOrderDate(value) : "",
         },
-
         {
             key: "actions",
             label: "Actions",
             sortable: false,
-            render: (_, row) => (
+            render: (_, order) => (
                 <div className="flex gap-2">
-                    <Link to={`/orders/${row.id}`} className="hover:underline">
+                    <Link to={`/store-orders/${order.id}`} className="hover:underline">
                         <ActionIcon
                             className={isDarkMode ? "text-white" : "text-secondary-100"}
                             icon={<EyeOpen size={22} />}
-                            title="View Order"
+                            title="View Order Details"
                         />
                     </Link>
                 </div>
             ),
         },
-    ]
-
+    ];
 
     return (
         <div className="p-4">
@@ -107,7 +144,7 @@ const StoreOrdersListPage: React.FC = () => {
                     value={query}
                     onChange={(val) => setQuery(val)}
                     delay={400}
-                    placeholder="Search orders…"
+                    placeholder="Search store orders…"
                     className="w-100"
                 />
             </div>

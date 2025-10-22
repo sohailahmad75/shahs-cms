@@ -12,7 +12,7 @@ export const ordersApi = baseApi.injectEndpoints({
                 const { page = 1, perPage = 10, query = "", ...filters } = args ?? {}
                 console.log("🔍 Orders API Params:", { page, perPage, query, ...filters });
                 return {
-                    url: "/store-orders",
+                    url: "/store-orders/all",
                     params: {
                         page,
                         perPage,
