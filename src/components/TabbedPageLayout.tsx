@@ -1,6 +1,5 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import type { PropsWithChildren } from "react";
-import { useMemo } from "react";
 import { useTheme } from "../context/themeContext";
 
 export interface Tab {

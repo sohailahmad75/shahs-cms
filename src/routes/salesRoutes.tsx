@@ -33,9 +33,7 @@ const salesRoutes = [
           {
             path: "suppliers/:id",
             element: (
-              <MainLayout>
-                <SupplierLayout />
-              </MainLayout>
+              <SupplierLayout />
             ),
             children: [
               {
