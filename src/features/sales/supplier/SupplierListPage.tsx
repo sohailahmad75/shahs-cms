@@ -16,10 +16,10 @@ import { toast } from "react-toastify";
 import { useTheme } from "../../../context/themeContext";
 import type { Supplier } from "./Supplier.types";
 import {
-  useGetSupplierQuery,
-  useCreateSupplierMutation,
-  useUpdateSupplierMutation,
-  useDeleteSupplierMutation,
+  useGetAllSupplierQuery,
+  useCreateOneSupplierMutation,
+  useUpdateOneSupplierMutation,
+   useDeleteOneSupplierMutation
 } from "./services/SupplierApi";
 import SupplierModal from "./components/SuuplierModal";
 
@@ -51,13 +51,11 @@ const SupplierListPage: React.FC = () => {
       meta: { total: 0, page: 1, perPage: 10, totalPages: 1 },
     },
     isLoading,
-  } = useGetSupplierQuery(queryParams);
+  } = useGetAllSupplierQuery(queryParams);
 
-  const [createCategory, { isLoading: creating }] =
-    useCreateSupplierMutation();
-  const [updateCategory, { isLoading: updating }] =
-    useUpdateSupplierMutation();
-  const [deleteCategory] = useDeleteSupplierMutation();
+  const [createSupplier, { isLoading: creating }] = useCreateOneSupplierMutation();
+  const [updateSupplier, { isLoading: updating }] = useUpdateOneSupplierMutation();
+  const [deleteSupplier] =  useDeleteOneSupplierMutation();
   const rows = resp.data as Supplier[];
   const meta = resp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
@@ -69,12 +67,24 @@ const SupplierListPage: React.FC = () => {
       render: (_v, _r, i) => <span>{apiPageIndexBase + (i ?? 0) + 1}</span>,
     },
     { key: "name", label: "Name", sortable: true },
+    { key: "email", label: "Email", sortable: true },
+    { key: "phone", label: "Phone", sortable: true },
     {
-      key: "createdAt",
-      label: "Created",
+      key: "status",
+      label: "Status",
       sortable: true,
-      render: (v) => (v ? new Date(v).toLocaleString() : "-"),
+      render: (status) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${status === "active"
+            ? "bg-green-100 text-green-800"
+            : "bg-red-100 text-red-800"
+            }`}
+        >
+          {status === "active" ? "Active" : "Inactive"}
+        </span>
+      ),
     },
+
     {
       key: "actions",
       label: "Actions",
@@ -94,7 +104,7 @@ const SupplierListPage: React.FC = () => {
           />
           <ConfirmDelete
             onConfirm={async () => {
-              await deleteCategory(row.id).unwrap();
+              await deleteSupplier(row.id).unwrap();
               toast.success("Supplier deleted");
             }}
             renderTrigger={({ open }) => (
@@ -114,7 +124,7 @@ const SupplierListPage: React.FC = () => {
   return (
     <div className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <h1 className="text-xl font-bold">Supplier</h1>
+        <h1 className="text-xl font-bold">Suppliers</h1>
         <Button
           onClick={() => {
             setEditing(null);
@@ -125,7 +135,6 @@ const SupplierListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search */}
       <div className="mb-4">
         <InputField
           className="w-72"
@@ -134,7 +143,7 @@ const SupplierListPage: React.FC = () => {
             setQuery(e.target.value);
             setPage(1);
           }}
-          placeholder="Search supplier…"
+          placeholder="Search suppliers by name, email, or contact person…"
           name="query"
         />
       </div>
@@ -143,7 +152,7 @@ const SupplierListPage: React.FC = () => {
         <Loader />
       ) : (
         <>
-          <div className="rounded-lg shadow-sm">
+          <div className="rounded-lg shadow-sm border border-gray-200">
             <DynamicTable
               data={rows}
               columns={columns}
@@ -178,15 +187,15 @@ const SupplierListPage: React.FC = () => {
           setModalOpen(false);
           setEditing(null);
         }}
-        editingCategory={editing ?? undefined}
+        editingSupplier={editing ?? undefined}
         isSubmitting={creating || updating}
         onSubmit={async (values) => {
           if (editing?.id) {
-            await updateCategory({ id: editing.id, data: values }).unwrap();
-            toast.success("Category updated");
+            await updateSupplier({ id: editing.id, data: values }).unwrap();
+            toast.success("Supplier updated successfully");
           } else {
-            await createCategory(values).unwrap();
-            toast.success("Category created");
+            await createSupplier(values).unwrap();
+            toast.success("Supplier created successfully");
           }
           setModalOpen(false);
           setEditing(null);

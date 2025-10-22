@@ -1,11 +1,8 @@
-import type {
-  Supplier,
-  PaginatedResponse,
-} from "../Supplier.types";
+import type { Supplier, PaginatedResponse } from "../Supplier.types";
 import { baseApi } from "../../../../services/baseApi";
 
 type SortDir = "ASC" | "DESC";
-export interface GetCategoriesArgs {
+export interface GetSuppliersArgs {
   page?: number;
   perPage?: number;
   query?: string;
@@ -13,11 +10,21 @@ export interface GetCategoriesArgs {
   sortDir?: SortDir;
 }
 
+interface ApiSupplierResponse {
+  suppliers: Supplier[];
+  pagination: {
+    currentPage: number;
+    perPage: number;
+    totalCount: number;
+    totalPages: number;
+  };
+}
+
 export const SupplierApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getSupplier: builder.query<
+    getAllSupplier: builder.query<
       PaginatedResponse<Supplier>,
-      GetCategoriesArgs | void
+      GetSuppliersArgs | void
     >({
       query: (args) => {
         const p = new URLSearchParams();
@@ -33,7 +40,18 @@ export const SupplierApi = baseApi.injectEndpoints({
         if (query) p.set("query", query);
         if (sort) p.set("sort", sort);
         if (sortDir) p.set("sortDir", sortDir);
-        return { url: `/inventory/categories?${p.toString()}`, method: "GET" };
+        return { url: `/suppliers?${p.toString()}`, method: "GET" };
+      },
+      transformResponse: (response: ApiSupplierResponse): PaginatedResponse<Supplier> => {
+        return {
+          data: response.suppliers,
+          meta: {
+            total: response.pagination.totalCount,
+            page: response.pagination.currentPage,
+            perPage: response.pagination.perPage,
+            totalPages: response.pagination.totalPages,
+          },
+        };
       },
       providesTags: (result) =>
         result?.data
@@ -47,39 +65,35 @@ export const SupplierApi = baseApi.injectEndpoints({
           : [{ type: "Supplier" as const, id: "LIST" }],
     }),
 
-    createSupplier: builder.mutation<
-      Supplier,
-      Pick<Supplier, "name">
-    >({
-      query: (body) => ({ url: "/inventory/categories", method: "POST", body }),
+
+    createOneSupplier: builder.mutation<Supplier, Partial<Supplier>>({
+      query: (data) => ({
+        url: "/suppliers",
+        method: "POST",
+        body: data,
+      }),
       invalidatesTags: [{ type: "Supplier", id: "LIST" }],
     }),
 
-    updateSupplier: builder.mutation<
-      Supplier,
-      { id: string; data: Pick<Supplier, "name"> }
-    >({
+    updateOneSupplier: builder.mutation<Supplier, { id: string; data: Partial<Supplier> }>({
       query: ({ id, data }) => ({
-        url: `/inventory/categories/${id}`,
-        method: "PATCH",
+        url: `/suppliers/${id}`,
+        method: "PUT",
         body: data,
       }),
-      invalidatesTags: (_r, _e, { id }) => [
-        { type: "Supplier", id },
-        { type: "Supplier", id: "LIST" },
-      ],
+      invalidatesTags: ({ id }) => [{ type: "Supplier", id }],
     }),
 
-    deleteSupplier: builder.mutation<{ success: boolean }, string>({
-      query: (id) => ({ url: `/inventory/categories/${id}`, method: "DELETE" }),
+    deleteOneSupplier: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({ url: `/suppliers/${id}`, method: "DELETE" }),
       invalidatesTags: [{ type: "Supplier", id: "LIST" }],
     }),
   }),
 });
 
 export const {
-  useGetSupplierQuery,
-  useCreateSupplierMutation,
-  useUpdateSupplierMutation,
-  useDeleteSupplierMutation,
+  useGetAllSupplierQuery,
+  useCreateOneSupplierMutation,
+  useUpdateOneSupplierMutation,
+  useDeleteOneSupplierMutation
 } = SupplierApi;
