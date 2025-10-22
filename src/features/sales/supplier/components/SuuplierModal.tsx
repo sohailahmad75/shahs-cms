@@ -5,6 +5,8 @@ import Button from "../../../../components/Button";
 import type { Supplier } from "../Supplier.types";
 import InputField from "../../../../components/InputField";
 import SelectField from "../../../../components/SelectField";
+import CheckboxField from "../../../../components/CheckboxField";
+import { useTheme } from "../../../../context/themeContext";
 
 type Props = {
   isOpen: boolean;
@@ -108,6 +110,26 @@ const Schema = Yup.object({
   return true;
 });
 
+const emptyInitialValues = {
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+  website: "",
+  notes: "",
+  currency: "GBP",
+  balance: 0,
+  isTaxable: true,
+  defaultVatRate: 0.2,
+  contactPerson: "",
+  paymentTerms: 30,
+  taxNumber: "",
+  bankDetails: "",
+  status: "active" as "active" | "inactive",
+};
+
+type FormValues = typeof emptyInitialValues;
+
 export default function SupplierModal({
   isOpen,
   onClose,
@@ -115,224 +137,295 @@ export default function SupplierModal({
   editingSupplier,
   isSubmitting,
 }: Props) {
+  const { isDarkMode } = useTheme();
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={editingSupplier?.id ? "Edit Supplier" : "Add Supplier"}
+      width="max-w-4xl"
     >
-      <Formik
+      <Formik<FormValues>
         initialValues={{
-          name: editingSupplier?.name ?? "",
-          email: editingSupplier?.email ?? "",
-          phone: editingSupplier?.phone ?? "",
-          address: editingSupplier?.address ?? "",
-          website: editingSupplier?.website ?? undefined,
-          notes: editingSupplier?.notes ?? "",
-          currency: editingSupplier?.currency ?? "GBP",
-          balance: editingSupplier?.balance ?? 0,
-          isTaxable: editingSupplier?.isTaxable ?? true,
-          defaultVatRate: editingSupplier?.defaultVatRate ?? 0.2,
-          contactPerson: editingSupplier?.contactPerson ?? "",
-          paymentTerms: editingSupplier?.paymentTerms ?? 30,
-          taxNumber: editingSupplier?.taxNumber ?? undefined,
-          bankDetails: editingSupplier?.bankDetails ?? undefined,
-          status: editingSupplier?.status ?? "active",
+          ...emptyInitialValues,
+          ...(editingSupplier
+            ? {
+              name: editingSupplier.name ?? "",
+              email: editingSupplier.email ?? "",
+              phone: editingSupplier.phone ?? "",
+              address: editingSupplier.address ?? "",
+              website: editingSupplier.website ?? "",
+              notes: editingSupplier.notes ?? "",
+              currency: editingSupplier.currency ?? "GBP",
+              balance: editingSupplier.balance ?? 0,
+              isTaxable: editingSupplier.isTaxable ?? true,
+              defaultVatRate: editingSupplier.defaultVatRate ?? 0.2,
+              contactPerson: editingSupplier.contactPerson ?? "",
+              paymentTerms: editingSupplier.paymentTerms ?? 30,
+              taxNumber: editingSupplier.taxNumber ?? "",
+              bankDetails: editingSupplier.bankDetails ?? "",
+              status: editingSupplier.status ?? "active",
+            }
+            : {}),
         }}
         validationSchema={Schema}
+        enableReinitialize
         onSubmit={async (vals) => {
           await onSubmit(vals);
         }}
-        enableReinitialize
       >
-        {({ values, handleChange, handleSubmit, errors, touched, setFieldValue }) => (
-          <Form className="space-y-4 max-h-96 overflow-y-auto pr-2" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {({ values, handleChange, setFieldValue, touched, errors }) => (
+          <Form className="space-y-8">
+           
+            <div className="col-span-2 flex items-center gap-6 mb-6">
+              <div className="flex-grow h-px bg-gray-200" />
+              <span className={`${isDarkMode ? "text-slate-100" : "text-orange-500"} text-md font-medium whitespace-nowrap`}>
+                Basic Information
+              </span>
+              <div className="flex-grow h-px bg-gray-200" />
+            </div>
 
-              <div className="md:col-span-2">
-                <h3 className="text-lg font-medium text-gray-500 mb-3">Basic Information</h3>
-              </div>
-
-              <InputField
-                label="Supplier Name *"
-                name="name"
-                value={values.name}
-                onChange={handleChange}
-                error={touched.name ? (errors.name as string) : undefined}
-                placeholder="e.g., Premium Meat Suppliers"
-              />
-
-              <InputField
-                label="Contact Person *"
-                name="contactPerson"
-                value={values.contactPerson}
-                onChange={handleChange}
-                error={touched.contactPerson ? (errors.contactPerson as string) : undefined}
-                placeholder="e.g., Ahmed Hassan"
-              />
-
-              <InputField
-                label="Email *"
-                name="email"
-                type="email"
-                value={values.email}
-                onChange={handleChange}
-                error={touched.email ? (errors.email as string) : undefined}
-                placeholder="e.g., orders@premiummeats.co.uk"
-              />
-
-              <InputField
-                label="Phone *"
-                name="phone"
-                value={values.phone}
-                onChange={handleChange}
-                error={touched.phone ? (errors.phone as string) : undefined}
-                placeholder="e.g., +44 161 234 5678"
-              />
-
-              <InputField
-                label="Website"
-                name="website"
-                type="url"
-                value={values.website}
-                onChange={handleChange}
-                error={touched.website ? (errors.website as string) : undefined}
-                placeholder="e.g., https://www.premiummeats.co.uk"
-                className="md:col-span-2"
-              />
-
-              <InputField
-                label="Address *"
-                name="address"
-                value={values.address}
-                onChange={handleChange}
-                error={touched.address ? (errors.address as string) : undefined}
-                placeholder="e.g., Unit 5, Food Industrial Estate, Manchester, M1 2AB, United Kingdom"
-                className="md:col-span-2"
-              />
-
-
-              <div className="md:col-span-2 mt-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Financial Information</h3>
-              </div>
-
-              <InputField
-                label="Currency *"
-                name="currency"
-                value={values.currency}
-                onChange={handleChange}
-                error={touched.currency ? (errors.currency as string) : undefined}
-                placeholder="e.g., GBP"
-              />
-
-              <InputField
-                label="Balance"
-                name="balance"
-                type="number"
-                value={values.balance}
-                onChange={handleChange}
-                error={touched.balance ? (errors.balance as string) : undefined}
-                placeholder="0.00"
-              />
-
-              <InputField
-                label="Default VAT Rate"
-                name="defaultVatRate"
-                type="number"
-                value={values.defaultVatRate}
-                onChange={handleChange}
-                error={touched.defaultVatRate ? (errors.defaultVatRate as string) : undefined}
-                placeholder="0.20"
-              />
-
-              <InputField
-                label="Payment Terms (days)"
-                name="paymentTerms"
-                type="number"
-                value={values.paymentTerms}
-                onChange={handleChange}
-                error={touched.paymentTerms ? (errors.paymentTerms as string) : undefined}
-                placeholder="30"
-              />
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isTaxable"
-                  name="isTaxable"
-                  checked={values.isTaxable}
-                  onChange={(e) => setFieldValue("isTaxable", e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="isTaxable" className="text-sm font-medium text-gray-700">
-                  Taxable Supplier
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Supplier Name <span className="text-red-500">*</span>
                 </label>
+                <InputField
+                  name="name"
+                  placeholder="e.g., Premium Meat Suppliers"
+                  value={values.name}
+                  onChange={handleChange}
+                  error={touched.name ? (errors.name as string) : ""}
+                />
               </div>
 
-
-              <div className="md:col-span-2 mt-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Additional Information</h3>
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Contact Person <span className="text-red-500">*</span>
+                </label>
+                <InputField
+                  name="contactPerson"
+                  placeholder="e.g., Ahmed Hassan"
+                  value={values.contactPerson}
+                  onChange={handleChange}
+                  error={touched.contactPerson ? (errors.contactPerson as string) : ""}
+                />
               </div>
 
-              <InputField
-                label="Tax Number"
-                name="taxNumber"
-                value={values.taxNumber}
-                onChange={handleChange}
-                error={touched.taxNumber ? (errors.taxNumber as string) : undefined}
-                placeholder="e.g., GB123456789"
-                className="md:col-span-2"
-              />
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <InputField
+                  name="email"
+                  type="email"
+                  placeholder="e.g., orders@premiummeats.co.uk"
+                  value={values.email}
+                  onChange={handleChange}
+                  error={touched.email ? (errors.email as string) : ""}
+                />
+              </div>
 
-              <InputField
-                label="Bank Details"
-                name="bankDetails"
-                value={values.bankDetails}
-                onChange={handleChange}
-                error={touched.bankDetails ? (errors.bankDetails as string) : undefined}
-                placeholder="e.g., Bank: HSBC, Sort: 12-34-56, Account: 12345678"
-                type="textarea"
-                rows={3}
-                className="md:col-span-2"
-              />
-
-              <InputField
-                label="Notes"
-                name="notes"
-                value={values.notes}
-                onChange={handleChange}
-                error={touched.notes ? (errors.notes as string) : undefined}
-                placeholder="e.g., Halal certified meat supplier with excellent quality"
-                type="textarea"
-                rows={3}
-                className="md:col-span-2"
-              />
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Phone <span className="text-red-500">*</span>
+                </label>
+                <InputField
+                  name="phone"
+                  placeholder="e.g., +44 161 234 5678"
+                  value={values.phone}
+                  onChange={handleChange}
+                  error={touched.phone ? (errors.phone as string) : ""}
+                />
+              </div>
 
               <div className="md:col-span-2">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="status" className="text-sm font-medium text-gray-700">
-                    Status *
-                  </label>
-                  <SelectField
-                    name="status"
-                    value={values.status}
-                    onChange={handleChange}
-                    options={[
-                      { value: "active", label: "Active" },
-                      { value: "inactive", label: "Inactive" }
-                    ]}
-                    error={touched.status ? errors.status : undefined}
-                  />
-                </div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Website
+                </label>
+                <InputField
+                  name="website"
+                  type="url"
+                  placeholder="e.g., https://www.premiummeats.co.uk"
+                  value={values.website}
+                  onChange={handleChange}
+                  error={touched.website ? (errors.website as string) : ""}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Address <span className="text-red-500">*</span>
+                </label>
+                <InputField
+                  name="address"
+                  placeholder="e.g., Unit 5, Food Industrial Estate, Manchester, M1 2AB, United Kingdom"
+                  value={values.address}
+                  onChange={handleChange}
+                  error={touched.address ? (errors.address as string) : ""}
+                />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t">
+            
+            <div className="col-span-2 flex items-center gap-6 mb-6">
+              <div className="flex-grow h-px bg-gray-200" />
+              <span className={`${isDarkMode ? "text-slate-100" : "text-orange-500"} text-md font-medium whitespace-nowrap`}>
+                Financial Information
+              </span>
+              <div className="flex-grow h-px bg-gray-200" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Currency <span className="text-red-500">*</span>
+                </label>
+                <InputField
+                  name="currency"
+                  placeholder="e.g., GBP"
+                  value={values.currency}
+                  onChange={handleChange}
+                  error={touched.currency ? (errors.currency as string) : ""}
+                />
+              </div>
+
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Balance
+                </label>
+                <InputField
+                  name="balance"
+                  type="number"
+                  placeholder="0.00"
+                  value={values.balance}
+                  onChange={handleChange}
+                  error={touched.balance ? (errors.balance as string) : ""}
+                />
+              </div>
+
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Default VAT Rate
+                </label>
+                <InputField
+                  name="defaultVatRate"
+                  type="number"
+                  placeholder="0.20"
+                  value={values.defaultVatRate}
+                  onChange={handleChange}
+                  error={touched.defaultVatRate ? (errors.defaultVatRate as string) : ""}
+                />
+              </div>
+
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Payment Terms (days)
+                </label>
+                <InputField
+                  name="paymentTerms"
+                  type="number"
+                  placeholder="30"
+                  value={values.paymentTerms}
+                  onChange={handleChange}
+                  error={touched.paymentTerms ? (errors.paymentTerms as string) : ""}
+                />
+              </div>
+
+              <div className="pt-2">
+                <CheckboxField
+                  name="isTaxable"
+                  label="Taxable Supplier"
+                  checked={values.isTaxable}
+                  onChange={(e) => setFieldValue("isTaxable", e.target.checked)}
+                  className=""
+
+                  labelClassName="select-none"
+                />
+                {touched.isTaxable && errors.isTaxable ? (
+                  <p className="text-primary-100 text-sm mt-1">
+                    {errors.isTaxable as string}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+           
+            <div className="col-span-2 flex items-center gap-6 mb-6">
+              <div className="flex-grow h-px bg-gray-200" />
+              <span className={`${isDarkMode ? "text-slate-100" : "text-orange-500"} text-md font-medium whitespace-nowrap`}>
+                Additional Information
+              </span>
+              <div className="flex-grow h-px bg-gray-200" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Tax Number
+                </label>
+                <InputField
+                  name="taxNumber"
+                  placeholder="e.g., GB123456789"
+                  value={values.taxNumber}
+                  onChange={handleChange}
+                  error={touched.taxNumber ? (errors.taxNumber as string) : ""}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Bank Details
+                </label>
+                <InputField
+                  type="textarea"
+                  name="bankDetails"
+                  placeholder="e.g., Bank: HSBC, Sort: 12-34-56, Account: 12345678"
+                  value={values.bankDetails}
+                  onChange={handleChange}
+                  error={touched.bankDetails ? (errors.bankDetails as string) : ""}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Notes
+                </label>
+                <InputField
+                  type="textarea"
+                  name="notes"
+                  placeholder="e.g., Halal certified meat supplier with excellent quality"
+                  value={values.notes}
+                  onChange={handleChange}
+                  error={touched.notes ? (errors.notes as string) : ""}
+                />
+              </div>
+
+              <div>
+                <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <SelectField
+                  name="status"
+                  value={values.status}
+                  onChange={handleChange}
+                  options={[
+                    { label: "Active", value: "active" },
+                    { label: "Inactive", value: "inactive" },
+                  ]}
+                  placeholder="Select status"
+                  error={touched.status ? (errors.status as string) : ""}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
               <Button type="button" variant="outlined" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save Supplier"}
+              <Button type="submit" loading={isSubmitting}>
+                {editingSupplier?.id ? "Update Supplier" : "Create Supplier"}
               </Button>
             </div>
           </Form>
