@@ -83,7 +83,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
         if (type === 'async-select') {
             return (
-                <div key={key} className="w-full sm:w-auto min-w-[200px]">
+                <div key={key} className="w-full sm:w-auto min-w-[200px] relative z-50">
                     <ReusableAsyncSelect
                         placeholder={label}
                         value={filters[key] || ''}
@@ -103,7 +103,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         getOptionLabel={getOptionLabel}
                         getOptionValue={getOptionValue}
                         darkMode={isDarkMode}
-                        className="!w-[200px] !h-[38px] rounded-sm"
+                        className="!w-[200px] !h-[38px] rounded-sm "
                     />
                 </div>
             );
