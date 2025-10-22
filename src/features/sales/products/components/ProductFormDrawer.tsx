@@ -253,8 +253,8 @@ export default function ProductFormDrawer({
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Unit of Measure <span className="text-red-500">*</span>
+              <label className={`${isDarkMode ? "text-slate-400" : "text-gray-700"} text-sm font-medium text-gray-700 mb-1 block`}>
+                Unit of Measure <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
               </label>
               <SelectField
                 name="uom"
@@ -272,8 +272,8 @@ export default function ProductFormDrawer({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                Usage <span className="text-red-500">*</span>
+              <label className={`${isDarkMode ? "text-slate-400" : "text-gray-700"} text-sm font-medium text-gray-700 mb-1 block`}>
+                Usage <span className={`${isDarkMode ? "text-white" : "text-red-500"}`}>*</span>
               </label>
               <SelectField
                 name="usage"
