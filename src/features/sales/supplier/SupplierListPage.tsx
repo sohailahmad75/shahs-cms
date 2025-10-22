@@ -171,7 +171,7 @@ const SupplierListPage: React.FC = () => {
               data={rows}
               columns={columns}
               rowKey="id"
-              tableClassName="bg-white"
+              
               sort={sort}
               onSortChange={setSort}
             />
