@@ -48,12 +48,12 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result?.data
           ? [
-              ...result.data.map(({ id }) => ({
-                type: "Product" as const,
-                id,
-              })),
-              { type: "Products" as const, id: "LIST" },
-            ]
+            ...result.data.map(({ id }) => ({
+              type: "Product" as const,
+              id,
+            })),
+            { type: "Products" as const, id: "LIST" },
+          ]
           : [{ type: "Products" as const, id: "LIST" }],
     }),
 
@@ -62,12 +62,12 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "Products", id: "LIST" }],
     }),
 
-    updateProducts: builder.mutation<
+    updateOneProducts: builder.mutation<
       Product,
       { id: string; data: Partial<Product> }
     >({
       query: ({ id, data }) => ({
-        url: `/products/${id}`,
+        url: `/inventory/products/${id}`,
         method: "PUT",
         body: data,
       }),
@@ -88,6 +88,6 @@ export const productApi = baseApi.injectEndpoints({
 export const {
   useGetProductsQuery,
   useCreateProductMutation,
-  useUpdateProductsMutation,
+  useUpdateOneProductsMutation,
   useDeleteProductMutation,
 } = productApi;

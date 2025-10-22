@@ -5,7 +5,7 @@ import ProductFormDrawer from "./ProductFormDrawer";
 import type { Product } from "../product.types";
 import {
   useCreateProductMutation,
-  useUpdateProductsMutation,
+  useUpdateOneProductsMutation,
 } from "../services/productApi";
 
 interface ProductDrawerManagerProps {
@@ -27,7 +27,7 @@ const ProductDrawerManager = ({
   );
 
   const [createProduct] = useCreateProductMutation();
-  const [updateProduct] = useUpdateProductsMutation();
+  const [updateProduct] = useUpdateOneProductsMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSelectType = (type: ProductType) => {

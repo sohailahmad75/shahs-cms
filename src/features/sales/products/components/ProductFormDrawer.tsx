@@ -104,29 +104,48 @@ const getDefaultValues = (type: string) => {
 
 
 const cleanFormData = (values: Partial<Product>): Partial<Product> => {
+  const {
+    name,
+    itemCode,
+    uom,
+    usage,
+    categoryId,
+    productType,
+    initialQuantity,
+    salesPrice,
+    purchaseCost,
+    reorderPoint,
+    salesDescription,
+    purchaseDescription,
+    supplierId,
+  } = values as any;
+
   return {
-    ...values,
-    name: values.name?.trim(),
-    itemCode: values.itemCode?.trim(),
-    initialQuantity: values.initialQuantity || undefined,
-    salesPrice: values.salesPrice || undefined,
-    purchaseCost: values.purchaseCost || undefined,
-    reorderPoint: values.reorderPoint || undefined,
-    salesDescription: values.salesDescription?.trim() || undefined,
-    purchaseDescription: values.purchaseDescription?.trim() || undefined,
-    supplierId: values.supplierId || undefined,
-  };
+    name: name?.trim() || undefined,
+    itemCode: itemCode?.trim() || undefined,
+    uom: uom || undefined,
+    usage: usage || undefined,
+    categoryId: categoryId || undefined,
+    productType: productType || undefined,
+    initialQuantity: initialQuantity != null ? Number(initialQuantity) : undefined,
+    salesPrice: salesPrice != null ? Number(salesPrice) : undefined,
+    purchaseCost: purchaseCost != null ? Number(purchaseCost) : undefined,
+    reorderPoint: reorderPoint != null ? Number(reorderPoint) : undefined,
+    salesDescription: salesDescription?.trim() || undefined,
+    purchaseDescription: purchaseDescription?.trim() || undefined,
+    supplierId: supplierId || undefined,
+  } as Partial<Product>;
 };
 
 
 const cleanEditingProduct = (product: Partial<Product>): Partial<Product> => {
   return {
     ...product,
-    
+
     categoryId: (product as any).category?.id ?? product.categoryId ?? undefined,
     supplierId: (product as any).supplier?.id ?? product.supplierId ?? undefined,
 
-    
+
     initialQuantity: product.initialQuantity != null
       ? Number(product.initialQuantity)
       : undefined,
@@ -140,7 +159,7 @@ const cleanEditingProduct = (product: Partial<Product>): Partial<Product> => {
       ? Number(product.purchaseCost)
       : undefined,
 
-    
+
     salesDescription: product.salesDescription || undefined,
     purchaseDescription: product.purchaseDescription || undefined,
   };

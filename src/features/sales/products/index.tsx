@@ -105,13 +105,6 @@ const ProductListPage: React.FC = () => {
     },
     { key: "name", label: "Name", sortable: true },
     {
-      key: "salesPrice",
-      label: "Price",
-      sortable: true,
-      render: (v) => (typeof v === "number" ? `£${Number(v).toFixed(2)}` : "-"),
-    },
-    { key: "unit", label: "Unit", sortable: true },
-    {
       key: "productType",
       label: "Type",
       sortable: true,
