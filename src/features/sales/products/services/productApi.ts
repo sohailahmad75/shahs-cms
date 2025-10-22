@@ -71,7 +71,7 @@ export const productApi = baseApi.injectEndpoints({
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: (r, e, { id }) => [
+      invalidatesTags: ({ id }) => [
         { type: "Product", id },
         { type: "Products", id: "LIST" },
       ],

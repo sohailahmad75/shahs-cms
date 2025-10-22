@@ -5,14 +5,18 @@ import { RotateCcw } from 'lucide-react';
 import InputField from './InputField';
 import SelectField from './SelectField';
 import DatePickerField from './DatePickerField';
+import ReusableAsyncSelect from './aysncSelect'; 
 import { useTheme } from '../../src/context/themeContext';
 
 interface FilterOption {
     key: string;
     label: string;
     options?: { label: string; value: string }[];
-    type: 'select' | 'input' | 'date';
+    type: 'select' | 'input' | 'date' | 'async-select' | 'number';
     isRange?: boolean;
+    useQueryHook?: any; 
+    getOptionLabel?: (item: any) => string;
+    getOptionValue?: (item: any) => string;
 }
 
 interface AppliedFilter {
@@ -46,12 +50,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
         if (!value.trim()) return;
 
         setAppliedFilters((prev) => {
-
             const newApplied = prev.filter((f) => f.key !== key);
             return [...newApplied, { key, value }];
         });
     };
-
 
     const removeFilter = (index: number) => {
         setAppliedFilters((prev) => {
@@ -76,8 +78,37 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const { isDarkMode } = useTheme();
 
     const renderFilterControl = (filter: FilterOption) => {
-        const { key, label, type, options } = filter;
+        const { key, label, type, options, useQueryHook, getOptionLabel, getOptionValue } = filter;
 
+        
+        if (type === 'async-select') {
+            return (
+                <div key={key} className="w-full sm:w-auto min-w-[200px]">
+                    <ReusableAsyncSelect
+                        placeholder={label}
+                        value={filters[key] || ''}
+                        onChange={(selectedOption) => {
+                            const value = selectedOption ? selectedOption.value : '';
+                            handleFilterChange(key, value);
+
+                          
+                            if (value) {
+                                applyFilter(key, selectedOption.label);
+                            } else {
+                                
+                                setAppliedFilters((prev) => prev.filter((f) => f.key !== key));
+                            }
+                        }}
+                        useQueryHook={useQueryHook}
+                        getOptionLabel={getOptionLabel}
+                        getOptionValue={getOptionValue}
+                        darkMode={isDarkMode}
+                    />
+                </div>
+            );
+        }
+
+        
         if (type === 'select') {
             return (
                 <div key={key} className="w-full sm:w-auto">
@@ -95,6 +126,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </div>
             );
         }
+
         if (type === 'date') {
             return (
                 <div key={key} className="w-full sm:w-auto">
@@ -117,16 +149,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         placeholder={label}
                         className="!w-[120px] !h-[38px] rounded-sm"
                         dropdownClassName="!w-[288px] !h-[320px]"
-
                     />
                 </div>
             );
         }
 
+       
         return (
-            <div key={key} className="w-full sm:w-auto">
+            <div className="w-full sm:w-auto">
                 <InputField
-                    type="text"
+                    type={type === 'number' ? 'number' : 'text'}
                     placeholder={label}
                     value={filters[key] || ''}
                     onChange={(e) => {
@@ -141,7 +173,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             }
                         }
                     }}
-
                     name={key}
                 />
             </div>

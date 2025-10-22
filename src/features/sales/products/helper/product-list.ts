@@ -1,3 +1,5 @@
+import { useGetProductCategoriesQuery } from "../../productCategories/services/productCategoryApi";
+
 export const productFiltersConfig = [
   {
     key: "isActive",
@@ -9,7 +11,23 @@ export const productFiltersConfig = [
       { label: "Inactive", value: "false" },
     ],
   },
-  { key: "categoryId", label: "Category", type: "text" },
   { key: "minPrice", label: "Min Price", type: "number" },
   { key: "maxPrice", label: "Max Price", type: "number" },
+
+  {
+    key: "categoryId",
+    label: "Category",
+    type: "async-select",
+    useQueryHook: useGetProductCategoriesQuery,
+    getOptionLabel: (item) => item.name,
+    getOptionValue: (item) => item.id,
+  },
+  {
+    key: "supplierId",
+    label: "Supplier",
+    type: "async-select",
+    useQueryHook: useGetProductCategoriesQuery,
+    getOptionLabel: (item) => item.name,
+    getOptionValue: (item) => item.id,
+  },
 ];

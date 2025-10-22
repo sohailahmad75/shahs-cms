@@ -158,7 +158,7 @@ const ProductListPage: React.FC = () => {
             }
           />
           {/* <ConfirmDelete
-            onConfirm={async () => handleDelete(row.id)}
+            onConfirm={async () => handleDelete(ow.id)}
             renderTrigger={({ open }) => (
               <ActionIcon
                 className="text-red-500"
@@ -197,7 +197,7 @@ const ProductListPage: React.FC = () => {
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mt-8">
           <InputField
             className="w-72"
             value={query}
