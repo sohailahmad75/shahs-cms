@@ -104,7 +104,7 @@ const ProductListPage: React.FC = () => {
       render: (_v, _r, i) => <span>{apiPageIndexBase + (i ?? 0) + 1}</span>,
     },
     { key: "name", label: "Name", sortable: true },
-     { key: "usage", label: "usage", sortable: true },
+     { key: "usage", label: "usage" },
     {
       key: "itemCode",
       label: "Item Code",
@@ -123,7 +123,7 @@ const ProductListPage: React.FC = () => {
     {
       key: "productType",
       label: "Type",
-      sortable: true,
+    
       render: (v) => {
         if (v === "stock") return "Stock";
         if (v === "non-stock") return "Non-Stock";
@@ -134,7 +134,7 @@ const ProductListPage: React.FC = () => {
     {
       key: "isActive",
       label: "Status",
-      sortable: true,
+    
       render: (v) => (v ? "Active" : "Inactive"),
     },
     {
