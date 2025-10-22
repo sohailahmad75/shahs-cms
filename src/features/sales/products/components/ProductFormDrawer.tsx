@@ -122,16 +122,29 @@ const cleanFormData = (values: Partial<Product>): Partial<Product> => {
 const cleanEditingProduct = (product: Partial<Product>): Partial<Product> => {
   return {
     ...product,
-    initialQuantity: product.initialQuantity || undefined,
-    salesPrice: product.salesPrice || undefined,
-    purchaseCost: product.purchaseCost || undefined,
-    reorderPoint: product.reorderPoint || undefined,
+    
+    categoryId: (product as any).category?.id ?? product.categoryId ?? undefined,
+    supplierId: (product as any).supplier?.id ?? product.supplierId ?? undefined,
+
+    
+    initialQuantity: product.initialQuantity != null
+      ? Number(product.initialQuantity)
+      : undefined,
+    reorderPoint: product.reorderPoint != null
+      ? Number(product.reorderPoint)
+      : undefined,
+    salesPrice: product.salesPrice != null
+      ? Number(product.salesPrice)
+      : undefined,
+    purchaseCost: product.purchaseCost != null
+      ? Number(product.purchaseCost)
+      : undefined,
+
+    
     salesDescription: product.salesDescription || undefined,
     purchaseDescription: product.purchaseDescription || undefined,
-    supplierId: product.supplierId || undefined,
   };
 };
-
 export default function ProductFormDrawer({
   selectedType,
   onBack,
