@@ -11,6 +11,7 @@ import NonStockIcon from "../../../../assets/styledIcons/NonStockIcon";
 import ServiceIcon from "../../../../assets/styledIcons/ServiceIcon";
 import InputField from "../../../../components/InputField";
 import SelectField from "../../../../components/SelectField";
+import { useGetAllSupplierQuery } from "../../supplier/services/SupplierApi";
 
 interface ProductFormDrawerProps {
   selectedType: "stock" | "non-stock" | "service";
@@ -275,7 +276,7 @@ export default function ProductFormDrawer({
                   setFieldValue("supplierId", selected?.value || "");
                 }}
                 useQueryHook={({ query, page }) =>
-                  useGetProductCategoriesQuery({ query, page })
+                  useGetAllSupplierQuery({ query, page })
                 }
                 getOptionLabel={(item: any) => item.name}
                 getOptionValue={(item: any) => item.id}
