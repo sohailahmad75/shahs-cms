@@ -8,7 +8,7 @@ export interface GetSuppliersArgs {
   query?: string;
   sort?: "name" | "createdAt" | "updatedAt";
   sortDir?: SortDir;
-  [key: string]: any; 
+  [key: string]: any;
 }
 
 interface ApiSupplierResponse {
@@ -34,10 +34,10 @@ export const SupplierApi = baseApi.injectEndpoints({
           query = "",
           sort = "createdAt",
           sortDir = "DESC",
-          ...filters 
+          ...filters
         } = args || {};
 
-        console.log("🔍 Supplier API Filters:", filters); 
+        console.log("🔍 Supplier API Filters:", filters);
 
         const p = new URLSearchParams();
         p.set("page", String(page));
@@ -46,7 +46,7 @@ export const SupplierApi = baseApi.injectEndpoints({
         if (sort) p.set("sort", sort);
         if (sortDir) p.set("sortDir", sortDir);
 
-      
+
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined && value !== null && value !== '') {
             p.set(key, String(value));
@@ -103,6 +103,11 @@ export const SupplierApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/suppliers/${id}`, method: "DELETE" }),
       invalidatesTags: [{ type: "Supplier", id: "LIST" }],
     }),
+
+    getOneSupplier: builder.query<Supplier, string>({
+      query: (id) => `/suppliers/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Supplier", id }],
+    }),
   }),
 });
 
@@ -110,5 +115,6 @@ export const {
   useGetAllSupplierQuery,
   useCreateOneSupplierMutation,
   useUpdateOneSupplierMutation,
-  useDeleteOneSupplierMutation
+  useDeleteOneSupplierMutation,
+  useGetOneSupplierQuery,
 } = SupplierApi;

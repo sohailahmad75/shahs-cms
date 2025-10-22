@@ -150,7 +150,7 @@ export default function SupplierModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               <div className="md:col-span-2">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Basic Information</h3>
+                <h3 className="text-lg font-medium text-gray-500 mb-3">Basic Information</h3>
               </div>
 
               <InputField
