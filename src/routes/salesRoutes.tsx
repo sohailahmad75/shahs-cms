@@ -1,4 +1,3 @@
-import { Outlet } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import { ROLES } from "../helper";
@@ -7,6 +6,9 @@ import ProductCategoryListPage from "../features/sales/productCategories/Product
 import ProductsWrapper from "../features/sales/products/ProductsWrapper";
 import StoreOrdersListPage from "../features/sales/storeOrders/StoreOrdersListPage";
 import SupplierListPage from "../features/sales/supplier/SupplierListPage";
+import SupplierLayout from "../features/sales/supplier/components/SupplierLayout";
+import SupplierInformation from "../features/sales/supplier/components/SupplierInformation";
+import { Outlet } from "react-router-dom";
 
 const salesRoutes = [
   {
@@ -27,6 +29,21 @@ const salesRoutes = [
           { path: "product-categories", element: <ProductCategoryListPage /> },
           { path: "store-orders", element: <StoreOrdersListPage /> },
           { path: "suppliers", element: <SupplierListPage /> },
+
+          {
+            path: "suppliers/:id",
+            element: (
+              <MainLayout>
+                <SupplierLayout />
+              </MainLayout>
+            ),
+            children: [
+              {
+                index: true,
+                element: <SupplierInformation />,
+              },
+            ],
+          },
         ],
       },
     ],

@@ -1,9 +1,9 @@
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import Button from "../../../components/Button";
 import {
   DynamicTable,
   type Column,
-  
+
 } from "../../../components/DynamicTable";
 import Loader from "../../../components/Loader";
 import Pagination from "../../../components/Pagination";
@@ -11,6 +11,7 @@ import ConfirmDelete from "../../../components/ConfirmDelete";
 import ActionIcon from "../../../components/ActionIcon";
 import EditIcon from "../../../assets/styledIcons/EditIcon";
 import TrashIcon from "../../../assets/styledIcons/TrashIcon";
+import EyeOpen from "../../../assets/styledIcons/EyeOpen"; 
 import { toast } from "react-toastify";
 import { useTheme } from "../../../context/themeContext";
 import type { Supplier } from "./Supplier.types";
@@ -25,6 +26,7 @@ import DebouncedSearch from "../../../components/DebounceSerach";
 import FilterBar from "../../../components/FilterBar";
 import { useServerTable } from "../../../hooks/useServerTable";
 import { supplierFiltersConfig } from "./filtersHelpers";
+import { Link } from "react-router-dom"; 
 
 const SupplierListPage: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -98,6 +100,14 @@ const SupplierListPage: React.FC = () => {
       label: "Actions",
       render: (_, row) => (
         <div className="flex gap-2">
+          <Link to={`/sales/suppliers/${row.id}`} className="hover:underline">
+            <ActionIcon
+              className={isDarkMode ? "text-white" : "text-secondary-100"}
+              icon={<EyeOpen size={22} />}
+              title="View Supplier"
+            />
+          </Link>
+
           <ActionIcon
             icon={<EditIcon size={22} />}
             onClick={() => {
@@ -109,6 +119,7 @@ const SupplierListPage: React.FC = () => {
                 ? "text-slate-400 hover:text-slate-200"
                 : "text-gray-500 hover:text-gray-700"
             }
+            title="Edit Supplier"
           />
           <ConfirmDelete
             onConfirm={async () => {
@@ -120,7 +131,7 @@ const SupplierListPage: React.FC = () => {
                 className="text-red-500"
                 icon={<TrashIcon size={22} />}
                 onClick={open}
-                title="Delete"
+                title="Delete Supplier"
               />
             )}
           />
@@ -143,7 +154,7 @@ const SupplierListPage: React.FC = () => {
         </Button>
       </div>
 
-   
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <DebouncedSearch
           value={query}
@@ -171,7 +182,7 @@ const SupplierListPage: React.FC = () => {
               data={rows}
               columns={columns}
               rowKey="id"
-              
+
               sort={sort}
               onSortChange={setSort}
             />
