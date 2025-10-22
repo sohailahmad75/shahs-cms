@@ -27,10 +27,10 @@ const Schema = Yup.object({
   phone: Yup.string()
     .trim()
     .min(10, "Phone must be longer than or equal to 10 characters")
-    .matches(
-      /^\+?[1-9]\d{1,14}$/,
-      "Phone number must be a valid international format"
-    )
+    // .matches(
+    //   /^\+?[1-9]\d{1,14}$/,
+    //   "Phone number must be a valid international format"
+    // )
     .required("Phone is required"),
   address: Yup.string()
     .trim()
@@ -38,7 +38,6 @@ const Schema = Yup.object({
     .required("Address is required"),
   website: Yup.string()
     .trim()
-    .url("Website must be a valid URL")
     .optional(),
   notes: Yup.string()
     .trim()
