@@ -1,12 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, {  useState } from "react";
 import Button from "../../../components/Button";
 import {
   DynamicTable,
   type Column,
-  type SortDir,
+  
 } from "../../../components/DynamicTable";
 import Loader from "../../../components/Loader";
-import InputField from "../../../components/InputField";
 import Pagination from "../../../components/Pagination";
 import ConfirmDelete from "../../../components/ConfirmDelete";
 import ActionIcon from "../../../components/ActionIcon";
@@ -19,31 +18,33 @@ import {
   useGetAllSupplierQuery,
   useCreateOneSupplierMutation,
   useUpdateOneSupplierMutation,
-   useDeleteOneSupplierMutation
+  useDeleteOneSupplierMutation
 } from "./services/SupplierApi";
 import SupplierModal from "./components/SuuplierModal";
+import DebouncedSearch from "../../../components/DebounceSerach";
+import FilterBar from "../../../components/FilterBar";
+import { useServerTable } from "../../../hooks/useServerTable";
+import { supplierFiltersConfig } from "./filtersHelpers";
 
 const SupplierListPage: React.FC = () => {
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState<number>(10);
-  const [sort, setSort] = useState<{ key: string | null; direction: SortDir }>({
-    key: "createdAt",
-    direction: "desc",
-  });
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Partial<Supplier> | null>(null);
   const { isDarkMode } = useTheme();
 
-  const queryParams = useMemo(() => {
-    const p: Record<string, any> = { page, perPage };
-    if (query) p.query = query;
-    if (sort.key && sort.direction) {
-      p.sort = sort.key;
-      p.sortDir = sort.direction.toUpperCase();
-    }
-    return p;
-  }, [page, perPage, query, sort]);
+  const {
+    query,
+    setQuery,
+    setPage,
+    setFilters,
+    clearFilters,
+    page,
+    perPage,
+    onPerPageChange,
+    sort,
+    setSort,
+    queryParams,
+  } = useServerTable();
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Partial<Supplier> | null>(null);
 
   const {
     data: resp = {
@@ -55,7 +56,8 @@ const SupplierListPage: React.FC = () => {
 
   const [createSupplier, { isLoading: creating }] = useCreateOneSupplierMutation();
   const [updateSupplier, { isLoading: updating }] = useUpdateOneSupplierMutation();
-  const [deleteSupplier] =  useDeleteOneSupplierMutation();
+  const [deleteSupplier] = useDeleteOneSupplierMutation();
+
   const rows = resp.data as Supplier[];
   const meta = resp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
@@ -84,7 +86,13 @@ const SupplierListPage: React.FC = () => {
         </span>
       ),
     },
-
+    {
+      key: "createdAt",
+      label: "Created Date",
+      sortable: true,
+      render: (value) =>
+        typeof value === "string" ? new Date(value).toLocaleDateString() : "",
+    },
     {
       key: "actions",
       label: "Actions",
@@ -135,16 +143,22 @@ const SupplierListPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="mb-4">
-        <InputField
-          className="w-72"
+   
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <DebouncedSearch
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Search suppliers by name, email, or contact person…"
-          name="query"
+          onChange={(val) => setQuery(val)}
+          delay={400}
+          placeholder="Search suppliers…"
+          className="w-100"
+        />
+      </div>
+
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={supplierFiltersConfig as any}
+          onApplyFilters={setFilters}
+          onClearAll={clearFilters}
         />
       </div>
 
@@ -159,10 +173,7 @@ const SupplierListPage: React.FC = () => {
               rowKey="id"
               tableClassName="bg-white"
               sort={sort}
-              onSortChange={(next) => {
-                setSort(next);
-                setPage(1);
-              }}
+              onSortChange={setSort}
             />
           </div>
 
@@ -171,11 +182,8 @@ const SupplierListPage: React.FC = () => {
             page={page}
             perPage={perPage}
             total={meta.total}
-            onPageChange={(p) => setPage(p)}
-            onPerPageChange={(pp) => {
-              setPerPage(pp);
-              setPage(1);
-            }}
+            onPageChange={setPage}
+            onPerPageChange={onPerPageChange}
             perPageOptions={[10, 25, 50]}
           />
         </>

@@ -8,6 +8,7 @@ export interface GetSuppliersArgs {
   query?: string;
   sort?: "name" | "createdAt" | "updatedAt";
   sortDir?: SortDir;
+  [key: string]: any; 
 }
 
 interface ApiSupplierResponse {
@@ -27,20 +28,35 @@ export const SupplierApi = baseApi.injectEndpoints({
       GetSuppliersArgs | void
     >({
       query: (args) => {
-        const p = new URLSearchParams();
         const {
           page = 1,
           perPage = 10,
-          query,
+          query = "",
           sort = "createdAt",
           sortDir = "DESC",
+          ...filters 
         } = args || {};
+
+        console.log("🔍 Supplier API Filters:", filters); 
+
+        const p = new URLSearchParams();
         p.set("page", String(page));
         p.set("perPage", String(perPage));
         if (query) p.set("query", query);
         if (sort) p.set("sort", sort);
         if (sortDir) p.set("sortDir", sortDir);
-        return { url: `/suppliers?${p.toString()}`, method: "GET" };
+
+      
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            p.set(key, String(value));
+          }
+        });
+
+        return {
+          url: `/suppliers?${p.toString()}`,
+          method: "GET"
+        };
       },
       transformResponse: (response: ApiSupplierResponse): PaginatedResponse<Supplier> => {
         return {
@@ -64,7 +80,6 @@ export const SupplierApi = baseApi.injectEndpoints({
           ]
           : [{ type: "Supplier" as const, id: "LIST" }],
     }),
-
 
     createOneSupplier: builder.mutation<Supplier, Partial<Supplier>>({
       query: (data) => ({
