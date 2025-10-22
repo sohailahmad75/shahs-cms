@@ -1,4 +1,3 @@
-// src/features/products/ProductCategoryListPage.tsx
 import React, { useMemo, useState } from "react";
 import Button from "../../../components/Button";
 import {
@@ -9,10 +8,8 @@ import {
 import Loader from "../../../components/Loader";
 import InputField from "../../../components/InputField";
 import Pagination from "../../../components/Pagination";
-import ConfirmDelete from "../../../components/ConfirmDelete";
 import ActionIcon from "../../../components/ActionIcon";
 import EditIcon from "../../../assets/styledIcons/EditIcon";
-import TrashIcon from "../../../assets/styledIcons/TrashIcon";
 import { toast } from "react-toastify";
 import { useTheme } from "../../../context/themeContext";
 
@@ -22,7 +19,6 @@ import {
   useGetProductCategoriesQuery,
   useCreateProductCategoryMutation,
   useUpdateCategoryMutation,
-  useDeleteProductCategoryMutation,
 } from "./services/productCategoryApi";
 
 const ProductCategoryListPage: React.FC = () => {
@@ -59,7 +55,6 @@ const ProductCategoryListPage: React.FC = () => {
     useCreateProductCategoryMutation();
   const [updateCategory, { isLoading: updating }] =
     useUpdateCategoryMutation();
-  const [deleteCategory] = useDeleteProductCategoryMutation();
   const rows = resp.data as ProductCategory[];
   const meta = resp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
@@ -93,20 +88,6 @@ const ProductCategoryListPage: React.FC = () => {
                 ? "text-slate-400 hover:text-slate-200"
                 : "text-gray-500 hover:text-gray-700"
             }
-          />
-          <ConfirmDelete
-            onConfirm={async () => {
-              await deleteCategory(row.id).unwrap();
-              toast.success("Category deleted");
-            }}
-            renderTrigger={({ open }) => (
-              <ActionIcon
-                className="text-red-500"
-                icon={<TrashIcon size={22} />}
-                onClick={open}
-                title="Delete"
-              />
-            )}
           />
         </div>
       ),

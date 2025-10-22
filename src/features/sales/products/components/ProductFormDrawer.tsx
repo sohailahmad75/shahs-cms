@@ -76,7 +76,7 @@ const getDefaultValues = (type: string) => {
     reorderPoint: undefined,
     salesDescription: "",
     purchaseDescription: "",
-    supplierId: "",
+    supplierId: undefined,
   };
 };
 
