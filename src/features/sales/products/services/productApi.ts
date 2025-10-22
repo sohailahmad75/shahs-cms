@@ -8,11 +8,15 @@ export interface GetProductsArgs {
   perPage?: number;
   query?: string;
   categoryId?: string;
+  supplierId?: string;
   isActive?: boolean;
   minPrice?: number;
   maxPrice?: number;
   sort?: string;
   sortDir?: SortDir;
+  createdAt?: string;
+  stockStatus?: "LOW" | "OUT";
+  [key: string]: any; 
 }
 
 export const productApi = baseApi.injectEndpoints({
@@ -22,28 +26,74 @@ export const productApi = baseApi.injectEndpoints({
       GetProductsArgs | void
     >({
       query: (args) => {
-        const p = new URLSearchParams();
         const {
           page = 1,
           perPage = 10,
-          query,
-          categoryId,
-          isActive,
-          minPrice,
-          maxPrice,
-          sort,
-          sortDir,
+          query = "",
+          ...filters
         } = args || {};
-        p.set("page", String(page));
-        p.set("perPage", String(perPage));
-        if (query) p.set("query", query);
-        if (categoryId) p.set("categoryId", categoryId);
-        if (typeof isActive === "boolean") p.set("isActive", String(isActive));
-        if (minPrice !== undefined) p.set("minPrice", String(minPrice));
-        if (maxPrice !== undefined) p.set("maxPrice", String(maxPrice));
-        if (sort) p.set("sort", sort);
-        if (sortDir) p.set("sortDir", sortDir);
-        return { url: `inventory/products?${p.toString()}`, method: "GET" };
+
+        console.log("🔍 Products API Params:", { page, perPage, query, ...filters });
+
+        return {
+          url: "/inventory/products",
+          method: "GET",
+          params: {
+            page,
+            perPage,
+            query,
+            ...filters
+          }
+        };
+      },
+      
+      transformResponse: (resp: any): PaginatedResponse<Product> => {
+      
+        if (resp && typeof resp === 'object' && resp.data && resp.meta) {
+          return {
+            data: resp.data,
+            meta: resp.meta
+          };
+        }
+
+        if (resp && typeof resp === 'object' && resp.items) {
+          const total = resp.total || resp.items.length;
+          const page = resp.page || 1;
+          const perPage = resp.perPage || resp.per_page || 10;
+          const totalPages = resp.totalPages || resp.total_pages || Math.ceil(total / perPage);
+
+          return {
+            data: resp.items,
+            meta: {
+              total,
+              page,
+              perPage,
+              totalPages,
+            }
+          };
+        }
+
+        if (Array.isArray(resp)) {
+          return {
+            data: resp,
+            meta: {
+              total: resp.length,
+              page: 1,
+              perPage: resp.length,
+              totalPages: 1,
+            },
+          }
+        }
+
+        return {
+          data: [],
+          meta: {
+            total: 0,
+            page: 1,
+            perPage: 10,
+            totalPages: 0,
+          }
+        };
       },
       providesTags: (result) =>
         result?.data

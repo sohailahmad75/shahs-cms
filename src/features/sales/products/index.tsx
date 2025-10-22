@@ -1,59 +1,48 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import Button from "../../../components/Button";
 import {
   type Column,
   DynamicTable,
-  type SortDir,
+
 } from "../../../components/DynamicTable";
 import Loader from "../../../components/Loader";
-
 import { Link } from "react-router-dom";
-// import { toast } from "react-toastify";
 import EditIcon from "../../../assets/styledIcons/EditIcon";
-// import TrashIcon from "../../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../../assets/styledIcons/EyeOpen";
 import ActionIcon from "../../../components/ActionIcon";
-import InputField from "../../../components/InputField";
 import Pagination from "../../../components/Pagination";
-// import ConfirmDelete from "../../../components/ConfirmDelete";
 import FilterBar from "../../../components/FilterBar";
 import { useTheme } from "../../../context/themeContext";
 import { productFiltersConfig } from "./helper/product-list";
 import type { Product } from "./product.types";
 import {
   useGetProductsQuery,
-  // useDeleteProductMutation,
 } from "./services/productApi";
-
 import { StockStatsHeader } from "./components/StatItem";
 import ProductDrawerManager from "./components/ProductModal";
+import { useServerTable } from "../../../hooks/useServerTable";
+import DebouncedSearch from "../../../components/DebounceSerach";
 
 const ProductListPage: React.FC = () => {
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(
-    null,
-  );
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState<number>(10);
   const { isDarkMode } = useTheme();
+
+  const {
+    query,
+    setQuery,
+    setPage,
+    setFilters,
+    clearFilters,
+    page,
+    perPage,
+    onPerPageChange,
+    sort,
+    setSort,
+    queryParams,
+  } = useServerTable();
+
+  const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const [sort, setSort] = useState<{ key: string | null; direction: SortDir }>({
-    key: null,
-    direction: null,
-  });
-
-  const queryParams = useMemo(() => {
-    const params: Record<string, any> = { page, perPage };
-    if (query) params.query = query;
-    Object.entries(filters).forEach(([k, v]) => v && (params[k] = v));
-    if (sort.key && sort.direction) {
-      params.sort = sort.key;
-      params.sortDir = sort.direction.toUpperCase();
-    }
-    return params;
-  }, [page, perPage, query, filters, sort]);
+  const [activeStat, setActiveStat] = useState<"LOW" | "OUT" | null>(null);
 
   const {
     data: resp = {
@@ -62,7 +51,6 @@ const ProductListPage: React.FC = () => {
     },
     isLoading,
   } = useGetProductsQuery(queryParams);
-  // const [deleteProduct] = useDeleteProductMutation();
 
   const products = resp.data as Product[];
   const meta = resp.meta;
@@ -73,29 +61,18 @@ const ProductListPage: React.FC = () => {
     setIsDrawerOpen(true);
   };
 
-  const [activeStat, setActiveStat] = useState<"LOW" | "OUT" | null>(null);
-
   const handleChange = (next: "LOW" | "OUT" | null) => {
     setActiveStat(next);
     if (next === "LOW") {
-      setFilters((f) => ({ ...f, stockStatus: "LOW" }));
+      setFilters((f: any) => ({ ...f, stockStatus: "LOW" }));
       setPage(1);
     } else if (next === "OUT") {
-      setFilters((f) => ({ ...f, stockStatus: "OUT" }));
+      setFilters((f: any) => ({ ...f, stockStatus: "OUT" }));
       setPage(1);
     } else {
-      setFilters(({ stockStatus, ...rest }) => rest);
+      setFilters(({ stockStatus, ...rest }: any) => rest);
     }
   };
-
-  // const handleDelete = async (id: string) => {
-  //   try {
-  //     await deleteProduct(id).unwrap();
-  //     toast.success("Product archived");
-  //   } catch {
-  //     toast.error("Failed to delete product");
-  //   }
-  // };
 
   const columns: Column<Product>[] = [
     {
@@ -104,7 +81,7 @@ const ProductListPage: React.FC = () => {
       render: (_v, _r, i) => <span>{apiPageIndexBase + (i ?? 0) + 1}</span>,
     },
     { key: "name", label: "Name", sortable: true },
-     { key: "usage", label: "usage" },
+    { key: "usage", label: "Usage" },
     {
       key: "itemCode",
       label: "Item Code",
@@ -123,7 +100,6 @@ const ProductListPage: React.FC = () => {
     {
       key: "productType",
       label: "Type",
-    
       render: (v) => {
         if (v === "stock") return "Stock";
         if (v === "non-stock") return "Non-Stock";
@@ -134,7 +110,6 @@ const ProductListPage: React.FC = () => {
     {
       key: "isActive",
       label: "Status",
-    
       render: (v) => (v ? "Active" : "Inactive"),
     },
     {
@@ -157,17 +132,6 @@ const ProductListPage: React.FC = () => {
                 : "text-gray-500 hover:text-gray-700"
             }
           />
-          {/* <ConfirmDelete
-            onConfirm={async () => handleDelete(ow.id)}
-            renderTrigger={({ open }) => (
-              <ActionIcon
-                className="text-red-500"
-                icon={<TrashIcon size={22} />}
-                onClick={open}
-                title="Delete"
-              />
-            )}
-          /> */}
         </div>
       ),
     },
@@ -197,31 +161,20 @@ const ProductListPage: React.FC = () => {
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3 mt-8">
-          <InputField
-            className="w-72"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search products…"
-            name="query"
-          />
-        </div>
+        <DebouncedSearch
+          value={query}
+          onChange={(val) => setQuery(val)}
+          delay={400}
+          placeholder="Search products…"
+          className="w-100"
+        />
       </div>
 
       <div className="mb-8 mt-8">
         <FilterBar
           filtersConfig={productFiltersConfig as any}
-          onApplyFilters={(applied) => {
-            setFilters(applied);
-            setPage(1);
-          }}
-          onClearAll={() => {
-            setFilters({});
-            setPage(1);
-          }}
+          onApplyFilters={setFilters}
+          onClearAll={clearFilters}
         />
       </div>
 
@@ -236,10 +189,7 @@ const ProductListPage: React.FC = () => {
               rowKey="id"
               tableClassName="bg-white"
               sort={sort}
-              onSortChange={(next) => {
-                setSort(next);
-                setPage(1);
-              }}
+              onSortChange={setSort}
             />
           </div>
           <Pagination
@@ -247,11 +197,8 @@ const ProductListPage: React.FC = () => {
             page={page}
             perPage={perPage}
             total={meta.total}
-            onPageChange={(p) => setPage(p)}
-            onPerPageChange={(pp) => {
-              setPerPage(pp);
-              setPage(1);
-            }}
+            onPageChange={setPage}
+            onPerPageChange={onPerPageChange}
             perPageOptions={[10, 25, 50]}
           />
         </>
