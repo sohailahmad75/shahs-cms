@@ -114,16 +114,16 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
         value: getOptionValue(currentValue),
     } : null;
 
-
     const customStyles = {
         control: (base: any, state: any) => ({
             ...base,
-            borderRadius: 8,
+            borderRadius: 6, // Same as DatePicker (6px = rounded-sm)
             borderColor: finalDarkMode
                 ? state.isFocused ? "#94a3b8" : "#475569"
                 : state.isFocused ? "#f97316" : "#d1d5db",
             backgroundColor: finalDarkMode ? "#1e293b" : "#ffffff",
-            minHeight: 42,
+            minHeight: "38px", // Same as DatePicker !h-[38px]
+            height: "38px",
             boxShadow: state.isFocused
                 ? finalDarkMode
                     ? "0 0 0 1px #94a3b8"
@@ -133,9 +133,51 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
                 borderColor: finalDarkMode ? "#94a3b8" : "#f97316",
             },
         }),
+        valueContainer: (base: any) => ({
+            ...base,
+            height: "38px",
+            padding: "0 12px",
+        }),
+        input: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#e2e8f0" : "#1f2937",
+            margin: "0px",
+            paddingTop: "0px",
+            paddingBottom: "0px",
+        }),
+        indicatorsContainer: (base: any) => ({
+            ...base,
+            height: "38px",
+        }),
+        dropdownIndicator: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#6b7280",
+            padding: "8px",
+            "&:hover": {
+                color: finalDarkMode ? "#e2e8f0" : "#374151",
+            },
+        }),
+        clearIndicator: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#6b7280",
+            padding: "8px",
+            "&:hover": {
+                color: finalDarkMode ? "#e2e8f0" : "#374151",
+            },
+        }),
+        singleValue: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#e2e8f0" : "#1f2937",
+            margin: "0px",
+        }),
+        placeholder: (base: any) => ({
+            ...base,
+            color: finalDarkMode ? "#94a3b8" : "#9ca3af",
+            margin: "0px",
+        }),
         menu: (base: any) => ({
             ...base,
-            borderRadius: 8,
+            borderRadius: 6,
             backgroundColor: finalDarkMode ? "#1e293b" : "#ffffff",
             border: finalDarkMode ? "1px solid #475569" : "1px solid #d1d5db",
             boxShadow: finalDarkMode
@@ -157,33 +199,7 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
             },
             fontSize: '0.875rem',
             borderRadius: 4,
-            marginBottom: 2,
-        }),
-        singleValue: (base: any) => ({
-            ...base,
-            color: finalDarkMode ? "#e2e8f0" : "#1f2937",
-        }),
-        input: (base: any) => ({
-            ...base,
-            color: finalDarkMode ? "#e2e8f0" : "#1f2937",
-        }),
-        placeholder: (base: any) => ({
-            ...base,
-            color: finalDarkMode ? "#94a3b8" : "#9ca3af",
-        }),
-        dropdownIndicator: (base: any) => ({
-            ...base,
-            color: finalDarkMode ? "#94a3b8" : "#6b7280",
-            "&:hover": {
-                color: finalDarkMode ? "#e2e8f0" : "#374151",
-            },
-        }),
-        clearIndicator: (base: any) => ({
-            ...base,
-            color: finalDarkMode ? "#94a3b8" : "#6b7280",
-            "&:hover": {
-                color: finalDarkMode ? "#e2e8f0" : "#374151",
-            },
+            padding: "8px 12px",
         }),
         loadingIndicator: (base: any) => ({
             ...base,
@@ -200,7 +216,7 @@ const ReusableAsyncSelect: React.FC<AsyncSelectProps> = ({
     };
 
     return (
-        <div className={`mb-4 ${className}`}>
+        <div className={className}> {/* Remove mb-4 from here */}
             {label && (
                 <label
                     className={`block mb-2 text-sm font-medium ${finalDarkMode ? "text-slate-200" : "text-gray-700"

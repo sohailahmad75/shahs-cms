@@ -5,7 +5,7 @@ import { RotateCcw } from 'lucide-react';
 import InputField from './InputField';
 import SelectField from './SelectField';
 import DatePickerField from './DatePickerField';
-import ReusableAsyncSelect from './aysncSelect'; 
+import ReusableAsyncSelect from './aysncSelect';
 import { useTheme } from '../../src/context/themeContext';
 
 interface FilterOption {
@@ -14,7 +14,7 @@ interface FilterOption {
     options?: { label: string; value: string }[];
     type: 'select' | 'input' | 'date' | 'async-select' | 'number';
     isRange?: boolean;
-    useQueryHook?: any; 
+    useQueryHook?: any;
     getOptionLabel?: (item: any) => string;
     getOptionValue?: (item: any) => string;
 }
@@ -80,7 +80,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const renderFilterControl = (filter: FilterOption) => {
         const { key, label, type, options, useQueryHook, getOptionLabel, getOptionValue } = filter;
 
-        
+
         if (type === 'async-select') {
             return (
                 <div key={key} className="w-full sm:w-auto min-w-[200px]">
@@ -91,11 +91,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             const value = selectedOption ? selectedOption.value : '';
                             handleFilterChange(key, value);
 
-                          
+
                             if (value) {
                                 applyFilter(key, selectedOption.label);
                             } else {
-                                
+
                                 setAppliedFilters((prev) => prev.filter((f) => f.key !== key));
                             }
                         }}
@@ -103,12 +103,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         getOptionLabel={getOptionLabel}
                         getOptionValue={getOptionValue}
                         darkMode={isDarkMode}
+                        className="!w-[200px] !h-[38px] rounded-sm"
                     />
                 </div>
             );
         }
 
-        
+
         if (type === 'select') {
             return (
                 <div key={key} className="w-full sm:w-auto">
@@ -154,7 +155,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             );
         }
 
-       
+
         return (
             <div className="w-full sm:w-auto">
                 <InputField

@@ -2,6 +2,12 @@ import { useGetProductCategoriesQuery } from "../../productCategories/services/p
 
 export const productFiltersConfig = [
   {
+    key: 'createdAt',
+    label: 'Created At',
+    type: 'date',
+    isRange: true,
+  },
+  {
     key: "isActive",
     label: "Status",
     type: "select",
