@@ -18,6 +18,7 @@ export interface Product {
   expenseAccount?: string;
   preferredSupplierId?: string;
   productType: string
+  supplierId?: string
 
 
   stockAssetAccount?: string;

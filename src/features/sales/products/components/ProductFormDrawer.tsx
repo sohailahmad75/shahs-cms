@@ -22,6 +22,13 @@ interface ProductFormDrawerProps {
   isSubmitting?: boolean;
 }
 
+
+const transformNumber = (value: any, originalValue: any) =>
+  originalValue === "" || originalValue === null ? undefined : value;
+
+const transformString = (value: any, originalValue: any) =>
+  originalValue === "" || originalValue === null ? undefined : value;
+
 const validationSchema = Yup.object({
   name: Yup.string().trim().required("Name is required"),
   itemCode: Yup.string().trim().required("Item code is required"),
@@ -36,27 +43,42 @@ const validationSchema = Yup.object({
     .oneOf(["stock", "non-stock", "service"], "Invalid product type")
     .required("Product type is required"),
 
+
   initialQuantity: Yup.number()
-    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .transform(transformNumber)
     .when([], {
       is: () => selectedTypeRef.current === "stock",
       then: (s) => s.min(0).required("Initial quantity is required"),
-      otherwise: (s) => s.optional(),
+      otherwise: (s) => s.min(0).optional(),
     }),
 
   salesPrice: Yup.number()
-    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .transform(transformNumber)
     .min(0)
     .optional(),
+
   purchaseCost: Yup.number()
-    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .transform(transformNumber)
     .min(0)
     .optional(),
+
   reorderPoint: Yup.number()
-    .transform((v, o) => (o === "" || o === null ? undefined : v))
+    .transform(transformNumber)
     .min(0)
     .optional(),
-  supplierId: Yup.string().optional(),
+
+
+  supplierId: Yup.string()
+    .transform(transformString)
+    .optional(),
+
+  salesDescription: Yup.string()
+    .transform(transformString)
+    .optional(),
+
+  purchaseDescription: Yup.string()
+    .transform(transformString)
+    .optional(),
 });
 
 let selectedTypeRef = { current: "stock" };
@@ -74,9 +96,39 @@ const getDefaultValues = (type: string) => {
     salesPrice: undefined,
     purchaseCost: undefined,
     reorderPoint: undefined,
-    salesDescription: "",
-    purchaseDescription: "",
+    salesDescription: undefined,
+    purchaseDescription: undefined,
     supplierId: undefined,
+  };
+};
+
+
+const cleanFormData = (values: Partial<Product>): Partial<Product> => {
+  return {
+    ...values,
+    name: values.name?.trim(),
+    itemCode: values.itemCode?.trim(),
+    initialQuantity: values.initialQuantity || undefined,
+    salesPrice: values.salesPrice || undefined,
+    purchaseCost: values.purchaseCost || undefined,
+    reorderPoint: values.reorderPoint || undefined,
+    salesDescription: values.salesDescription?.trim() || undefined,
+    purchaseDescription: values.purchaseDescription?.trim() || undefined,
+    supplierId: values.supplierId || undefined,
+  };
+};
+
+
+const cleanEditingProduct = (product: Partial<Product>): Partial<Product> => {
+  return {
+    ...product,
+    initialQuantity: product.initialQuantity || undefined,
+    salesPrice: product.salesPrice || undefined,
+    purchaseCost: product.purchaseCost || undefined,
+    reorderPoint: product.reorderPoint || undefined,
+    salesDescription: product.salesDescription || undefined,
+    purchaseDescription: product.purchaseDescription || undefined,
+    supplierId: product.supplierId || undefined,
   };
 };
 
@@ -92,10 +144,21 @@ export default function ProductFormDrawer({
 
   const initialValues = useMemo(() => {
     const defaults = getDefaultValues(selectedType);
-    return { ...defaults, ...(editingProduct || {}) };
+
+    if (editingProduct) {
+      const cleanedEditingProduct = cleanEditingProduct(editingProduct);
+      return { ...defaults, ...cleanedEditingProduct };
+    }
+
+    return defaults;
   }, [selectedType, editingProduct]);
 
   const isStock = selectedType === "stock";
+
+  const handleFormSubmit = (values: Partial<Product>) => {
+    const cleanedValues = cleanFormData(values);
+    onSubmit(cleanedValues);
+  };
 
   return (
     <div className={`p-6 h-full overflow-y-auto ${isDarkMode ? "bg-slate-900 text-slate-100" : "bg-white"}`}>
@@ -134,7 +197,7 @@ export default function ProductFormDrawer({
         initialValues={initialValues}
         validationSchema={validationSchema}
         enableReinitialize
-        onSubmit={onSubmit}
+        onSubmit={handleFormSubmit}
       >
         {({ values, errors, touched, handleChange, setFieldValue, handleSubmit }) => (
           <Form onSubmit={handleSubmit} className="space-y-6">
@@ -219,7 +282,11 @@ export default function ProductFormDrawer({
                   name="initialQuantity"
                   type="number"
                   value={values.initialQuantity ?? ""}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const value = e.target.value === "" ? undefined : Number(e.target.value);
+                    setFieldValue("initialQuantity", value);
+                  }}
+
                 />
 
                 <InputField
@@ -227,7 +294,11 @@ export default function ProductFormDrawer({
                   name="reorderPoint"
                   type="number"
                   value={values.reorderPoint ?? ""}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const value = e.target.value === "" ? undefined : Number(e.target.value);
+                    setFieldValue("reorderPoint", value);
+                  }}
+
                 />
               </>
             )}
@@ -239,6 +310,7 @@ export default function ProductFormDrawer({
               onChange={handleChange}
               type="textarea"
               rows={2}
+
             />
 
             <InputField
@@ -248,6 +320,7 @@ export default function ProductFormDrawer({
               onChange={handleChange}
               type="textarea"
               rows={2}
+
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -256,14 +329,22 @@ export default function ProductFormDrawer({
                 name="salesPrice"
                 type="number"
                 value={values.salesPrice ?? ""}
-                onChange={handleChange}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? undefined : Number(e.target.value);
+                  setFieldValue("salesPrice", value);
+                }}
+
               />
               <InputField
                 label="Purchase Cost"
                 name="purchaseCost"
                 type="number"
                 value={values.purchaseCost ?? ""}
-                onChange={handleChange}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? undefined : Number(e.target.value);
+                  setFieldValue("purchaseCost", value);
+                }}
+
               />
             </div>
 
@@ -273,7 +354,7 @@ export default function ProductFormDrawer({
                 placeholder="Select supplier..."
                 value={values.supplierId}
                 onChange={(selected: any) => {
-                  setFieldValue("supplierId", selected?.value || "");
+                  setFieldValue("supplierId", selected?.value || undefined);
                 }}
                 useQueryHook={({ query, page }) =>
                   useGetAllSupplierQuery({ query, page })
