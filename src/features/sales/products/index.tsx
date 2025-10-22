@@ -81,7 +81,24 @@ const ProductListPage: React.FC = () => {
       render: (_v, _r, i) => <span>{apiPageIndexBase + (i ?? 0) + 1}</span>,
     },
     { key: "name", label: "Name", sortable: true },
-    { key: "usage", label: "Usage" },
+    {
+      key: "usage",
+      label: "Usage",
+      render: (v) => {
+        const usageTypes = {
+          "store": { label: "Store", className: "bg-green-100 text-green-800 border border-green-300" },
+          "warehouse": { label: "Warehouse", className: "bg-indigo-100 text-indigo-800 border border-indigo-300" }
+        };
+
+        if (v === null || v === undefined || typeof v !== "string") return "-";
+        const usage = usageTypes[v as "store" | "warehouse"];
+        return usage ? (
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${usage.className}`}>
+            {usage.label}
+          </span>
+        ) : "-";
+      },
+    },
     {
       key: "itemCode",
       label: "Item Code",
@@ -101,16 +118,34 @@ const ProductListPage: React.FC = () => {
       key: "productType",
       label: "Type",
       render: (v) => {
-        if (v === "stock") return "Stock";
-        if (v === "non-stock") return "Non-Stock";
-        if (v === "service") return "Service";
-        return "-";
+        const types = {
+          "stock": { label: "Stock", className: "bg-blue-100 text-blue-800 border border-blue-200" },
+          "non-stock": { label: "Non-Stock", className: "bg-yellow-100 text-yellow-800 border border-yellow-300" },
+          "service": { label: "Service", className: "bg-purple-100 text-purple-800 border border-purple-200" }
+        };
+
+        if (v === null || v === undefined || typeof v !== "string") return "-";
+        const type = types[v as "stock" | "non-stock" | "service"];
+        return type ? (
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${type.className}`}>
+            {type.label}
+          </span>
+        ) : "-";
       },
     },
     {
       key: "isActive",
       label: "Status",
-      render: (v) => (v ? "Active" : "Inactive"),
+      render: (isActive) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${isActive
+            ? "bg-green-100 text-green-800"
+            : "bg-red-100 text-red-800"
+            }`}
+        >
+          {isActive ? "Active" : "Inactive"}
+        </span>
+      ),
     },
     {
       key: "actions",
