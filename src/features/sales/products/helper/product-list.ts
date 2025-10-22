@@ -1,4 +1,5 @@
 import { useGetProductCategoriesQuery } from "../../productCategories/services/productCategoryApi";
+import { useGetAllSupplierQuery } from "../../supplier/services/SupplierApi";
 
 export const productFiltersConfig = [
   {
@@ -12,7 +13,6 @@ export const productFiltersConfig = [
     label: "Status",
     type: "select",
     options: [
-      { label: "All", value: "" },
       { label: "Active", value: "true" },
       { label: "Inactive", value: "false" },
     ],
@@ -32,7 +32,7 @@ export const productFiltersConfig = [
     key: "supplierId",
     label: "Supplier",
     type: "async-select",
-    useQueryHook: useGetProductCategoriesQuery,
+    useQueryHook: useGetAllSupplierQuery,
     getOptionLabel: (item) => item.name,
     getOptionValue: (item) => item.id,
   },
