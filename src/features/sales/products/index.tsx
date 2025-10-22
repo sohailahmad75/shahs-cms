@@ -8,21 +8,21 @@ import {
 import Loader from "../../../components/Loader";
 
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import EditIcon from "../../../assets/styledIcons/EditIcon";
-import TrashIcon from "../../../assets/styledIcons/TrashIcon";
+// import TrashIcon from "../../../assets/styledIcons/TrashIcon";
 import EyeOpen from "../../../assets/styledIcons/EyeOpen";
 import ActionIcon from "../../../components/ActionIcon";
 import InputField from "../../../components/InputField";
 import Pagination from "../../../components/Pagination";
-import ConfirmDelete from "../../../components/ConfirmDelete";
+// import ConfirmDelete from "../../../components/ConfirmDelete";
 import FilterBar from "../../../components/FilterBar";
 import { useTheme } from "../../../context/themeContext";
 import { productFiltersConfig } from "./helper/product-list";
 import type { Product } from "./product.types";
 import {
   useGetProductsQuery,
-  useDeleteProductMutation,
+  // useDeleteProductMutation,
 } from "./services/productApi";
 
 import { StockStatsHeader } from "./components/StatItem";
@@ -62,7 +62,7 @@ const ProductListPage: React.FC = () => {
     },
     isLoading,
   } = useGetProductsQuery(queryParams);
-  const [deleteProduct] = useDeleteProductMutation();
+  // const [deleteProduct] = useDeleteProductMutation();
 
   const products = resp.data as Product[];
   const meta = resp.meta;
@@ -88,14 +88,14 @@ const ProductListPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteProduct(id).unwrap();
-      toast.success("Product archived");
-    } catch {
-      toast.error("Failed to delete product");
-    }
-  };
+  // const handleDelete = async (id: string) => {
+  //   try {
+  //     await deleteProduct(id).unwrap();
+  //     toast.success("Product archived");
+  //   } catch {
+  //     toast.error("Failed to delete product");
+  //   }
+  // };
 
   const columns: Column<Product>[] = [
     {
@@ -104,6 +104,22 @@ const ProductListPage: React.FC = () => {
       render: (_v, _r, i) => <span>{apiPageIndexBase + (i ?? 0) + 1}</span>,
     },
     { key: "name", label: "Name", sortable: true },
+     { key: "usage", label: "usage", sortable: true },
+    {
+      key: "itemCode",
+      label: "Item Code",
+      sortable: true
+    },
+    {
+      key: "createdAt",
+      label: "Created At",
+      sortable: true,
+      render: (v) => {
+        if (v === null || v === undefined || typeof v === "boolean") return "-";
+        const d = new Date(v as string | number | Date);
+        return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
+      },
+    },
     {
       key: "productType",
       label: "Type",
@@ -141,7 +157,7 @@ const ProductListPage: React.FC = () => {
                 : "text-gray-500 hover:text-gray-700"
             }
           />
-          <ConfirmDelete
+          {/* <ConfirmDelete
             onConfirm={async () => handleDelete(row.id)}
             renderTrigger={({ open }) => (
               <ActionIcon
@@ -151,7 +167,7 @@ const ProductListPage: React.FC = () => {
                 title="Delete"
               />
             )}
-          />
+          /> */}
         </div>
       ),
     },

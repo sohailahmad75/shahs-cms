@@ -25,6 +25,7 @@ export interface Product {
   reorderPoint?: number;
   initialQuantity?: number;
   initialAsOf?: string;
+  usage?: string;
 
 
   unit?: string;
