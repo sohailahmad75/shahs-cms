@@ -11,6 +11,12 @@ export interface GetCategoriesArgs {
   query?: string;
   sort?: "name" | "createdAt" | "updatedAt";
   sortDir?: SortDir;
+  status?: string;
+  createdAtFrom?: string;
+  createdAtTo?: string;
+  updatedAtFrom?: string;
+  updatedAtTo?: string;
+  [key: string]: any; 
 }
 
 export const productCategoryApi = baseApi.injectEndpoints({
@@ -20,20 +26,54 @@ export const productCategoryApi = baseApi.injectEndpoints({
       GetCategoriesArgs | void
     >({
       query: (args) => {
-        const p = new URLSearchParams();
         const {
           page = 1,
           perPage = 10,
           query,
           sort = "createdAt",
           sortDir = "DESC",
+          status,
+          createdAtFrom,
+          createdAtTo,
+          updatedAtFrom,
+          updatedAtTo,
+          ...otherFilters
         } = args || {};
-        p.set("page", String(page));
-        p.set("perPage", String(perPage));
-        if (query) p.set("query", query);
-        if (sort) p.set("sort", sort);
-        if (sortDir) p.set("sortDir", sortDir);
-        return { url: `/inventory/categories?${p.toString()}`, method: "GET" };
+
+        console.log("🔍 Product Categories API Params:", {
+          page, perPage, query, sort, sortDir,
+          status, createdAtFrom, createdAtTo,
+          updatedAtFrom, updatedAtTo, ...otherFilters
+        });
+
+        const params: Record<string, any> = {
+          page,
+          perPage,
+        };
+
+        if (query) params.query = query;
+        if (sort) params.sort = sort;
+        if (sortDir) params.sortDir = sortDir;
+
+       
+        if (status) params.status = status;
+        if (createdAtFrom) params.createdAtFrom = createdAtFrom;
+        if (createdAtTo) params.createdAtTo = createdAtTo;
+        if (updatedAtFrom) params.updatedAtFrom = updatedAtFrom;
+        if (updatedAtTo) params.updatedAtTo = updatedAtTo;
+
+   
+        Object.keys(otherFilters).forEach(key => {
+          if (otherFilters[key] !== undefined && otherFilters[key] !== null && otherFilters[key] !== '') {
+            params[key] = otherFilters[key];
+          }
+        });
+
+        return {
+          url: `/inventory/categories`,
+          method: "GET",
+          params
+        };
       },
       providesTags: (result) =>
         result?.data
@@ -46,6 +86,7 @@ export const productCategoryApi = baseApi.injectEndpoints({
           ]
           : [{ type: "ProductCategory" as const, id: "LIST" }],
     }),
+
 
     createProductCategory: builder.mutation<
       ProductCategory,

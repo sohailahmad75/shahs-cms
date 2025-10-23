@@ -1,12 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import Button from "../../../components/Button";
 import {
   DynamicTable,
   type Column,
-  type SortDir,
 } from "../../../components/DynamicTable";
 import Loader from "../../../components/Loader";
-import InputField from "../../../components/InputField";
 import Pagination from "../../../components/Pagination";
 import ActionIcon from "../../../components/ActionIcon";
 import EditIcon from "../../../assets/styledIcons/EditIcon";
@@ -20,28 +18,31 @@ import {
   useCreateProductCategoryMutation,
   useUpdateCategoryMutation,
 } from "./services/productCategoryApi";
+import FilterBar from "../../../components/FilterBar";
+import { productCategoryFiltersConfig } from "./helpers/CategoriesFilters";
+import { useServerTable } from "../../../hooks/useServerTable";
+import DebouncedSearch from "../../../components/DebounceSerach";
 
 const ProductCategoryListPage: React.FC = () => {
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState<number>(10);
-  const [sort, setSort] = useState<{ key: string | null; direction: SortDir }>({
-    key: "createdAt",
-    direction: "desc",
-  });
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Partial<ProductCategory> | null>(null);
   const { isDarkMode } = useTheme();
 
-  const queryParams = useMemo(() => {
-    const p: Record<string, any> = { page, perPage };
-    if (query) p.query = query;
-    if (sort.key && sort.direction) {
-      p.sort = sort.key;
-      p.sortDir = sort.direction.toUpperCase();
-    }
-    return p;
-  }, [page, perPage, query, sort]);
+ 
+  const {
+    query,
+    setQuery,
+    setPage,
+    setFilters,
+    clearFilters,
+    page,
+    perPage,
+    onPerPageChange,
+    sort,
+    setSort,
+    queryParams,
+  } = useServerTable();
+
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [editing, setEditing] = React.useState<Partial<ProductCategory> | null>(null);
 
   const {
     data: resp = {
@@ -55,6 +56,7 @@ const ProductCategoryListPage: React.FC = () => {
     useCreateProductCategoryMutation();
   const [updateCategory, { isLoading: updating }] =
     useUpdateCategoryMutation();
+
   const rows = resp.data as ProductCategory[];
   const meta = resp.meta;
   const apiPageIndexBase = (meta.page - 1) * meta.perPage;
@@ -108,17 +110,23 @@ const ProductCategoryListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="mb-4">
-        <InputField
-          className="w-72"
+   
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <DebouncedSearch
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setPage(1);
-          }}
+          onChange={setQuery}
+          delay={400}
           placeholder="Search categories…"
-          name="query"
+          className="w-100"
+        />
+      </div>
+
+
+      <div className="mb-8 mt-8">
+        <FilterBar
+          filtersConfig={productCategoryFiltersConfig as any}
+          onApplyFilters={setFilters}
+          onClearAll={clearFilters}
         />
       </div>
 
@@ -145,11 +153,8 @@ const ProductCategoryListPage: React.FC = () => {
             page={page}
             perPage={perPage}
             total={meta.total}
-            onPageChange={(p) => setPage(p)}
-            onPerPageChange={(pp) => {
-              setPerPage(pp);
-              setPage(1);
-            }}
+            onPageChange={setPage}
+            onPerPageChange={onPerPageChange}
             perPageOptions={[10, 25, 50]}
           />
         </>
