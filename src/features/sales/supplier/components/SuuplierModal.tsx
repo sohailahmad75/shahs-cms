@@ -7,6 +7,7 @@ import InputField from "../../../../components/InputField";
 import SelectField from "../../../../components/SelectField";
 import CheckboxField from "../../../../components/CheckboxField";
 import { useTheme } from "../../../../context/themeContext";
+// import { VAT_OPTIONS } from "../../../finance/constants/accountOptions";
 
 type Props = {
   isOpen: boolean;
@@ -177,7 +178,7 @@ export default function SupplierModal({
       >
         {({ values, handleChange, setFieldValue, touched, errors }) => (
           <Form className="space-y-8">
-           
+
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
               <span className={`${isDarkMode ? "text-slate-100" : "text-orange-500"} text-md font-medium whitespace-nowrap`}>
@@ -268,7 +269,7 @@ export default function SupplierModal({
               </div>
             </div>
 
-            
+
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
               <span className={`${isDarkMode ? "text-slate-100" : "text-orange-500"} text-md font-medium whitespace-nowrap`}>
@@ -318,6 +319,23 @@ export default function SupplierModal({
                   error={touched.defaultVatRate ? (errors.defaultVatRate as string) : ""}
                 />
               </div>
+              {/* <div>
+                <label
+                  className={`${isDarkMode ? "text-slate-100" : "text-gray-700"
+                    } text-sm font-medium mb-1 block`}
+                >
+                  Default VAT Rate
+                </label>
+                <SelectField
+                  name="defaultVatRate"
+                  value={values.defaultVatRate || "NO_VAT"}
+                  onChange={handleChange}
+                  options={VAT_OPTIONS}
+                  placeholder="Select VAT Rate"
+                  error={touched.defaultVatRate ? (errors.defaultVatRate as string) : ""}
+                />
+              </div> */}
+
 
               <div>
                 <label className={`${isDarkMode ? "text-slate-100" : "text-gray-700"} text-sm font-medium mb-1 block`}>
@@ -351,7 +369,7 @@ export default function SupplierModal({
               </div>
             </div>
 
-           
+
             <div className="col-span-2 flex items-center gap-6 mb-6">
               <div className="flex-grow h-px bg-gray-200" />
               <span className={`${isDarkMode ? "text-slate-100" : "text-orange-500"} text-md font-medium whitespace-nowrap`}>
