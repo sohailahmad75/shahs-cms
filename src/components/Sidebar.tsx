@@ -165,7 +165,7 @@ const Sidebar = ({
 
           {/* Dark Mode Toggle */}
           <div
-            className={`flex items-center pb-4 ${isCollapsed ? "justify-center" : "gap-3 px-4"}`}
+            className={`flex items-center pb-4 pt-4 ${isCollapsed ? "justify-center" : "gap-3 px-4"}`}
           >
             <div
               className={`flex items-center w-full justify-between px-3 py-2 rounded-md
