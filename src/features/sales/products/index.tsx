@@ -64,7 +64,7 @@ const ProductListPage: React.FC = () => {
   const handleChange = (next: "LOW" | "OUT" | null) => {
     setActiveStat(next);
     if (next === "LOW") {
-      setFilters((f: any) => ({ ...f, stockStatus: "LOW" }));
+      setFilters((f: any) => ({ ...f, lowStock: true }));
       setPage(1);
     } else if (next === "OUT") {
       setFilters((f: any) => ({ ...f, stockStatus: "OUT" }));
